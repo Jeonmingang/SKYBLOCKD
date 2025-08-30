@@ -16,5 +16,3 @@ permissions:
   samsky.admin:
     default: op
 softdepend: [Vault]
-
-
