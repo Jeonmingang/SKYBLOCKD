@@ -1,3 +1,5 @@
+
+
 name: SamSkyBridge
 version: 0.4.0
 main: com.signition.samskybridge.Main
@@ -9,3 +11,4 @@ permissions:
   samsky.admin:
     description: Allows admin access
     default: op
+
