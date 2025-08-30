@@ -13,7 +13,7 @@ commands:
 permissions:
   samsky.use:
     default: true
-softdepend: [Vault]
-
   samsky.admin:
     default: op
+softdepend: [Vault]
+
