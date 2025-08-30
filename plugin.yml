@@ -1,0 +1,11 @@
+name: SamSkyBridge
+version: 0.4.0
+main: com.signition.samskybridge.Main
+commands:
+  island:
+    description: Island creation command
+    usage: /is create
+permissions:
+  samsky.admin:
+    description: Allows admin access
+    default: op
