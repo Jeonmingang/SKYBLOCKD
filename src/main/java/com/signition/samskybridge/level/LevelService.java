@@ -1,3 +1,4 @@
+
 package com.signition.samskybridge.level;
 import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
@@ -11,7 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import java.io.File; import java.util.*;
 public class LevelService {
-  private final Main plugin; private final DataStore store; private final Map<String, Long> blockXp = new HashMap<>();
+  private final Main plugin; private final DataStore store; private final Map<String, Long> blockXp = new HashMap<String, Long>();
   public LevelService(Main plugin, DataStore store){ this.plugin = plugin; this.store = store; loadBlocks(); }
   public void reload(){ blockXp.clear(); loadBlocks(); }
   private void loadBlocks(){
@@ -21,7 +22,6 @@ public class LevelService {
       if (!f.exists()){
         YamlConfiguration y = new YamlConfiguration();
         y.set("minecraft:stone", 1);
-        // Pixelmon 예시 키 (하이브리드 서버에서 NamespacedKey가 노출되는 경우)
         y.set("pixelmon:ruby_block", 10);
         y.set("pixelmon:platinum_block", 12);
         y.set("pixelmon:aluminum_block", 8);
@@ -39,7 +39,7 @@ public class LevelService {
   }
   public void onPlace(Material mat, Player p){
     if (p==null) return;
-    IslandData is = store.findByMember(p.getUniqueId()).orElseGet(()->store.getOrCreate(p.getUniqueId()));
+    IslandData is = store.findByMember(p.getUniqueId()).orElseGet(new java.util.function.Supplier<IslandData>(){ public IslandData get(){ return store.getOrCreate(p.getUniqueId()); }});
     Location l = p.getLocation().getBlock().getLocation();
     String key = (l.getWorld()!=null?l.getWorld().getName():"world")+":"+l.getBlockX()+":"+l.getBlockY()+":"+l.getBlockZ();
     if (is.hasXpOnce(key)) return;

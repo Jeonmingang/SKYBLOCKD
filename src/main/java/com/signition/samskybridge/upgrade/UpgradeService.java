@@ -1,131 +1,75 @@
-package com.signition.samskybridge.upgrade;
 
+package com.signition.samskybridge.upgrade;
 import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
-import com.signition.samskybridge.level.LevelService;
-import com.signition.samskybridge.util.VaultHook;
-import com.signition.samskybridge.integration.BentoSync;
+import com.signition.samskybridge.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Arrays;
-
 public class UpgradeService {
-    private final Main plugin;
-    private final DataStore store;
-    private final LevelService level;
-    private final VaultHook vault;
-    private final BentoSync bento;
-
-    public UpgradeService(Main plugin, DataStore store, LevelService level, VaultHook vault){
-        this.plugin = plugin;
-        this.store = store;
-        this.level = level;
-        this.vault = vault;
-        this.bento = plugin.getBento();
+  private final Main plugin; private final DataStore store;
+  public UpgradeService(Main plugin, DataStore store){ this.plugin = plugin; this.store = store; }
+  public void open(Player p){
+    Inventory inv = Bukkit.createInventory(p, 27, Text.color(plugin.getConfig().getString("gui.title-upgrade","섬 업그레이드")));
+    inv.setItem(11, item(Material.PLAYER_HEAD,
+      plugin.getConfig().getString("gui.upgrade.size.name","&a섬 크기 업그레이드"),
+      new String[]{"&7좌클릭: 비용 지불(레벨+돈, 둘 다 필요)","&7우클릭: 비활성화됨"}));
+    inv.setItem(15, item(Material.WHITE_STAINED_GLASS,
+      plugin.getConfig().getString("gui.upgrade.team.name","&a팀원 업그레이드"),
+      new String[]{"&7좌클릭: 비용 지불(레벨+돈, 둘 다 필요)","&7우클릭: 비활성화됨"}));
+    p.openInventory(inv);
+  }
+  private ItemStack item(Material m, String name, String[] loreArr){
+    ItemStack it = new ItemStack(m);
+    ItemMeta im = it.getItemMeta();
+    if (im!=null){
+      im.setDisplayName(Text.color(name));
+      java.util.List<String> lore = new java.util.ArrayList<String>();
+      for (String s: loreArr) lore.add(Text.color(s));
+      im.setLore(lore); it.setItemMeta(im);
     }
-
-    public void openGui(Player p){
-        Inventory inv = Bukkit.createInventory(null, 27, plugin.getConfig().getString("gui.title-upgrade","섬 업그레이드"));
-        IslandData is = store.getOrCreate(p.getUniqueId(), p.getName());
-        inv.setItem(11, named(new ItemStack(Material.WHITE_STAINED_GLASS), plugin.getConfig().getString("gui.size-item-name","섬 크기 업그레이드"),
-                new String[]{
-                    "현재 반지름: " + is.getSize(),
-                    "가격(돈): " + (long)costSize(is.getSize()) + " | 요구 레벨: " + needLevelSize(is.getSize()),
-                    "좌클릭=돈 구매, 쉬프트=레벨 구매"
-                }));
-        inv.setItem(15, named(new ItemStack(Material.PLAYER_HEAD), plugin.getConfig().getString("gui.team-item-name","팀원 수 업그레이드"),
-                new String[]{
-                    "현재 팀 최대: " + is.getTeamMax(),
-                    "가격(돈): " + (long)costTeam(is.getTeamMax()) + " | 요구 레벨: " + needLevelTeam(is.getTeamMax()),
-                    "좌클릭=돈 구매, 쉬프트=레벨 구매"
-                }));
-        p.openInventory(inv);
+    return it;
+  }
+  public void click(Player p, int slot){
+    if (slot!=11 && slot!=15) return;
+    IslandData is = store.findByMember(p.getUniqueId()).orElseGet(new java.util.function.Supplier<IslandData>(){ public IslandData get(){ return store.getOrCreate(p.getUniqueId()); }});
+    if (!is.getOwner().equals(p.getUniqueId())){ p.sendMessage(Text.color("&c섬장만 업그레이드 가능합니다.")); return; }
+    boolean both = plugin.getConfig().getBoolean("upgrade.costs.require-both", true);
+    int sizeDelta = plugin.getConfig().getInt("upgrade.size.delta", 5);
+    int teamDelta = plugin.getConfig().getInt("upgrade.team.delta", 1);
+    int beforeSize = is.getSizeLevel(); int beforeTeam = is.getTeamLevel();
+    int sizeCostLevel = plugin.getConfig().getInt("upgrade.size.level-cost-base",5) + is.getSizeLevel()*plugin.getConfig().getInt("upgrade.size.level-cost-mul",2);
+    double sizeCostMoney = plugin.getConfig().getDouble("upgrade.size.money-cost-base",1000.0) * Math.pow(plugin.getConfig().getDouble("upgrade.size.money-cost-mul",1.2), is.getSizeLevel());
+    int teamCostLevel = plugin.getConfig().getInt("upgrade.team.level-cost-base",3) + is.getTeamLevel()*plugin.getConfig().getInt("upgrade.team.level-cost-mul",2);
+    double teamCostMoney = plugin.getConfig().getDouble("upgrade.team.money-cost-base",1500.0) * Math.pow(plugin.getConfig().getDouble("upgrade.team.money-cost-mul",1.25), is.getTeamLevel());
+    if (slot==11){
+      if (!pay(p, is, both? sizeCostLevel:0, both? sizeCostMoney:0.0)) return;
+      is.setSizeLevel(is.getSizeLevel()+sizeDelta);
+    }else if (slot==15){
+      if (!pay(p, is, both? teamCostLevel:0, both? teamCostMoney:0.0)) return;
+      is.setTeamLevel(is.getTeamLevel()+teamDelta);
     }
-
-    private ItemStack named(ItemStack it, String name, String[] lores){
-        ItemMeta im = it.getItemMeta();
-        im.setDisplayName(org.bukkit.ChatColor.translateAlternateColorCodes('&', name));
-        im.setLore(Arrays.asList(lores));
-        it.setItemMeta(im);
-        return it;
+    String msg = plugin.getConfig().getString("messages.upgrade.done","&a섬 업그레이드 완료! &7크기 +<size>, 인원 +<team>");
+    p.sendMessage(Text.color(msg.replace("<size>", String.valueOf(is.getSizeLevel()-beforeSize)).replace("<team>", String.valueOf(is.getTeamLevel()-beforeTeam))));
+    store.save();
+    open(p);
+  }
+  private boolean pay(Player p, IslandData is, int reqLevel, double reqMoney){
+    if (is.getLevel() < reqLevel){ p.sendMessage(Text.color("&c레벨 부족 &7(요구: "+reqLevel+")")); return false; }
+    if (reqMoney > 0.0){
+      org.bukkit.plugin.Plugin vault = Bukkit.getPluginManager().getPlugin("Vault");
+      if (vault == null){ p.sendMessage(Text.color("&cVault(경제) 플러그인이 없습니다. 업그레이드 불가.")); return false; }
+      try{
+        net.milkbowl.vault.economy.Economy econ = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
+        if (!econ.has(p, reqMoney)){ p.sendMessage(Text.color("&c돈 부족 &7(요구: "+(long)reqMoney+")")); return false; }
+        econ.withdrawPlayer(p, reqMoney);
+      }catch (Exception ex){ p.sendMessage(Text.color("&c경제 연동 오류: "+ex.getMessage())); return false; }
     }
-
-    public void click(Player p, int slot, boolean shift){
-        IslandData is = store.getOrCreate(p.getUniqueId(), p.getName());
-        if (slot == 11){
-            int before = is.getSize();
-            int next = before + 10;
-            if (shift){
-                int need = needLevelSize(before);
-                if (is.getLevel() < need){
-                    String msg = plugin.getConfig().getString("messages.upgrade.not-enough-level","레벨 부족").replace("<need>", String.valueOf(need));
-                    p.sendMessage(msg);
-                    return;
-                }
-            } else {
-                double cost = costSize(before);
-                if (!vault.withdraw(p.getName(), cost)){
-                    String msg = plugin.getConfig().getString("messages.upgrade.not-enough-money","돈 부족").replace("<cost>", String.valueOf((long)cost));
-                    p.sendMessage(msg);
-                    return;
-                }
-            }
-            is.setSize(next);
-            p.sendMessage(plugin.getConfig().getString("messages.upgrade.size-up-success","섬 크기 업그레이드").replace("<radius>", String.valueOf(next)));
-            Barrier.showWhiteBarrier(p, next);
-            try { if (bento != null && bento.isEnabled()) bento.applyRangeInstant(p, next); } catch (Throwable t){ plugin.getLogger().warning("BentoSync range failed: "+t.getMessage()); }
-        } else if (slot == 15){
-            int before = is.getTeamMax();
-            int next = before + 1;
-            if (shift){
-                int need = needLevelTeam(before);
-                if (is.getLevel() < need){
-                    String msg = plugin.getConfig().getString("messages.upgrade.not-enough-level","레벨 부족").replace("<need>", String.valueOf(need));
-                    p.sendMessage(msg);
-                    return;
-                }
-            } else {
-                double cost = costTeam(before);
-                if (!vault.withdraw(p.getName(), cost)){
-                    String msg = plugin.getConfig().getString("messages.upgrade.not-enough-money","돈 부족").replace("<cost>", String.valueOf((long)cost));
-                    p.sendMessage(msg);
-                    return;
-                }
-            }
-            is.setTeamMax(next);
-            p.sendMessage(plugin.getConfig().getString("messages.upgrade.team-up-success","팀원 업그레이드").replace("<count>", String.valueOf(next)));
-            try { if (bento != null && bento.isEnabled()) bento.applyTeamMax(p, next); } catch (Throwable t){ plugin.getLogger().warning("BentoSync team failed: "+t.getMessage()); }
-        }
-    }
-
-    private double costSize(int currentRadius){
-        double base = plugin.getConfig().getDouble("economy.costs.size.base", 10000.0);
-        double mul = plugin.getConfig().getDouble("economy.costs.size.multiplier", 1.25);
-        int steps = Math.max(0, (currentRadius - 50) / 10);
-        return Math.round(base * Math.pow(mul, steps));
-    }
-    private double costTeam(int currentTeam){
-        double base = plugin.getConfig().getDouble("economy.costs.team.base", 5000.0);
-        double mul = plugin.getConfig().getDouble("economy.costs.team.multiplier", 1.5);
-        int steps = Math.max(0, currentTeam - 1);
-        return Math.round(base * Math.pow(mul, steps));
-    }
-    private int needLevelSize(int currentRadius){
-        int base = plugin.getConfig().getInt("economy.costs.size.level-required-base", 5);
-        int step = plugin.getConfig().getInt("economy.costs.size.level-required-step", 2);
-        int steps = Math.max(0, (currentRadius - 50) / 10);
-        return base + step * steps;
-    }
-    private int needLevelTeam(int currentTeam){
-        int base = plugin.getConfig().getInt("economy.costs.team.level-required-base", 3);
-        int step = plugin.getConfig().getInt("economy.costs.team.level-required-step", 1);
-        int steps = Math.max(0, currentTeam - 1);
-        return base + step * steps;
-    }
+    is.setLevel(is.getLevel()-reqLevel);
+    return true;
+  }
 }

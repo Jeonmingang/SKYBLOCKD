@@ -1,11 +1,11 @@
+
 package com.signition.samskybridge.data;
 import com.signition.samskybridge.Main;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File; import java.io.IOException;
 import java.util.*; import java.util.stream.Collectors;
 public class DataStore {
-  private final Main plugin; private final File dataFile; private final FileConfiguration data;
+  private final Main plugin; private final File dataFile; private final YamlConfiguration data;
   private final Map<UUID, IslandData> islands = new HashMap<>();
   private final Set<UUID> chatOn = new HashSet<>();
   public DataStore(Main plugin){
@@ -21,20 +21,25 @@ public class DataStore {
         IslandData is = e.getValue();
         data.set(b+".name", is.getName());
         data.set(b+".owner", is.getOwner().toString());
-        data.set(b+".coOwners", is.getCoOwners().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
-        data.set(b+".members", is.getMembers().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
-        data.set(b+".workers", is.getWorkers().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
+        data.set(b+".coOwners", toStrings(is.getCoOwners()));
+        data.set(b+".members", toStrings(is.getMembers()));
+        data.set(b+".workers", toStrings(is.getWorkers()));
         data.set(b+".level", is.getLevel());
         data.set(b+".xp", is.getXp());
         data.set(b+".sizeLevel", is.getSizeLevel());
         data.set(b+".teamLevel", is.getTeamLevel());
         data.set(b+".forSale", is.isForSale());
         data.set(b+".price", is.getPrice());
-        data.set(b+".xpOnce", new ArrayList<>(is.getXpOnce()));
+        data.set(b+".xpOnce", new ArrayList<String>(is.getXpOnce()));
       }
-      data.set("chatOn", chatOn.stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
+      data.set("chatOn", new ArrayList<String>(toStrings(chatOn)));
       data.save(dataFile);
     }catch (IOException e){ plugin.getLogger().warning("Failed to save data.yml: "+e.getMessage()); }
+  }
+  private List<String> toStrings(Collection<UUID> c){
+    List<String> out = new ArrayList<String>();
+    for (UUID u : c) out.add(u.toString());
+    return out;
   }
   private void load(){
     islands.clear();
@@ -74,7 +79,7 @@ public class DataStore {
     for (IslandData is : islands.values()) if (is.getCoOwners().contains(u) || is.getMembers().contains(u)) return true;
     return false;
   }
-  public List<IslandData> getAll(){ return new ArrayList<>(islands.values()); }
+  public List<IslandData> getAll(){ return new ArrayList<IslandData>(islands.values()); }
   public boolean isChatOn(UUID u){ return chatOn.contains(u); }
   public void toggleChat(UUID u){ if (!chatOn.add(u)) chatOn.remove(u); }
 }

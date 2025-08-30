@@ -1,186 +1,78 @@
 
 package com.signition.samskybridge.cmd;
-
 import com.signition.samskybridge.Main;
+import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
+import com.signition.samskybridge.gui.ManagementGui;
+import com.signition.samskybridge.gui.MarketGui;
 import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.rank.RankingService;
 import com.signition.samskybridge.upgrade.UpgradeService;
-import com.signition.samskybridge.util.ConfigUtil;
 import com.signition.samskybridge.util.Text;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-
-public class IslandCommand implements CommandExecutor {
-    private final Main plugin;
-    private final com.signition.samskybridge.data.DataStore store;
-    private final LevelService level;
-    private final UpgradeService upgrade;
-    private final RankingService ranking;
-
-    public IslandCommand(Main plugin, com.signition.samskybridge.data.DataStore store, LevelService level, UpgradeService upgrade, RankingService ranking) {
-        this.plugin = plugin;
-        this.store = store;
-        this.level = level;
-        this.upgrade = upgrade;
-        this.ranking = ranking;
+import org.bukkit.Bukkit; import org.bukkit.OfflinePlayer;
+import org.bukkit.command.*; import org.bukkit.entity.Player;
+import java.util.*;
+public class IslandCommand implements CommandExecutor, TabCompleter {
+  private final Main plugin; private final DataStore store; private final LevelService level; private final RankingService rank;
+  public IslandCommand(Main plugin, DataStore store, LevelService level, RankingService rank){ this.plugin=plugin; this.store=store; this.level=level; this.rank=rank; }
+  @Override public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+    if (!(sender instanceof Player)){ sender.sendMessage("플레이어만 사용 가능합니다."); return true; }
+    Player p=(Player)sender;
+    if (args.length==0){ sendHelp(p); return true; }
+    String sub = args[0];
+    if ("업그레이드".equals(sub)){ new UpgradeService(plugin, store).open(p); return true; }
+    if ("레벨".equals(sub)){
+      IslandData is = store.findByMember(p.getUniqueId()).orElseGet(new java.util.function.Supplier<IslandData>(){ public IslandData get(){ return store.getOrCreate(p.getUniqueId()); }});
+      long need = level.requiredXp(is.getLevel());
+      p.sendMessage(Text.color("&a섬 레벨: &f"+is.getLevel()+" &7경험치 &f"+is.getXp()+"&7/&f"+need));
+      return true;
     }
-
-    private void sendHelp(Player p){
-        p.sendMessage(Text.color("&7/섬 레벨 &f: 섬 레벨 확인"));
-        p.sendMessage(Text.color("&7/섬 업그레이드 &f: 업그레이드 GUI 열기"));
-        p.sendMessage(Text.color("&7/섬 랭킹 &f: 섬 랭킹 보기"));
-        if (p.hasPermission("samsky.admin")){
-            p.sendMessage(Text.color("&8---- 관리자 ----"));
-            p.sendMessage(Text.color("&7/섬 설정 리로드 &f: 설정/블럭경험치 리로드"));
-            p.sendMessage(Text.color("&7/섬 설정 보기 &f: 주요 설정값 확인"));
-            p.sendMessage(Text.color("&7/섬 설정 블럭경험치 설정 <블럭> <xp> &f: blocks.yml 수정"));
-            p.sendMessage(Text.color("&7/섬 설정 바리어 시간 <초> &f: 방벽 표시 시간 변경"));
-            p.sendMessage(Text.color("&7/섬 설정 레벨 증가율 <퍼센트> &f: 필요 경험치 증가율(%)"));
-            p.sendMessage(Text.color("&7/섬 설정 비용 size base|multiplier <값> &f: 섬 크기 비용/증가율"));
-            p.sendMessage(Text.color("&7/섬 설정 비용 team base|multiplier <값> &f: 팀원 비용/증가율"));
-            p.sendMessage(Text.color("&7/섬 설정 랭킹접두어 <형식> &f: [ 섬 랭킹 <rank>위 ] 포맷"));
-            p.sendMessage(Text.color("&7/섬 설정 저장 &f: config.yml 저장"));
-        }
+    if ("랭킹".equals(sub)){ rank.showTop(p, 10); return true; }
+    if ("알바".equals(sub)){
+      if (args.length<2){ p.sendMessage("/섬 알바 <플레이어>"); return true; }
+      OfflinePlayer op = Bukkit.getOfflinePlayer(args[1]);
+      if (op==null || op.getUniqueId()==null){ p.sendMessage("플레이어를 찾을 수 없습니다."); return true; }
+      IslandData is = store.findByMember(p.getUniqueId()).orElseGet(new java.util.function.Supplier<IslandData>(){ public IslandData get(){ return store.getOrCreate(p.getUniqueId()); }});
+      if (!is.getOwner().equals(p.getUniqueId())){ p.sendMessage("섬장만 설정 가능합니다."); return true; }
+      is.toggleWorker(op.getUniqueId());
+      p.sendMessage(Text.color("&a알바 권한: &f"+args[1]+" &7=> "+(is.isWorker(op.getUniqueId())?"&a허용":"&c해제")));
+      store.save(); return true;
     }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)){
-            sender.sendMessage(Text.color(plugin.getConfig().getString("messages.not-player","플레이어만 사용가능")));
-            return true;
-        }
-        Player p = (Player) sender;
-        if (args.length == 0){
-            sendHelp(p);
-            return true;
-        }
-        switch (args[0]){
-            case "레벨": {
-                IslandData is = level.getIslandOf(p);
-                long need = level.requiredXp(is.getLevel());
-                double percent = Math.min(100.0, (is.getXp() * 100.0) / need);
-                String msg = plugin.getConfig().getString("messages.level.status","섬 레벨")
-                        .replace("<level>", String.valueOf(is.getLevel()))
-                        .replace("<xp>", String.valueOf(is.getXp()))
-                        .replace("<need>", String.valueOf(need))
-                        .replace("<percent>", String.format("%.1f", percent));
-                p.sendMessage(Text.color(msg));
-                return true;
-            }
-            case "업그레이드": {
-                upgrade.openGui(p);
-                return true;
-            }
-            case "랭킹": {
-                ranking.sendTop(p, 10);
-                return true;
-            }
-            case "설정": {
-                if (!p.hasPermission("samsky.admin")){
-                    p.sendMessage(Text.color("&c권한이 없습니다."));
-                    return true;
-                }
-                if (args.length == 1){
-                    sendHelp(p);
-                    return true;
-                }
-                // /섬 설정 리로드
-                if ("리로드".equals(args[1])){
-                    plugin.reloadConfig();
-                    level.reloadBlocks();
-                    p.sendMessage(Text.color("&a설정이 리로드되었습니다."));
-                    return true;
-                }
-                // /섬 설정 보기
-                if ("보기".equals(args[1])){
-                    p.sendMessage(Text.color("&7increase-percent: &f"+plugin.getConfig().getDouble("leveling.increase-percent",1.5)));
-                    p.sendMessage(Text.color("&7barrier.show-seconds: &f"+plugin.getConfig().getInt("barrier.show-seconds",6)));
-                    p.sendMessage(Text.color("&7economy.size: base &f"+plugin.getConfig().getDouble("economy.costs.size.base",10000.0)+" &7multiplier &f"+plugin.getConfig().getDouble("economy.costs.size.multiplier",1.25)));
-                    p.sendMessage(Text.color("&7economy.team: base &f"+plugin.getConfig().getDouble("economy.costs.team.base",5000.0)+" &7multiplier &f"+plugin.getConfig().getDouble("economy.costs.team.multiplier",1.5)));
-                    p.sendMessage(Text.color("&7scoreboard.prefix-format: &f"+plugin.getConfig().getString("scoreboard.prefix-format","&7[ &a섬 랭킹 &f<rank>위 &7] ")));
-                    return true;
-                }
-                // /섬 설정 바리어 시간 <초>
-                if ("바리어".equals(args[1]) && args.length>=4 && "시간".equals(args[2])){
-                    try{
-                        int v = Integer.parseInt(args[3]);
-                        plugin.getConfig().set("barrier.show-seconds", v);
-                        p.sendMessage(Text.color("&abarrier.show-seconds = "+v));
-                    }catch (Exception ex){ p.sendMessage(Text.color("&c숫자를 입력하세요.")); }
-                    return true;
-                }
-                // /섬 설정 레벨 증가율 <퍼센트>
-                if ("레벨".equals(args[1]) && args.length>=4 && "증가율".equals(args[2])){
-                    try{
-                        double v = Double.parseDouble(args[3]);
-                        plugin.getConfig().set("leveling.increase-percent", v);
-                        p.sendMessage(Text.color("&aincrease-percent = "+v));
-                    }catch (Exception ex){ p.sendMessage(Text.color("&c숫자를 입력하세요.")); }
-                    return true;
-                }
-                // /섬 설정 비용 size|team base|multiplier <값>
-                if ("비용".equals(args[1]) && args.length>=5){
-                    String cat = args[2]; String key = args[3];
-                    try{
-                        double v = Double.parseDouble(args[4]);
-                        if ("size".equals(cat) && ("base".equals(key) || "multiplier".equals(key))){
-                            plugin.getConfig().set("economy.costs.size."+key, v);
-                            p.sendMessage(Text.color("&aeconomy.costs.size."+key+" = "+v));
-                        } else if ("team".equals(cat) && ("base".equals(key) || "multiplier".equals(key))){
-                            plugin.getConfig().set("economy.costs.team."+key, v);
-                            p.sendMessage(Text.color("&aeconomy.costs.team."+key+" = "+v));
-                        } else {
-                            p.sendMessage(Text.color("&c사용법: /섬 설정 비용 size|team base|multiplier <값>"));
-                        }
-                    }catch (Exception ex){ p.sendMessage(Text.color("&c숫자를 입력하세요.")); }
-                    return true;
-                }
-                // /섬 설정 랭킹접두어 <형식>
-                if ("랭킹접두어".equals(args[1]) && args.length>=3){
-                    StringBuilder sb = new StringBuilder();
-                    for (int i=2;i<args.length;i++){
-                        if (i>2) sb.append(" ");
-                        sb.append(args[i]);
-                    }
-                    plugin.getConfig().set("scoreboard.prefix-format", sb.toString());
-                    p.sendMessage(Text.color("&aprefix-format = "+sb));
-                    return true;
-                }
-                // /섬 설정 블럭경험치 설정 <블럭> <xp>
-                if ("블럭경험치".equals(args[1]) && args.length>=4 && "설정".equals(args[2])){
-                    FileConfiguration blocks = ConfigUtil.loadBlocks(plugin);
-                    try{
-                        String mat = args[3].toUpperCase();
-                        int xp = Integer.parseInt(args[4]);
-                        blocks.set(mat, xp);
-                        if (ConfigUtil.saveBlocks(plugin, blocks)){
-                            level.reloadBlocks();
-                            p.sendMessage(Text.color("&ablocks.yml: "+mat+" = "+xp));
-                        } else {
-                            p.sendMessage(Text.color("&cblocks.yml 저장 실패"));
-                        }
-                    }catch (Exception ex){
-                        p.sendMessage(Text.color("&c사용법: /섬 설정 블럭경험치 설정 <블럭> <xp>"));
-                    }
-                    return true;
-                }
-                // /섬 설정 저장
-                if ("저장".equals(args[1])){
-                    plugin.saveConfig();
-                    p.sendMessage(Text.color("&aconfig.yml 저장 완료"));
-                    return true;
-                }
-
-                sendHelp(p);
-                return true;
-            }
-            default:
-                sendHelp(p);
-                return true;
-        }
+    if ("관리".equals(sub)){ new ManagementGui(plugin, store).open(p); return true; }
+    if ("매물".equals(sub)){ new MarketGui(plugin, store).open(p); return true; }
+    if ("판매".equals(sub)){
+      if (args.length<2){ p.sendMessage("/섬 판매 <금액>"); return true; }
+      IslandData is = store.findByMember(p.getUniqueId()).orElseGet(new java.util.function.Supplier<IslandData>(){ public IslandData get(){ return store.getOrCreate(p.getUniqueId()); }});
+      if (!is.getOwner().equals(p.getUniqueId())){ p.sendMessage("섬장만 매물 등록 가능"); return true; }
+      try{ double price = Double.parseDouble(args[1]); is.setForSale(true); is.setPrice(price); store.save(); p.sendMessage(Text.color("&a매물 등록 완료: &f"+(long)price)); }catch(Exception ex){ p.sendMessage("숫자를 입력하세요."); }
+      return true;
     }
+    if ("채팅".equals(sub)){
+      if (args.length<2){ p.sendMessage("/섬 채팅 켜기|끄기"); return true; }
+      if ("켜기".equals(args[1])){
+        if (!store.isChatOn(p.getUniqueId())) store.toggleChat(p.getUniqueId());
+        p.sendMessage(Text.color("&a섬 채팅: 켜짐"));
+      } else if ("끄기".equals(args[1])){
+        if (store.isChatOn(p.getUniqueId())) store.toggleChat(p.getUniqueId());
+        p.sendMessage(Text.color("&c섬 채팅: 꺼짐"));
+      } else { p.sendMessage("/섬 채팅 켜기|끄기"); }
+      store.save(); return true;
+    }
+    sendHelp(p); return true;
+  }
+  private void sendHelp(Player p){
+    p.sendMessage(Text.color("&7/섬 업그레이드 &f: 업그레이드 GUI"));
+    p.sendMessage(Text.color("&7/섬 레벨 &f: 현재 섬 레벨/경험치"));
+    p.sendMessage(Text.color("&7/섬 랭킹 &f: 랭킹 보기"));
+    p.sendMessage(Text.color("&7/섬 알바 <플레이어> &f: 블럭 설치/파괴 허용 토글"));
+    p.sendMessage(Text.color("&7/섬 관리 &f: 섬 관리 GUI (승급/강등/추방)"));
+    p.sendMessage(Text.color("&7/섬 매물 &f: 섬 매물 GUI"));
+    p.sendMessage(Text.color("&7/섬 판매 <금액> &f: 매물 등록/갱신"));
+    p.sendMessage(Text.color("&7/섬 채팅 켜기|끄기 &f: 섬 채팅 토글"));
+  }
+  @Override public java.util.List<String> onTabComplete(CommandSender s, Command c, String a, String[] args){
+    if (args.length==1) return java.util.Arrays.asList("업그레이드","레벨","랭킹","알바","관리","매물","판매","채팅");
+    if (args.length==2 && "채팅".equals(args[0])) return java.util.Arrays.asList("켜기","끄기");
+    return java.util.Collections.emptyList();
+  }
 }

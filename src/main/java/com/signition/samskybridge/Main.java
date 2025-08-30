@@ -1,3 +1,4 @@
+
 package com.signition.samskybridge;
 import com.signition.samskybridge.cmd.IslandCommand;
 import com.signition.samskybridge.data.DataStore;
@@ -26,7 +27,7 @@ public final class Main extends JavaPlugin {
     getServer().getPluginManager().registerEvents(new ChatListener(this, dataStore), this);
     getServer().getPluginManager().registerEvents(new ManagementListener(this, dataStore), this);
     getServer().getPluginManager().registerEvents(new MarketListener(this, dataStore), this);
-    getLogger().info("SamSkyBridge enabled (roles/market/pixelmon XP).");
+    getLogger().info("SamSkyBridge enabled (clean Java8 build).");
   }
   @Override public void onDisable(){ if (dataStore!=null) dataStore.save(); }
   public DataStore getDataStore(){ return dataStore; }
