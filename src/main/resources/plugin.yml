@@ -1,0 +1,17 @@
+name: SamSkyBridge
+main: com.signition.samskybridge.Main
+version: 0.4.0
+api-version: 1.16
+author: signition
+commands:
+  섬:
+    description: 섬 관련 명령어
+    usage: /섬
+    aliases: [island, sky, sk]
+permissions:
+  samsky.use:
+    default: true
+softdepend: [Vault]
+
+  samsky.admin:
+    default: op
