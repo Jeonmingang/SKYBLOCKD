@@ -78,7 +78,7 @@ public class UpgradeService {
             }
             is.setSize(next);
             p.sendMessage(plugin.getConfig().getString("messages.upgrade.size-up-success","섬 크기 업그레이드").replace("<radius>", String.valueOf(next)));
-            Barrier.showWhiteBarrier(p, next);
+            // [removed] Barrier call
             try { if (bento != null && bento.isEnabled()) bento.applyRangeInstant(p, next); } catch (Throwable t){ plugin.getLogger().warning("BentoSync range failed: "+t.getMessage()); }
         } else if (slot == 15){
             int before = is.getTeamMax();

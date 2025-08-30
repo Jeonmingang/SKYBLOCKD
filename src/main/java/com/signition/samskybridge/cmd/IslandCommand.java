@@ -38,7 +38,6 @@ public class IslandCommand implements CommandExecutor {
             p.sendMessage(Text.color("&7/섬 설정 리로드 &f: 설정/블럭경험치 리로드"));
             p.sendMessage(Text.color("&7/섬 설정 보기 &f: 주요 설정값 확인"));
             p.sendMessage(Text.color("&7/섬 설정 블럭경험치 설정 <블럭> <xp> &f: blocks.yml 수정"));
-            p.sendMessage(Text.color("&7/섬 설정 바리어 시간 <초> &f: 방벽 표시 시간 변경"));
             p.sendMessage(Text.color("&7/섬 설정 레벨 증가율 <퍼센트> &f: 필요 경험치 증가율(%)"));
             p.sendMessage(Text.color("&7/섬 설정 비용 size base|multiplier <값> &f: 섬 크기 비용/증가율"));
             p.sendMessage(Text.color("&7/섬 설정 비용 team base|multiplier <값> &f: 팀원 비용/증가율"));

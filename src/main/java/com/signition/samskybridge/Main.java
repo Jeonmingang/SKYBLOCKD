@@ -9,8 +9,6 @@ import com.signition.samskybridge.listener.BlockXPListener;
 import com.signition.samskybridge.listener.GuiListener;
 import com.signition.samskybridge.rank.RankingService;
 import com.signition.samskybridge.integration.BentoSync;
-import com.signition.samskybridge.service.BarrierService;
-import com.wimbli.WorldBorder.WorldBorder;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,6 +25,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         // Initialize services
         this.dataStore = new DataStore();
         this.levelService = new LevelService(dataStore);
@@ -58,7 +57,7 @@ public class Main extends JavaPlugin {
     }
 
     private void updateIslandBorder(String islandId, int newSize) {
-        WorldBorder border = new WorldBorder();
+        WorldBorder border = // [removed] WorldBorder constructor was here
         
         // Set new border size based on the upgraded island size
         border.setSize(newSize * 2);  // Example: double the size for the border
