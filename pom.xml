@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.signition</groupId>
   <artifactId>SamSkyBridge</artifactId>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
   <name>SamSkyBridge</name>
   <description>Island leveling, upgrades, ranking, and white barrier visualizer (Java 8)</description>
   <properties>
