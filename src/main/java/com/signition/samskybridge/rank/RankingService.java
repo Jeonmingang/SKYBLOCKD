@@ -29,7 +29,7 @@ public class RankingService {
         lastTop = store.all().stream()
                 .sorted(Comparator.comparingInt(IslandData::getLevel).thenComparingLong(IslandData::getXp).reversed())
                 .limit(100)
-                .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                .collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList())));
         for (Player p : Bukkit.getOnlinePlayers()){
             int rank = getRankOf(p.getUniqueId());
             applyPrefix(p, rank);

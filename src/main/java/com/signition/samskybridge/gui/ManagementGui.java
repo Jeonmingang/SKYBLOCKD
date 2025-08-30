@@ -24,7 +24,7 @@ public class ManagementGui {
     if (im instanceof SkullMeta sm){
       OfflinePlayer op = Bukkit.getOfflinePlayer(u); sm.setOwningPlayer(op);
       sm.setDisplayName(Text.color(name+" &7- &f"+(op.getName()==null?u.toString():op.getName())));
-      sm.setLore(lore.stream().map(Text::color).collect(java.util.stream.Collectors.toList())); it.setItemMeta(sm);
+      sm.setLore(lore.stream().map(Text::color).collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))); it.setItemMeta(sm);
     }
     return it;
   }

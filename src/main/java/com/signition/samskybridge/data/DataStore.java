@@ -21,9 +21,9 @@ public class DataStore {
         IslandData is = e.getValue();
         data.set(b+".name", is.getName());
         data.set(b+".owner", is.getOwner().toString());
-        data.set(b+".coOwners", is.getCoOwners().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.toList())));
-        data.set(b+".members", is.getMembers().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.toList())));
-        data.set(b+".workers", is.getWorkers().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.toList())));
+        data.set(b+".coOwners", is.getCoOwners().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
+        data.set(b+".members", is.getMembers().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
+        data.set(b+".workers", is.getWorkers().stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
         data.set(b+".level", is.getLevel());
         data.set(b+".xp", is.getXp());
         data.set(b+".sizeLevel", is.getSizeLevel());
@@ -32,7 +32,7 @@ public class DataStore {
         data.set(b+".price", is.getPrice());
         data.set(b+".xpOnce", new ArrayList<>(is.getXpOnce()));
       }
-      data.set("chatOn", chatOn.stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.toList())));
+      data.set("chatOn", chatOn.stream().map(UUID::toString).collect(Collectors.collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))));
       data.save(dataFile);
     }catch (IOException e){ plugin.getLogger().warning("Failed to save data.yml: "+e.getMessage()); }
   }

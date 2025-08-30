@@ -13,7 +13,7 @@ public class ActionGui {
   }
   private static ItemStack item(Material m, String name, List<String> lore){
     ItemStack it = new ItemStack(m); ItemMeta im = it.getItemMeta();
-    if (im!=null){ im.setDisplayName(Text.color(name)); im.setLore(lore.stream().map(Text::color).collect(java.util.stream.Collectors.toList())); it.setItemMeta(im); }
+    if (im!=null){ im.setDisplayName(Text.color(name)); im.setLore(lore.stream().map(Text::color).collect(java.util.stream.Collectors.collect(java.util.stream.Collectors.toList()))); it.setItemMeta(im); }
     return it;
   }
 }
