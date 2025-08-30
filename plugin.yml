@@ -11,4 +11,3 @@ permissions:
   samsky.admin:
     description: Allows admin access
     default: op
-
