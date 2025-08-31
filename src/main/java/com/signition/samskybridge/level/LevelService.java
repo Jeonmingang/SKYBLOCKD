@@ -126,3 +126,15 @@ public void onPlace(BlockPlaceEvent e){
 
 
 }
+    public long requiredXp(int level){
+        try{
+            org.bukkit.configuration.ConfigurationSection sec = plugin.getConfig().getConfigurationSection("level.required");
+            if (sec != null && sec.contains(String.valueOf(level))){
+                return sec.getLong(String.valueOf(level));
+            }
+        }catch (Throwable ignored){}
+        long base = (long) plugin.getConfig().getDouble("level.base", 100.0);
+        long mult = (long) plugin.getConfig().getDouble("level.mult", 1.0);
+        return base * level * level * Math.max(1, mult);
+    }
+}

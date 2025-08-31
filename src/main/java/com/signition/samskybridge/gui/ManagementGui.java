@@ -23,7 +23,9 @@ public class ManagementGui {
     public ManagementGui(Main plugin, DataStore store){ this.plugin=plugin; this.store=store; }
 
     public void open(Player p){
-        IslandData is = store.findByMember(p.getUniqueId());
+        java.util.Optional<com.signition.samskybridge.data.IslandData> opt = store.findByMember(p.getUniqueId());
+        if (!opt.isPresent()){ p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬 정보를 찾을 수 없습니다.")); return; }
+        com.signition.samskybridge.data.IslandData is = opt.get();
         if (is == null){
             p.sendMessage(Text.color("&c섬 정보를 찾을 수 없습니다."));
             return;
