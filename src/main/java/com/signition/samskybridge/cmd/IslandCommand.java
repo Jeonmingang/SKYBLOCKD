@@ -7,7 +7,7 @@ public class IslandCommand implements CommandExecutor, TabCompleter {
   public IslandCommand(Main plugin, DataStore store, LevelService level, RankingService rank){ this.plugin=plugin; this.store=store; this.level=level; this.rank=rank; }
   @Override public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
     if (!(sender instanceof Player)){ sender.sendMessage("플레이어만 사용 가능합니다."); return true; }
-    Player p=(Player)sender; if (args.length==0){ sendHelp(p); return true; } String sub=args[0];
+    Player p=(Player)sender; if (args.length==0){ sendHelp(p, 1); return true; } String sub=args[0];
     if ("초대".equals(sub) && args.length>=2){ if ("수락".equals(args[1])) return forward(p,"is team accept"); if ("거절".equals(args[1])) return forward(p,"is team reject"); return forward(p,"is team invite "+args[1]); }
     if ("탈퇴".equals(sub)) return forward(p,"is team leave");
     if ("알바".equals(sub) && args.length>=2) return forward(p,"is team coop "+args[1]);
@@ -49,41 +49,54 @@ public class IslandCommand implements CommandExecutor, TabCompleter {
       else if ("끄기".equals(args[1])){ if (store.isChatOn(p.getUniqueId())) store.toggleChat(p.getUniqueId()); p.sendMessage(Text.color("&c섬 채팅: 꺼짐")); }
       else p.sendMessage("/섬 채팅 켜기|끄기"); store.save(); return true;
     }
-    if ("도움말".equals(sub)){ sendHelp(p); return true; }
+    if ("도움말".equals(sub)){ sendHelp(p, 1); return true; }
     sendHelp(p); return true;
   }
   private boolean forward(Player p, String raw){ return p.performCommand(raw); }
   private String joinTail(String[] arr, int start){ if (arr.length<=start) return ""; StringBuilder sb=new StringBuilder(); for (int i=start;i<arr.length;i++){ if (i>start) sb.append(' '); sb.append(arr[i]); } return sb.toString(); }
-  private void sendHelp(Player p){
-    p.sendMessage(Text.color("&b================= &f섬 명령어(한글) &b================="));
-    p.sendMessage(Text.color("&a/is go [번호] &f→ &7/섬 이동 [번호]"));
-    p.sendMessage(Text.color("&a/is spawn &f→ &7/섬 스폰"));
-    p.sendMessage(Text.color("&a/is create <설계도> &f→ &7/섬 생성 <설계도>"));
-    p.sendMessage(Text.color("&a/is reset <설계도> &f→ &7/섬 초기화 <설계도>"));
-    p.sendMessage(Text.color("&a/is info [플레이어] &f→ &7/섬 정보 [플레이어]"));
-    p.sendMessage(Text.color("&a/is settings &f→ &7/섬 설정"));
-    p.sendMessage(Text.color("&a/is setname <이름> &f→ &7/섬 이름 <이름>"));
-    p.sendMessage(Text.color("&a/is resetname &f→ &7/섬 이름초기화"));
-    p.sendMessage(Text.color("&a/is language [언어] &f→ &7/섬 언어 [언어]"));
-    p.sendMessage(Text.color("&a/is ban <플레이어> &f→ &7/섬 차단 <플레이어>"));
-    p.sendMessage(Text.color("&a/is unban <플레이어> &f→ &7/섬 차단해제 <플레이어>"));
-    p.sendMessage(Text.color("&a/is banlist &f→ &7/섬 차단목록"));
-    p.sendMessage(Text.color("&a/is expel <플레이어> &f→ &7/섬 추방 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team invite <플레이어> &f→ &7/섬 초대 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team accept &f→ &7/섬 초대 수락"));
-    p.sendMessage(Text.color("&a/is team reject &f→ &7/섬 초대 거절"));
-    p.sendMessage(Text.color("&a/is team leave &f→ &7/섬 탈퇴"));
-    p.sendMessage(Text.color("&a/is team setowner <플레이어> &f→ &7/섬 섬장위임 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team kick <플레이어> &f→ &7/섬 팀추방 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team coop <플레이어> &f→ &7/섬 알바 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team uncoop <플레이어> &f→ &7/섬 알바해제 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team trust <플레이어> &f→ &7/섬 신뢰 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team untrust <플레이어> &f→ &7/섬 신뢰해제 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team promote <플레이어> &f→ &7/섬 승급 <플레이어>"));
-    p.sendMessage(Text.color("&a/is team demote <플레이어> &f→ &7/섬 강등 <플레이어>"));
-    p.sendMessage(Text.color("&b==================================================="));
-  }
-  @Override public java.util.List<String> onTabComplete(CommandSender s, Command c, String a, String[] args){
+  
+private void sendHelp(Player p, int page){
+  java.util.List<String> page1 = new java.util.ArrayList<String>();
+  page1.add("&a/섬 이동 [번호] &7- 내 섬/서브 홈으로 이동");
+  page1.add("&a/섬 스폰 &7- 섬 월드 스폰으로 이동");
+  page1.add("&a/섬 생성 <설계도> &7- 섬 만들기");
+  page1.add("&a/섬 초기화 <설계도> &7- 섬 리셋(주의)");
+  page1.add("&a/섬 정보 [플레이어] &7- 섬 정보 보기");
+  page1.add("&a/섬 설정 &7- 섬 설정 열기");
+  page1.add("&a/섬 이름 <이름> &7- 섬 이름 변경");
+  page1.add("&a/섬 이름초기화 &7- 섬 이름 초기화");
+  page1.add("&a/섬 언어 [언어] &7- 언어 선택");
+  page1.add("&a/섬 레벨 &7- 현재 레벨/경험치 확인");
+  page1.add("&a/섬 채팅 켜기|끄기 &7- 섬 전용 채팅 토글");
+  page1.add("&a/섬 업그레이드 &7- 업그레이드 GUI");
+  page1.add("&a/섬 관리 &7- 섬원 관리 GUI");
+  page1.add("&a/섬 매물 &7- 섬 매물 GUI");
+  page1.add("&a/섬 판매 <금액> &7- 내 섬을 매물로 등록");
+  java.util.List<String> page2 = new java.util.ArrayList<String>();
+  page2.add("&a/섬 초대 <플레이어> &7- 섬 초대");
+  page2.add("&a/섬 초대 수락 &7- 초대 수락");
+  page2.add("&a/섬 초대 거절 &7- 초대 거절");
+  page2.add("&a/섬 탈퇴 &7- 섬 떠나기");
+  page2.add("&a/섬 섬장위임 <플레이어> &7- 섬장 권한 넘기기");
+  page2.add("&a/섬 팀추방 <플레이어> &7- 섬원 추방");
+  page2.add("&a/섬 알바 <플레이어> &7- 알바 등록");
+  page2.add("&a/섬 알바해제 <플레이어> &7- 알바 해제");
+  page2.add("&a/섬 신뢰 <플레이어> &7- 신뢰 등록");
+  page2.add("&a/섬 신뢰해제 <플레이어> &7- 신뢰 해제");
+  page2.add("&a/섬 승급 <플레이어> &7- 등급 승급");
+  page2.add("&a/섬 강등 <플레이어> &7- 등급 강등");
+  page2.add("&a/섬 추방 <플레이어> &7- 방문자 추방");
+  page2.add("&a/섬 차단 <플레이어> &7- 차단");
+  page2.add("&a/섬 차단해제 <플레이어> &7- 차단 해제");
+  page2.add("&a/섬 차단목록 &7- 차단 목록");
+  int max = 2; if (page<1) page=1; if (page>max) page=max;
+  p.sendMessage(com.signition.samskybridge.util.Text.color("&b================= &f섬 명령어(한글) &b[페이지 "+page+"/"+max+"]"));
+  java.util.List<String> list = page==1 ? page1 : page2;
+  for (String s : list) p.sendMessage(com.signition.samskybridge.util.Text.color(s));
+  p.sendMessage(com.signition.samskybridge.util.Text.color("&b==============================================="));
+  if (page==1) p.sendMessage(com.signition.samskybridge.util.Text.color("&7다음 페이지: &a/섬 도움말 2"));
+}
+@Override public java.util.List<String> onTabComplete(CommandSender s, Command c, String a, String[] args){
     java.util.List<String> first=java.util.Arrays.asList("도움말","이동","스폰","생성","초기화","정보","설정","이름","이름초기화","언어","차단","차단해제","차단목록","추방","초대","탈퇴","섬장위임","팀추방","알바","알바해제","신뢰","신뢰해제","승급","강등","업그레이드","레벨","랭킹","관리","매물","판매","채팅");
     if (args.length==1){ java.util.List<String> out=new java.util.ArrayList<String>(); for (String k:first) if (k.startsWith(args[0])) out.add(k); return out; }
     if (args.length==2){
