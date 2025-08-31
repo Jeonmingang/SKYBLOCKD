@@ -42,7 +42,9 @@ public class ActionGui {
         ItemMeta im = it.getItemMeta();
         if (im != null){
             im.setDisplayName(Text.color(name));
-            im.setLore(java.util.Arrays.asList(Text.color(org.apache.commons.lang.StringUtils.join(lore, "\n")).split("\\n")));
+            java.util.List<String> _l = new java.util.ArrayList<String>();
+            for (String line : lore) { _l.add(com.signition.samskybridge.util.Text.color(line)); }
+            im.setLore(_l);
             im.getPersistentDataContainer().set(TARGET_KEY, PersistentDataType.STRING, target.toString());
             im.getPersistentDataContainer().set(TARGET_NAME, PersistentDataType.STRING, tname);
             it.setItemMeta(im);
