@@ -40,7 +40,7 @@ public class ChatListener implements Listener {
     String islandName = (is.getName()==null || is.getName().matches("^[0-9a-fA-F\-]{36}$")) ? java.util.Optional.ofNullable(org.bukkit.Bukkit.getOfflinePlayer(is.getOwner()).getName()).orElse("섬") : is.getName();
     String rendered = fmt.replace("<island>", islandName)
             .replace("<role>", role)
-            .replace("<player>", p.getDisplayName()))
+            .replace("<player>", p.getDisplayName())
             .replace("<message>", e.getMessage());
     rendered = Text.color(rendered);
 
