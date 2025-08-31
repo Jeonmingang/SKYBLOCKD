@@ -87,14 +87,14 @@ public class TradeManager implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent e){
-            try {
-        if (!(e.getWhoClicked() instanceof Player)) return;
+            if (!(e.getWhoClicked() instanceof Player)) return;
         Player p = (Player) e.getWhoClicked();
         TradeSession s = sessions.get(p.getUniqueId());
         if (s==null || e.getView().getTopInventory()!=s.inv) return;
         e.setCancelled(true);
         s.handleClick(p, e);
-    }
+    
+}
 
     @EventHandler
     public void onClose(InventoryCloseEvent e){
