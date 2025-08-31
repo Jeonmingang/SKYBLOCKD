@@ -1,52 +1,49 @@
+hunger-disable: true
 
-gui:
-  title-upgrade: '&a섬 업그레이드'
-  upgrade:
-    size:
-      name: '&a섬 크기 업그레이드'
-      lore:
-        - '&7좌클릭: 비용 지불(레벨+돈, 둘 다 필요)'
-        - '&7우클릭: 비활성화됨'
-    team:
-      name: '&a팀원 업그레이드'
-      lore:
-        - '&7좌클릭: 비용 지불(레벨+돈, 둘 다 필요)'
-        - '&7우클릭: 비활성화됨'
-upgrade:
-  costs:
-    require-both: true
-  size:
-    delta: 5
-    level-cost-base: 5
-    level-cost-mul: 2
-    money-cost-base: 1000.0
-    money-cost-mul: 1.2
-  team:
-    delta: 1
-    level-cost-base: 3
-    level-cost-mul: 2
-    money-cost-base: 1500.0
-    money-cost-mul: 1.25
-messages:
-  level-up: '&a레벨업! 현재 레벨: &f<level>'
-  level-bar: '&7경험치: &f<cur>&7/&f<need>'
-  island-chat-prefix: '&a[섬] &f'
-  upgrade:
-    done: '&a섬 업그레이드 완료! &7크기 +<size>, 인원 +<team>'
-  ranking:
-    title: '&a섬 랭킹 TOP <n>'
-    line: '&f<rank>. &a<name> &7- &f레벨 <level> &7(경험치 <xp>)'
-level:
-  base: 100.0
-  growth: 1.15
+format:
+  currency: "$%,.2f"
 
 messages:
-  island-chat:
-    format: '&a[섬:&f<island>&a] &e[<role>] &f<player>&7: &r<message>'
-    role:
-      owner: '섬장'
-      coowner: '부섬장'
-      member: '섬원'
+  prefix: "&6[서버] &r"
+  no-perm: "&c권한이 없습니다."
+  player-only: "&c플레이어만 사용 가능합니다."
 
-xp:
-  allowed-worlds: ['bskyblock_world']
+cheque:
+  material: PAPER
+  name: "&a&l수표"
+  lore:
+    - "&7금액: &e%amount%"
+    - "&f우클릭 시 입금됩니다."
+  glow: true
+
+repairticket:
+  material: NAME_TAG
+  name: "&b[수리권]"
+  lore:
+    - "&7우클릭: 손에 든 아이템 수리"
+  glow: true
+
+lock:
+  item:
+    material: TRIPWIRE_HOOK
+    name: "&6[잠금권]"
+    lore:
+      - "&7우클릭: 바라보는 블록을 잠금"
+  protect-blocks:
+    - CHEST
+    - TRAPPED_CHEST
+    - BARREL
+    - FURNACE
+    - BLAST_FURNACE
+    - SMOKER
+    - HOPPER
+    - DISPENSER
+    - DROPPER
+    - OAK_DOOR
+    - SPRUCE_DOOR
+    - BIRCH_DOOR
+    - JUNGLE_DOOR
+    - ACACIA_DOOR
+    - DARK_OAK_DOOR
+    - IRON_DOOR
+    - OAK_TRAPDOOR
