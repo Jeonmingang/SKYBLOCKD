@@ -51,3 +51,5 @@ messages:
 xp:
   allowed-worlds: ['bskyblock_world']
   default-per-block: 1
+  debug: true
+  default-per-block: 1

@@ -23,7 +23,7 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable(){
-        getLogger().info("[SamSkyBridge-KR] MARKERS v1.0.4: CHAT_UUID_PARSE | BLOCK_XP | DROP_TAG");
+        getLogger().info("[SamSkyBridge-KR] MARKERS v1.0.5: CHAT_UUID_PARSE | BLOCK_XP | DROP_TAG");
         instance = this;
         saveDefaultConfig();
 

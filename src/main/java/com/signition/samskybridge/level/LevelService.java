@@ -7,6 +7,7 @@ import com.signition.samskybridge.util.Text;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class LevelService {
+  private boolean xpDebug(){ return plugin.getConfig().getBoolean("xp.debug", false); }
+  private void debug(Player p, String m){ if (xpDebug() && p!=null) p.sendMessage(com.signition.samskybridge.util.Text.color("&8[XP 디버그] &7"+m)); }
   private final Main plugin; private final DataStore store; private final Map<String, Long> blockXp = new HashMap<String, Long>();
   private final NamespacedKey minedKey;
   private final Set<String> allowedWorlds = new HashSet<String>();
@@ -80,9 +83,9 @@ public class LevelService {
     String id=e.getBlockPlaced().getType().name().toLowerCase();
     try{ org.bukkit.NamespacedKey nk = e.getBlockPlaced().getType().getKey(); if (nk!=null) id=(nk.getNamespace()+":"+nk.getKey()).toLowerCase(); }catch(Throwable ignored){}
     long add = blockXp.getOrDefault(id, blockXp.getOrDefault(e.getBlockPlaced().getType().name().toLowerCase(), 0L));
-    if (add<=0) { add = (long) plugin.getConfig().getDouble("xp.default-per-block", 0.0); if (add<=0) return; }
+    if (add<=0) { add = (long) plugin.getConfig().getDouble("xp.default-per-block", 0.0); if (add<=0) { debug(p, "블럭 XP 매핑/기본값=0: XP 미지급"); return; } }
 
-    is.addXp(add);
+    is.addXp(add); debug(p, "XP +"+add+" (id="+id+")");
     long need=requiredXp(is.getLevel());
     while (is.getXp()>=need){ is.setXp(is.getXp()-need); is.setLevel(is.getLevel()+1); p.sendMessage(Text.color(plugin.getConfig().getString("messages.level-up","&a레벨업! 현재 레벨: &f<level>").replace("<level>", String.valueOf(is.getLevel())))); need=requiredXp(is.getLevel()); }
     String fmt=plugin.getConfig().getString("messages.level-bar","&7경험치: &f<cur>&7/&f<need>");
