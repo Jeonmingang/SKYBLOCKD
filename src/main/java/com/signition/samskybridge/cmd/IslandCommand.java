@@ -49,7 +49,7 @@ public class IslandCommand implements CommandExecutor, TabCompleter {
       else if ("끄기".equals(args[1])){ if (store.isChatOn(p.getUniqueId())) store.toggleChat(p.getUniqueId()); p.sendMessage(Text.color("&c섬 채팅: 꺼짐")); }
       else p.sendMessage("/섬 채팅 켜기|끄기"); store.save(); return true;
     }
-    if ("도움말".equals(sub)){ sendHelp(p, 1); return true; }
+    if ("도움말".equals(sub)) { int page=1; if (args.length>=2) try{ page=Integer.parseInt(args[1]); }catch(Exception ignored){} sendHelp(p, page); return true; }
     sendHelp(p, 1); return true;
   }
   private boolean forward(Player p, String raw){ return p.performCommand(raw); }

@@ -80,7 +80,7 @@ public class LevelService {
     String id=e.getBlockPlaced().getType().name().toLowerCase();
     try{ org.bukkit.NamespacedKey nk = e.getBlockPlaced().getType().getKey(); if (nk!=null) id=(nk.getNamespace()+":"+nk.getKey()).toLowerCase(); }catch(Throwable ignored){}
     long add = blockXp.getOrDefault(id, blockXp.getOrDefault(e.getBlockPlaced().getType().name().toLowerCase(), 0L));
-    if (add<=0) return;
+    if (add<=0) { add = (long) plugin.getConfig().getDouble("xp.default-per-block", 0.0); if (add<=0) return; }
 
     is.addXp(add);
     long need=requiredXp(is.getLevel());

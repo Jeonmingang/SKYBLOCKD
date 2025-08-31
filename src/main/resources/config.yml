@@ -50,3 +50,4 @@ messages:
 
 xp:
   allowed-worlds: ['bskyblock_world']
+  default-per-block: 1
