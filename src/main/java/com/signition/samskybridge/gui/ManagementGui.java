@@ -30,17 +30,9 @@ public class ManagementGui {
         }
         Inventory inv = Bukkit.createInventory(p, 54, Text.color("&b섬 관리"));
 
-        // Owner
         inv.addItem(head(is.getOwner(), plugin.getConfig().getString("messages.role.owner","섬장")));
-
-        // Co-owners
-        for (UUID u : is.getCoOwners()){
-            inv.addItem(head(u, plugin.getConfig().getString("messages.role.coowner","부섬장")));
-        }
-        // Members
-        for (UUID u : is.getMembers()){
-            inv.addItem(head(u, plugin.getConfig().getString("messages.role.member","섬원")));
-        }
+        for (UUID u : is.getCoOwners()) inv.addItem(head(u, plugin.getConfig().getString("messages.role.coowner","부섬장")));
+        for (UUID u : is.getMembers())  inv.addItem(head(u, plugin.getConfig().getString("messages.role.member","섬원")));
 
         p.openInventory(inv);
     }

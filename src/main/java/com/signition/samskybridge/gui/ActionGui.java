@@ -26,7 +26,6 @@ public class ActionGui {
         }
         Inventory inv = Bukkit.createInventory(viewer, 27, Text.color("&b관리: "+name));
 
-        // Buttons
         ItemStack promote = item(Material.LIME_DYE, "&a승급", new String[]{"&7상위 등급으로 올리기"}, target, name);
         ItemStack demote  = item(Material.ORANGE_DYE, "&6강등", new String[]{"&7하위 등급으로 내리기"}, target, name);
         ItemStack kick    = item(Material.BARRIER, "&c추방", new String[]{"&7섬에서 제거"}, target, name);
@@ -43,7 +42,7 @@ public class ActionGui {
         ItemMeta im = it.getItemMeta();
         if (im != null){
             im.setDisplayName(Text.color(name));
-            im.setLore(Arrays.asList(Text.color(String.join("\n", lore)).split("\\n")));
+            im.setLore(java.util.Arrays.asList(Text.color(org.apache.commons.lang.StringUtils.join(lore, "\n")).split("\\n")));
             im.getPersistentDataContainer().set(TARGET_KEY, PersistentDataType.STRING, target.toString());
             im.getPersistentDataContainer().set(TARGET_NAME, PersistentDataType.STRING, tname);
             it.setItemMeta(im);

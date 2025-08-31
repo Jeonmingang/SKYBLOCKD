@@ -35,7 +35,7 @@ public class ManagementListener implements Listener {
         ItemStack it = e.getCurrentItem();
         HumanEntity who = e.getWhoClicked();
 
-        // 1) Top-level management GUI
+        // Top-level GUI
         if (ChatColor.stripColor(title).equals("섬 관리")){
             e.setCancelled(true);
             if (it == null || it.getType() != Material.PLAYER_HEAD) return;
@@ -48,37 +48,22 @@ public class ManagementListener implements Listener {
             return;
         }
 
-        // 2) Action GUI
+        // Action GUI
         if (ChatColor.stripColor(title).startsWith("관리:")){
             e.setCancelled(true);
             if (it == null) return;
-
-            UUID target = ActionGui.getTarget(it);
-            String tname = ActionGui.getTargetName(it);
+            java.util.UUID target = com.signition.samskybridge.gui.ActionGui.getTarget(it);
+            String tname = com.signition.samskybridge.gui.ActionGui.getTargetName(it);
             if (tname == null && target != null){
                 OfflinePlayer op = Bukkit.getOfflinePlayer(target);
                 tname = op.getName()==null? target.toString(): op.getName();
             }
             if (tname == null) return;
-
             Player p = (Player) who;
-
             Material type = it.getType();
-            if (type == Material.LIME_DYE){
-                p.performCommand("is team promote " + tname);
-                p.closeInventory();
-                return;
-            }
-            if (type == Material.ORANGE_DYE){
-                p.performCommand("is team demote " + tname);
-                p.closeInventory();
-                return;
-            }
-            if (type == Material.BARRIER){
-                p.performCommand("is team kick " + tname);
-                p.closeInventory();
-                return;
-            }
+            if (type == Material.LIME_DYE){ p.performCommand("is team promote " + tname); p.closeInventory(); return; }
+            if (type == Material.ORANGE_DYE){ p.performCommand("is team demote " + tname); p.closeInventory(); return; }
+            if (type == Material.BARRIER){ p.performCommand("is team kick " + tname); p.closeInventory(); return; }
         }
     }
 }
