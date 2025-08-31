@@ -1,9 +1,9 @@
 
-package com.minkang.ultimate;
+package com.minkang.usp2;
 
-import com.minkang.ultimate.commands.*;
-import com.minkang.ultimate.listeners.*;
-import com.minkang.ultimate.managers.*;
+import com.minkang.usp2.commands.*;
+import com.minkang.usp2.listeners.*;
+import com.minkang.usp2.managers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.PluginCommand;

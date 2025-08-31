@@ -1,6 +1,6 @@
-package com.minkang.ultimate.managers;
+package com.minkang.usp2.managers;
 
-import com.minkang.ultimate.Main;
+import com.minkang.usp2.Main;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;

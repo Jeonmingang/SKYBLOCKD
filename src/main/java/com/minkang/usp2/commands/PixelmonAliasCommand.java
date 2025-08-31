@@ -1,4 +1,4 @@
-package com.minkang.ultimate.commands;
+package com.minkang.usp2.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

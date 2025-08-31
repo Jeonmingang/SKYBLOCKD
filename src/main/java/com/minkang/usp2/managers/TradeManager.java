@@ -1,6 +1,6 @@
-package com.minkang.ultimate.managers;
+package com.minkang.usp2.managers;
 
-import com.minkang.ultimate.Main;
+import com.minkang.usp2.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

@@ -1,6 +1,6 @@
-package com.minkang.ultimate.commands;
+package com.minkang.usp2.commands;
 
-import com.minkang.ultimate.Main;
+import com.minkang.usp2.Main;
 import org.bukkit.command.*; import org.bukkit.entity.Player;
 
 public class LockTokenCommand implements CommandExecutor {
