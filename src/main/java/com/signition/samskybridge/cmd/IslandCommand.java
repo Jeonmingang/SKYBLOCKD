@@ -50,7 +50,7 @@ public class IslandCommand implements CommandExecutor, TabCompleter {
       else p.sendMessage("/섬 채팅 켜기|끄기"); store.save(); return true;
     }
     if ("도움말".equals(sub)){ sendHelp(p, 1); return true; }
-    sendHelp(p); return true;
+    sendHelp(p, 1); return true;
   }
   private boolean forward(Player p, String raw){ return p.performCommand(raw); }
   private String joinTail(String[] arr, int start){ if (arr.length<=start) return ""; StringBuilder sb=new StringBuilder(); for (int i=start;i<arr.length;i++){ if (i>start) sb.append(' '); sb.append(arr[i]); } return sb.toString(); }
@@ -108,4 +108,6 @@ private void sendHelp(Player p, int page){
     }
     return java.util.Collections.emptyList();
   }
+
+private void sendHelp(Player p){ sendHelp(p, 1); }
 }
