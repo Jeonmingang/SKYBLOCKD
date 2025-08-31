@@ -7,8 +7,8 @@ public final class Main extends JavaPlugin {
   private static Main instance; public static Main get(){ return instance; }
   private DataStore dataStore; private LevelService levelService; private RankingService rankingService;
   @Override public void onEnable(){
-    getLogger().info("[SamSkyBridge-KR] MARKERS v1.0.3: CHAT_UUID_FIX | BLOCK_XP | DROP_TAG");
-getLogger().info("[SamSkyBridge-KR] MARKERS: HELP_KR | MARKET_LEFT_BUY | RANK_XP_SLASH");
+    getLogger().info("[SamSkyBridge-KR] MARKERS v1.0.4: CHAT_UUID_PARSE | BLOCK_XP | DROP_TAG"
+getLogger().info("[SamSkyBridge-KR] MARKERS v1.0.4: CHAT_UUID_PARSE | BLOCK_XP | DROP_TAG"
     instance=this; saveDefaultConfig(); dataStore=new DataStore(this); levelService=new LevelService(this, dataStore); rankingService=new RankingService(this, dataStore);
     IslandCommand cmd=new IslandCommand(this, dataStore, levelService, rankingService);
     if (getCommand("섬")!=null){ getCommand("섬").setExecutor(cmd); getCommand("섬").setTabCompleter(cmd); }
