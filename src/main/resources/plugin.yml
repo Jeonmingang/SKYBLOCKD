@@ -1,13 +1,12 @@
 
-
 name: SamSkyBridge
 main: com.signition.samskybridge.Main
-version: 0.8.0
+version: 0.9.0
 api-version: 1.16
 author: signition
 softdepend: [Vault, BentoBox]
 commands:
   섬:
-    description: 섬 관련 명령어
+    description: 섬 관련 명령어 (한국어 별칭 → /is 전달)
     usage: /섬
-    aliases: [island, sky, sk]
+    aliases: [sky, sk]

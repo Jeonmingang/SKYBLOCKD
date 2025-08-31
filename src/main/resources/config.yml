@@ -12,7 +12,6 @@ gui:
       lore:
         - '&7좌클릭: 비용 지불(레벨+돈, 둘 다 필요)'
         - '&7우클릭: 비활성화됨'
-
 upgrade:
   costs:
     require-both: true
@@ -28,7 +27,6 @@ upgrade:
     level-cost-mul: 2
     money-cost-base: 1500.0
     money-cost-mul: 1.25
-
 messages:
   level-up: '&a레벨업! 현재 레벨: &f<level>'
   level-bar: '&7경험치: &f<cur>&7/&f<need>'
@@ -38,7 +36,17 @@ messages:
   ranking:
     title: '&a섬 랭킹 TOP <n>'
     line: '&f<rank>. &a<name> &7- &f레벨 <level> &7(경험치 <xp>)'
-
 level:
   base: 100.0
   growth: 1.15
+
+messages:
+  island-chat:
+    format: '&a[섬:&f<island>&a] &e[<role>] &f<player>&7: &r<message>'
+    role:
+      owner: '섬장'
+      coowner: '부섬장'
+      member: '섬원'
+
+xp:
+  allowed-worlds: ['bskyblock_world']
