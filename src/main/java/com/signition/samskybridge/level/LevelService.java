@@ -1,98 +1,126 @@
-
 package com.signition.samskybridge.level;
+
 import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.util.Text;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.Bukkit;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 public class LevelService {
-  private boolean xpDebug(){ return plugin.getConfig().getBoolean("xp.debug", false); }
-  private void debug(Player p, String m){ if (xpDebug() && p!=null) p.sendMessage(com.signition.samskybridge.util.Text.color("&8[XP 디버그] &7"+m)); }
-  private final Main plugin; private final DataStore store; private final Map<String, Long> blockXp = new HashMap<String, Long>();
-  private final NamespacedKey minedKey;
-  private final Set<String> allowedWorlds = new HashSet<String>();
+    private final Main plugin;
+    private final DataStore store;
+    private final NamespacedKey minedKey;
+    private final Map<String, Long> blockXp = new HashMap<String, Long>();
 
-  public LevelService(Main plugin, DataStore store){
-    this.plugin=plugin; this.store=store;
-    this.minedKey = new NamespacedKey(plugin, "mined_item");
-    loadBlocks();
-    loadWorlds();
-  }
-  public void reload(){ blockXp.clear(); loadBlocks(); loadWorlds(); }
-
-  private void loadWorlds(){
-    allowedWorlds.clear();
-    java.util.List<String> ws = plugin.getConfig().getStringList("xp.allowed-worlds");
-    if (ws==null || ws.isEmpty()) allowedWorlds.add("bskyblock_world");
-    else for (String w : ws) allowedWorlds.add(w);
-  }
-
-  private void loadBlocks(){
-    try{
-      File f = new File(plugin.getDataFolder(), "blocks.yml");
-      if (!f.getParentFile().exists()) f.getParentFile().mkdirs();
-      if (!f.exists()){
-        YamlConfiguration y=new YamlConfiguration();
-        y.set("minecraft:stone", 1);
-        y.set("pixelmon:ruby_block", 10);
-        y.set("pixelmon:platinum_block", 12);
-        y.set("pixelmon:aluminum_block", 8);
-        y.set("pixelmon:amethyst_block", 14);
-        y.set("pixelmon:sapphire_block", 16);
-        y.set("pixelmon:silicon_block", 9);
-        y.save(f);
-      }
-      YamlConfiguration y=YamlConfiguration.loadConfiguration(f);
-      for (String k : y.getKeys(false)) blockXp.put(k.toLowerCase(), y.getLong(k,0));
-    }catch(Exception ex){ plugin.getLogger().warning("blocks.yml load error: "+ex.getMessage()); }
-  }
-
-  public void onPlace(BlockPlaceEvent e){
-    Player p = e.getPlayer();
-    if (p==null) return;
-    if (e.getBlock()==null || e.getBlock().getWorld()==null) return;
-    String worldName = e.getBlock().getWorld().getName();
-    if (!allowedWorlds.contains(worldName)) return; // only in allowed worlds
-
-    // If the item used to place is from a mined drop, no XP
-    ItemStack hand = e.getItemInHand();
-    if (hand!=null){
-      try{
-        ItemMeta meta = hand.getItemMeta();
-        if (meta!=null && meta.getPersistentDataContainer().has(minedKey, org.bukkit.persistence.PersistentDataType.BYTE)){
-          return; // mined item -> no XP
-        }
-      }catch(Throwable ignored){}
+    public LevelService(Main plugin, DataStore store){
+        this.plugin=plugin; this.store=store;
+        this.minedKey = new NamespacedKey(plugin, "mined_item");
+        loadBlocks();
     }
 
-    IslandData is = store.findByMember(p.getUniqueId()).orElseGet(new java.util.function.Supplier<IslandData>(){ public IslandData get(){ return store.getOrCreate(p.getUniqueId()); }});
+    public NamespacedKey getMinedKey(){ return minedKey; }
 
-    // Identify block key (namespace if available)
-    String id=e.getBlockPlaced().getType().name().toLowerCase();
-    try{ org.bukkit.NamespacedKey nk = e.getBlockPlaced().getType().getKey(); if (nk!=null) id=(nk.getNamespace()+":"+nk.getKey()).toLowerCase(); }catch(Throwable ignored){}
-    long add = blockXp.getOrDefault(id, blockXp.getOrDefault(e.getBlockPlaced().getType().name().toLowerCase(), 0L));
-    if (add<=0) { add = (long) plugin.getConfig().getDouble("xp.default-per-block", 0.0); if (add<=0) { debug(p, "블럭 XP 매핑/기본값=0: XP 미지급"); return; } }
+    private boolean xpDebug(){ return plugin.getConfig().getBoolean("xp.debug", false); }
+    private void debug(Player p, String m){ if (xpDebug() && p!=null) p.sendMessage(Text.color("&8[XP 디버그] &7"+m)); }
 
-    is.addXp(add); debug(p, "XP +"+add+" (id="+id+")");
-    long need=requiredXp(is.getLevel());
-    while (is.getXp()>=need){ is.setXp(is.getXp()-need); is.setLevel(is.getLevel()+1); p.sendMessage(Text.color(plugin.getConfig().getString("messages.level-up","&a레벨업! 현재 레벨: &f<level>").replace("<level>", String.valueOf(is.getLevel())))); need=requiredXp(is.getLevel()); }
-    String fmt=plugin.getConfig().getString("messages.level-bar","&7경험치: &f<cur>&7/&f<need>");
-    p.sendMessage(Text.color(fmt.replace("<cur>", String.valueOf(is.getXp())).replace("<need>", String.valueOf(need))));
-  }
+    private void loadBlocks(){
+        try{
+            File f = new File(plugin.getDataFolder(), "blocks.yml");
+            if (!f.getParentFile().exists()) f.getParentFile().mkdirs();
+            if (!f.exists()){
+                YamlConfiguration y=new YamlConfiguration();
+                y.set("minecraft:diamond_block", 20);
+                y.set("pixelmon:ruby_block", 12);
+                y.save(f);
+            }
+            YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+            for (String k : y.getKeys(false)){
+                blockXp.put(k.toLowerCase(), y.getLong(k));
+            }
+        }catch(Exception e){
+            plugin.getLogger().warning("blocks.yml 로드 실패: "+e.getMessage());
+        }
+    }
 
-  public long requiredXp(int level){ double base=plugin.getConfig().getDouble("level.base",100.0); double g=plugin.getConfig().getDouble("level.growth",1.15); return (long)Math.max(10, Math.floor(base*Math.pow(g, Math.max(0, level)))); }
+    
+public void onPlace(BlockPlaceEvent e){
+    // Guard: cancelled or cannot build
+    if (e.isCancelled() || (e.isCancelled()==false && e.canBuild()==false)) return;
 
-  public NamespacedKey getMinedKey(){ return minedKey; }
+    final Player p = e.getPlayer();
+    final String world = e.getBlockPlaced().getWorld().getName();
+    java.util.List<String> allowed = plugin.getConfig().getStringList("xp.allowed-worlds");
+    if (allowed==null || !allowed.contains(world)){ debug(p,"허용 월드 아님: "+world); return; }
+
+    final java.util.Optional<IslandData> opt = store.findByMember(p.getUniqueId());
+    if (!opt.isPresent()){ debug(p, "섬 데이터 없음(멤버 아님)"); return; }
+    final IslandData is = opt.get();
+
+    // capture item-tag now (hand might change next tick)
+    final boolean fromDropTag;
+    {
+        ItemStack inHand = e.getItemInHand();
+        boolean tagged = false;
+        if (inHand!=null && inHand.hasItemMeta()){
+            ItemMeta im = inHand.getItemMeta();
+            if (im!=null && im.getPersistentDataContainer().has(minedKey, PersistentDataType.BYTE)){
+                tagged = true;
+            }
+        }
+        fromDropTag = tagged;
+    }
+
+    // capture placed type/location to verify actual placement next tick
+    final Material placedType = e.getBlockPlaced().getType();
+    final Material replacedType = e.getBlockReplacedState().getType();
+    final Location loc = e.getBlockPlaced().getLocation();
+
+    Bukkit.getScheduler().runTask(plugin, new Runnable(){
+        @Override public void run(){
+            // Only award if the block actually changed to the placed type
+            Material now = loc.getBlock().getType();
+            if (now != placedType || now == replacedType){
+                debug(p, "실제 배치되지 않음(우클릭 상호작용 등): XP 미지급");
+                return;
+            }
+            if (fromDropTag){
+                debug(p, "드랍 재설치 감지: XP 미지급");
+                return;
+            }
+
+            // resolve block id (lowercase material and try namespaced key)
+            String id = now.name().toLowerCase();
+            long add = 0L;
+            if (blockXp.containsKey(id)) add = blockXp.get(id);
+            else {
+                try{
+                    String ns = loc.getBlock().getBlockData().getMaterial().getKey().toString().toLowerCase();
+                    if (blockXp.containsKey(ns)) add = blockXp.get(ns);
+                }catch(Throwable ignored){}
+            }
+            if (add<=0){
+                add = (long) plugin.getConfig().getDouble("xp.default-per-block", 0.0);
+                if (add<=0){ debug(p, "블럭 XP 매핑/기본값=0: XP 미지급"); return; }
+            }
+
+            is.addXp(add);
+            debug(p, "XP +"+add+" (id="+id+")");
+        }
+    });
 }
+

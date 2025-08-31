@@ -47,3 +47,9 @@ lock:
     - DARK_OAK_DOOR
     - IRON_DOOR
     - OAK_TRAPDOOR
+
+
+xp:
+  allowed-worlds: ['bskyblock_world']
+  default-per-block: 1
+  debug: false
