@@ -1,0 +1,13 @@
+name: SamSkyBridge-IslandOnly
+main: com.signition.samskybridge.Main
+version: 1.0.17-island-v8
+api-version: 1.16
+softdepend: [Vault, BentoBox, BSkyBlock]
+commands:
+  섬:
+    description: Island main command
+    usage: /섬
+    aliases: [is,island]
+permissions:
+  samskybridge.admin:
+    default: op
