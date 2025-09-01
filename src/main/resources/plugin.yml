@@ -1,0 +1,22 @@
+name: SamSkyBridge-IslandOnly
+main: com.signition.samskybridge.Main
+version: 1.0.15-island-v6
+api-version: 1.0.15-island-v6
+author: MinGang
+softdepend: [BentoBox, Vault]
+commands:
+  섬:
+    description: SkyBlock (Island) command gateway
+    aliases: [island, is]
+    permission: samskybridge.use
+
+permissions:
+  samskybridge.use:
+    default: true
+  samskybridge.admin:
+    default: op
+
+commands:
+  섬관리자:
+    description: Island admin tools
+    permission: samskybridge.admin

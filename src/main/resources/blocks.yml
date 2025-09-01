@@ -1,0 +1,104 @@
+# 블럭별 경험치 (필요에 맞게 추가/수정)
+COBBLESTONE: 1
+STONE: 1
+OAK_LOG: 3
+SPRUCE_LOG: 3
+BIRCH_LOG: 3
+OAK_PLANKS: 1
+IRON_ORE: 8
+GOLD_ORE: 12
+DIAMOND_ORE: 40
+
+# Pixelmon 예시(서버의 실제 Material 이름으로 수정)
+PIXELMON_ALUMINUM_ORE: 20
+PIXELMON_HEALER: 80      # 키우미집/치유기류 예시
+
+
+# ===== Pixelmon resource blocks (IDs may vary by distribution; keep/edit as needed) =====
+# Aluminium / Aluminum
+PIXELMON_ALUMINIUM_BLOCK: 8
+PIXELMON_ALUMINUM_BLOCK: 8
+pixelmon:aluminium_block: 8
+pixelmon:aluminum_block: 8
+pixelmon_aluminium_block: 8
+pixelmon_aluminum_block: 8
+
+# Ruby
+PIXELMON_RUBY_BLOCK: 12
+pixelmon:ruby_block: 12
+pixelmon_ruby_block: 12
+
+# Sapphire
+PIXELMON_SAPPHIRE_BLOCK: 12
+pixelmon:sapphire_block: 12
+pixelmon_sapphire_block: 12
+
+# Amethyst
+PIXELMON_AMETHYST_BLOCK: 12
+pixelmon:amethyst_block: 12
+pixelmon_amethyst_block: 12
+
+# Crystal
+PIXELMON_CRYSTAL_BLOCK: 12
+pixelmon:crystal_block: 12
+pixelmon_crystal_block: 12
+
+# Silicon (if block provided by your pack)
+PIXELMON_SILICON_BLOCK: 8
+pixelmon:silicon_block: 8
+pixelmon_silicon_block: 8
+
+# Platinum (백금) if present
+PIXELMON_PLATINUM_BLOCK: 14
+pixelmon:platinum_block: 14
+pixelmon_platinum_block: 14
+
+# ===== Vanilla / Island-level raising blocks =====
+# Use lower values for common blocks, higher for rare blocks. Adjust to your server economy.
+MINECRAFT:DIAMOND_BLOCK: 20
+MINECRAFT:EMERALD_BLOCK: 25
+MINECRAFT:GOLD_BLOCK: 12
+MINECRAFT:IRON_BLOCK: 6
+MINECRAFT:REDSTONE_BLOCK: 6
+MINECRAFT:LAPIS_BLOCK: 6
+MINECRAFT:COAL_BLOCK: 4
+MINECRAFT:QUARTZ_BLOCK: 6
+MINECRAFT:NETHERITE_BLOCK: 100
+MINECRAFT:OBSIDIAN: 3
+MINECRAFT:GLOWSTONE: 2
+
+DIAMOND_BLOCK: 20
+EMERALD_BLOCK: 25
+GOLD_BLOCK: 12
+IRON_BLOCK: 6
+REDSTONE_BLOCK: 6
+LAPIS_BLOCK: 6
+COAL_BLOCK: 4
+QUARTZ_BLOCK: 6
+NETHERITE_BLOCK: 100
+OBSIDIAN: 3
+GLOWSTONE: 2
+
+minecraft:diamond_block: 20
+minecraft:emerald_block: 25
+minecraft:gold_block: 12
+minecraft:iron_block: 6
+minecraft:redstone_block: 6
+minecraft:lapis_block: 6
+minecraft:coal_block: 4
+minecraft:quartz_block: 6
+minecraft:netherite_block: 100
+minecraft:obsidian: 3
+minecraft:glowstone: 2
+
+pixelmon:aluminum_ore: 20
+
+pixelmon:ruby_ore: 25
+
+pixelmon:sapphire_ore: 25
+
+pixelmon:amethyst_ore: 30
+
+pixelmon:platinum_ore: 35
+
+pixelmon:silicon_ore: 18
