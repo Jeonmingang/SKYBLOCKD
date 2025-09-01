@@ -1,0 +1,16 @@
+
+package com.signition.samskybridge.listener;
+
+import com.signition.samskybridge.level.LevelService;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+
+public class BlockXPListener implements Listener {
+  private final LevelService level;
+  public BlockXPListener(com.signition.samskybridge.Main plugin, com.signition.samskybridge.data.DataStore store, LevelService level){
+    this.level = level;
+  }
+  @EventHandler(ignoreCancelled = true)
+  public void onPlace(BlockPlaceEvent e){ level.onPlace(e); }
+}
