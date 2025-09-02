@@ -1,1 +1,0 @@
-package com.signition.samskybridge.upgrade; public class UpgradeService{ public void open(org.bukkit.entity.Player p){ p.sendMessage("업그레이드 GUI는 추후 제공됩니다."); }}
