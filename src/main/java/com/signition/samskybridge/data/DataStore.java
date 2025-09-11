@@ -70,6 +70,27 @@ public class DataStore {
         }
     }
 
+    
+    private final java.util.Map<java.util.UUID, IslandData> players = new java.util.HashMap<>();
+    private org.bukkit.configuration.file.FileConfiguration yaml;
+    private final java.util.Set<java.util.UUID> chatOn = new java.util.HashSet<>();
+
+    public IslandData getOrCreate(java.util.UUID uid){
+        IslandData d = players.get(uid);
+        if (d == null){ d = new IslandData(); players.put(uid, d); }
+        return d;
+    }
+
+    public boolean isChatOn(java.util.UUID uid){ return chatOn.contains(uid); }
+    public void setChatOn(java.util.UUID uid, boolean on){
+        if (on) chatOn.add(uid); else chatOn.remove(uid);
+    }
+
+    public void saveAsync(){
+        try { plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable(){ public void run(){ try { /* no-op stub */ } catch (Throwable ignore){} }}); }
+        catch (Throwable ignore){}
+    }
+
     // --- Added for build stability (stubs) ---
     public java.util.Optional<IslandData> findByMember(java.util.UUID uid){
         try { return java.util.Optional.ofNullable(players.get(uid)); }

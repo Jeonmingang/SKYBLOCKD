@@ -5,8 +5,9 @@ import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.listener.BlockXPListener;
 import com.signition.samskybridge.listener.DropPickupTracker;
 import com.signition.samskybridge.listener.JoinListener;
+import com.signition.samskybridge.listener.ChatListener;
+import com.signition.samskybridge.listener.GuiListener;
 import com.signition.samskybridge.rank.RankingService;
-import com.signition.samskybridge.util.Configs;
 import com.signition.samskybridge.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -19,6 +20,7 @@ public class Main extends JavaPlugin {
     private DataStore dataStore;
     private LevelService levelService;
     private RankingService rankingService;
+    private GuiListener guiListener;
 
     @Override
     public void onEnable() {
@@ -26,11 +28,14 @@ public class Main extends JavaPlugin {
         dataStore = new DataStore(this);
         levelService = new LevelService(this, dataStore);
         rankingService = new RankingService(this, dataStore);
+        guiListener = new GuiListener(this);
 
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new DropPickupTracker(), this);
         pm.registerEvents(new BlockXPListener(this), this);
         pm.registerEvents(new JoinListener(this), this);
+        pm.registerEvents(new ChatListener(this, dataStore), this);
+        pm.registerEvents(guiListener, this);
     }
 
     @Override
@@ -48,6 +53,7 @@ public class Main extends JavaPlugin {
     public DataStore getDataStore() { return dataStore; }
     public LevelService getLevelService() { return levelService; }
     public RankingService getRankingService() { return rankingService; }
+    public GuiListener getGuiListener(){ return guiListener; }
 
     public FileConfiguration cfg() { return getConfig(); }
 }

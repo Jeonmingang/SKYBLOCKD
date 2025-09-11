@@ -17,7 +17,10 @@ public class RankingService {
     public RankingService(Main plugin, DataStore data){
         this.plugin = plugin;
         this.data = data;
-    }
+    
+    /** Backward-compat: some code calls getRank(UUID) */
+    public int getRank(java.util.UUID uid){ return rankOf(uid); }
+}
 
     public int rankOf(UUID id){
         // sort by level desc, then xp desc

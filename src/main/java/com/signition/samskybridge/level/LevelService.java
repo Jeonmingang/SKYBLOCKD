@@ -26,7 +26,11 @@ public class LevelService {
         this.plugin = plugin;
         this.data = data;
         reload();
+    
+    public int requiredXp(int level){
+        return nextRequired(level);
     }
+}
 
     public void reload(){
         base = plugin.getConfig().getInt("level.base", 100);
