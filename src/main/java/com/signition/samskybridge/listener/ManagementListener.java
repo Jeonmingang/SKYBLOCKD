@@ -1,0 +1,1 @@
+package com.signition.samskybridge.listener; public class ManagementListener implements org.bukkit.event.Listener{ public ManagementListener(com.signition.samskybridge.Main m, com.signition.samskybridge.data.DataStore s){} }
