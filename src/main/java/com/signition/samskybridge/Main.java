@@ -6,12 +6,14 @@ import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.rank.RankingService;
 import com.signition.samskybridge.listener.BlockXPListener;
-import com.signition.samskybridge.listener.DropTagListener;
 import com.signition.samskybridge.place.PlacedTracker;
 import com.signition.samskybridge.listener.ChatListener;
 import com.signition.samskybridge.listener.GuiListener;
 import com.signition.samskybridge.listener.JoinListener;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.signition.samskybridge.xpguard.RecycleGuardService;
+import com.signition.samskybridge.listener.ClearOnQuitListener;
+import com.signition.samskybridge.listener.DropAndPickupListener;
 
 import com.signition.samskybridge.tab.TabPrefixRefresher;
 import com.signition.samskybridge.tab.TabPrefixManager;
@@ -39,11 +41,14 @@ public final class Main extends JavaPlugin {
 
     this.guiListener = new GuiListener(this);
         this.placedTracker = new PlacedTracker();
-    getServer().getPluginManager().registerEvents(new BlockXPListener(this, dataStore, levelService, placedTracker), this);
-        getServer().getPluginManager().registerEvents(new DropTagListener(this, placedTracker), this);
-    getServer().getPluginManager().registerEvents(new ChatListener(this, dataStore), this);
+    
+        RecycleGuardService recycleGuard = new RecycleGuardService();
+getServer().getPluginManager().registerEvents(new BlockXPListener(this, levelService, placedTracker, recycleGuard), this);
+getServer().getPluginManager().registerEvents(new DropAndPickupListener(this, placedTracker, recycleGuard), this);
+getServer().getPluginManager().registerEvents(new ChatListener(this, dataStore), this);
     getServer().getPluginManager().registerEvents(guiListener, this);
     getServer().getPluginManager().registerEvents(new JoinListener(this), this);
+    getServer().getPluginManager().registerEvents(new ClearOnQuitListener(recycleGuard), this);
 
     // schedule ranking refresh
     int ticks = getConfig().getInt("ranking.refresh-ticks", 6000);
