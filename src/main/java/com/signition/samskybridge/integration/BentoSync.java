@@ -1,0 +1,1 @@
+package com.signition.samskybridge.integration; public class BentoSync{}
