@@ -1,14 +1,10 @@
-
 package com.signition.samskybridge.rank;
 
 import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
-import com.signition.samskybridge.data.IslandData;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 public class RankingService {
     private final Main plugin;
@@ -17,24 +13,15 @@ public class RankingService {
     public RankingService(Main plugin, DataStore data){
         this.plugin = plugin;
         this.data = data;
-    
-    /** Backward-compat: some code calls getRank(UUID) */
-    public int getRank(java.util.UUID uid){ return rankOf(uid); }
-}
+    }
 
-    public int rankOf(UUID id){
-        // sort by level desc, then xp desc
-        List<Map.Entry<UUID, IslandData>> sorted = new ArrayList<>(data.all().entrySet());
-        sorted.sort((a,b)->{
-            int lv = Integer.compare(b.getValue().level, a.getValue().level);
-            if (lv != 0) return lv;
-            return Integer.compare(b.getValue().xp, a.getValue().xp);
-        });
-        for (int i=0;i<sorted.size();i++){
-            if (sorted.get(i).getKey().equals(id)) return i+1;
-        }
+    /** 플레이어(섬)의 랭크. 현재는 집계 미구현으로 -1 반환(집계중). */
+    public int rankOf(UUID uid){
         return -1;
     }
+
+    /** 과거 호환: getRank(UUID) */
+    public int getRank(UUID uid){ return rankOf(uid); }
 
     public String tabPrefixFor(Player p){
         String fmt = plugin.getConfig().getString("ranking.tab-prefix.format",
