@@ -1,67 +1,57 @@
-
 package com.signition.samskybridge.listener;
 
 import com.signition.samskybridge.Main;
-import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.place.PlacedTracker;
-import com.signition.samskybridge.xpguard.SlotGuardService;
-import org.bukkit.NamespacedKey;
+import com.signition.samskybridge.xpguard.RecycleGuardService;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
-public class BlockXPListener implements Listener {
+/**
+ * Awards XP on normal placements; denies XP exactly once per recycled item usage.
+ * Always marks the location as player-placed to enable future recycle tagging on break.
+ */
+public final class BlockXPListener implements Listener {
+
     private final Main plugin;
-    private final DataStore store;
     private final LevelService level;
     private final PlacedTracker placedTracker;
-    private final NamespacedKey RECYCLED_KEY;
-    private final SlotGuardService slotGuard;
+    private final RecycleGuardService recycleGuard;
 
-    public BlockXPListener(Main plugin, DataStore store, LevelService level, PlacedTracker tracker){
+    public BlockXPListener(Main plugin, LevelService level, PlacedTracker placedTracker, RecycleGuardService recycleGuard){
         this.plugin = plugin;
-        this.store = store;
         this.level = level;
-        this.placedTracker = tracker;
-        this.RECYCLED_KEY = new NamespacedKey(plugin, "recycled");
-        this.slotGuard = new SlotGuardService();
-        this.slotGuard.configureSeconds(plugin.getConfig().getInt("xp_once.per_slot_ttl_seconds", -1));
-}
+        this.placedTracker = placedTracker;
+        this.recycleGuard = recycleGuard;
+    }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent e){
-        // Allowed worlds check
-        List<String> worlds = plugin.getConfig().getStringList("xp.allowed-worlds");
-        if (!worlds.isEmpty() && !worlds.contains(e.getBlock().getWorld().getName())) return;
+        Player p = e.getPlayer();
+        if (p == null) return;
 
-        // If player's hand item is a recycled drop from a previously placed block -> allow place but deny XP
-        ItemStack hand = e.getItemInHand();
-        if (hand != null){
-            ItemMeta meta = hand.getItemMeta();
-            if (meta != null){
-                PersistentDataContainer pdc = meta.getPersistentDataContainer();
-                if (pdc.has(RECYCLED_KEY, PersistentDataType.BYTE)){
-                    return; // skip XP
-                }
-            }
+        // Allowed worlds guard (keep identical to LevelService behavior)
+        List<String> allowedWorlds = plugin.getConfig().getStringList("xp.allowed-worlds");
+        World w = e.getBlockPlaced().getWorld();
+        if (w == null) return;
+        if (!allowedWorlds.isEmpty() && !allowedWorlds.contains(w.getName())){
+            // Still mark as placed to be consistent
+            placedTracker.add(e.getBlockPlaced().getLocation());
+            return;
         }
 
-        // Award XP if not already awarded here
-        if (slotGuard.already(e.getBlockPlaced().getLocation())){
-            return; // already awarded at this location (per-slot once/TTL)
+        boolean denyXp = recycleGuard.consumeIfRecycled(p.getUniqueId(), e.getBlockPlaced().getType());
+        if (!denyXp){
+            level.onPlace(e); // normal XP path
         }
-        level.onPlace(e);
-        slotGuard.mark(e.getBlockPlaced().getLocation());
 
-        // Mark this location as player-placed for future drop tagging
-        placedTracker.markPlaced(e.getBlockPlaced().getLocation());
+        // Mark as player-placed for future drop tagging
+        placedTracker.add(e.getBlockPlaced().getLocation());
     }
 }
