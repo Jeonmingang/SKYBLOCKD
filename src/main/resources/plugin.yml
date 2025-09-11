@@ -1,0 +1,11 @@
+name: SamSkyBridge-IslandOnly
+\g<1>com.signition.samskybridge.Main
+\g<1>1.0.26-island-v17+ci28
+api-version: 1.16
+author: signition
+commands:
+  섬:
+    description: 섬 명령어
+    usage: /섬 리로드
+    aliases: [island, sb]
+softdepend: [BentoBox, LuckPerms, PlaceholderAPI]
