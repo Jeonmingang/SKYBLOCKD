@@ -1,0 +1,79 @@
+# XP/레벨 기본값
+level:
+  base: 100
+  percent-increase: 10
+  cap: 50000
+
+xp:
+  allowed-worlds:
+    - bskyblock_world
+  recent-ttl-ms: 5000           # 드롭줍기 악용 판정 TTL
+  blocks-cache-check-ticks: 200 # 내부 캐시 점검 주기
+  blocks:
+    'minecraft:stone': 1
+    'minecraft:cobblestone': 1
+    'minecraft:oak_log': 1
+    'minecraft:spruce_log': 1
+    'minecraft:birch_log': 1
+    'minecraft:oak_planks': 1
+    'minecraft:dirt': 1
+    'minecraft:grass_block': 1
+    'minecraft:sand': 1
+    'minecraft:gravel': 1
+    'minecraft:coal_ore': 2
+    'minecraft:iron_ore': 3
+    'minecraft:gold_ore': 4
+    'minecraft:redstone_ore': 2
+    'minecraft:lapis_ore': 3
+    'minecraft:diamond_ore': 8
+    'minecraft:emerald_ore': 10
+    'minecraft:obsidian': 3
+
+storage:
+  debounce-ticks: 20
+
+ranking:
+  refresh-ticks: 6000
+  unranked_label: '등록안됨'
+  # 탭키 강제 접두사
+  tab-prefix:
+    force: true
+    format: '&7[ &a섬 랭킹 &f<rank>위 &7| &bLv.<level> &7] &r'
+
+hud:
+  bossbar:
+    duration-ticks: 40
+    step-ticks: 10
+
+upgrade:
+  size:
+    base-range: 50
+    per-level: 10
+    cost-base: 50000
+    cost-multiplier: 1.25
+    required-level-base: 3
+    required-level-step: 2
+  team:
+    base-members: 4
+    per-level: 1
+    cost-base: 80000
+    cost-multiplier: 1.35
+    required-level-base: 5
+    required-level-step: 2
+
+market:
+  page-size: 28
+  confirm: true
+  blocks:
+    'minecraft:stone': 1
+
+debug:
+  xp-blocks: false
+
+xp_once:
+  per_slot_ttl_seconds: -1
+
+tab_prefix:
+  force: true
+  refresh_ticks: 200
+  format_dynamic: '&7[ &a섬 랭킹 <rank>위 &7| &fLv.&b<level> &7]'
