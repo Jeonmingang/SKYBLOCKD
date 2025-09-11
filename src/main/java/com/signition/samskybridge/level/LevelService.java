@@ -4,6 +4,7 @@ import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import org.bukkit.entity.Player;
+import org.bukkit.Material;
 
 import java.util.UUID;
 
@@ -14,7 +15,21 @@ public class LevelService {
     public LevelService(Main plugin, DataStore data){
         this.plugin = plugin;
         this.data = data;
+    
+    public int getXpFor(Material m){
+        if (m == null) return 0;
+        switch (m){
+            case STONE: case COBBLESTONE: return 1;
+            case COAL_ORE: return 3;
+            case IRON_ORE: return 5;
+            case GOLD_ORE: return 8;
+            case DIAMOND_ORE: return 20;
+            case EMERALD_ORE: return 25;
+            case ANCIENT_DEBRIS: return 30;
+            default: return 0;
+        }
     }
+}
 
     /** 다음 레벨까지 필요한 XP (간단 공식; 추후 config 연동 가능) */
     public int nextRequired(int level){

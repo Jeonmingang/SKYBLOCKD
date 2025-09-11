@@ -31,9 +31,10 @@ public class Main extends JavaPlugin {
         guiListener = new GuiListener(this);
 
         PluginManager pm = Bukkit.getPluginManager();
-        pm.registerEvents(new DropPickupTracker(), this);
-        pm.registerEvents(new BlockXPListener(this), this);
-        pm.registerEvents(new JoinListener(this), this);
+        DropPickupTracker tracker = new DropPickupTracker(this);
+        pm.registerEvents(tracker, this);
+        pm.registerEvents(new BlockXPListener(this, dataStore, levelService, tracker), this);
+        pm.registerEvents(new JoinListener(this, rankingService, levelService), this);
         pm.registerEvents(new ChatListener(this, dataStore), this);
         pm.registerEvents(guiListener, this);
     }

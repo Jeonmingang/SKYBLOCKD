@@ -1,4 +1,3 @@
-
 package com.signition.samskybridge.listener;
 
 import com.signition.samskybridge.Main;

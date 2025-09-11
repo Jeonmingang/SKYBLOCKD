@@ -1,4 +1,3 @@
-
 package com.signition.samskybridge.gui;
 
 import com.signition.samskybridge.Main;
@@ -12,28 +11,32 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ManagementGui {
   private final Main plugin; private final DataStore store;
-  public ManagementGui(Main plugin, DataStore store){ this.plugin=plugin; this.store=store; }
-  private static final String TITLE = "섬 관리";
+  public static final String TITLE = "섬 관리";
+
+  public ManagementGui(Main plugin, DataStore store){ this.plugin = plugin; this.store = store; }
 
   public void open(Player p){
-    Inventory inv = Bukkit.createInventory(p, 27, Text.color("&a"+TITLE));
-    inv.setItem(10, make(Material.PAPER, "&b멤버 초대", "&7/섬 초대 <닉네임>"));
-    inv.setItem(12, make(Material.BOOK, "&d부섬장 위임", "&7/섬 부섬장 <닉네임>"));
-    inv.setItem(14, make(Material.BARRIER, "&c추방", "&7/섬 추방 <닉네임>"));
-    inv.setItem(16, make(Material.CHEST, "&6섬 보관함", "&7(준비중)"));
+    Inventory inv = Bukkit.createInventory(null, 9, TITLE);
+    inv.setItem(0, item(Material.BOOK, "&a가이드", "&7명령어를 사용해 섬을 관리하세요."));
+    inv.setItem(1, item(Material.ANVIL, "&b개편 예정", "&7이 GUI는 추후 업데이트됩니다."));
     p.openInventory(inv);
   }
 
-  private ItemStack make(Material m, String name, String... lore){
+  private ItemStack item(Material m, String name, String... lore){
     ItemStack it = new ItemStack(m);
     ItemMeta im = it.getItemMeta();
-    im.setDisplayName(Text.color(name));
-    java.util.List<String> ls = new java.util.ArrayList<>();
-    for (String s : lore) ls.add(Text.color(s));
-    im.setLore(ls);
-    it.setItemMeta(im);
+    if (im != null){
+      im.setDisplayName(Text.color(name));
+      List<String> ls = new ArrayList<>();
+      for (String s : lore) ls.add(Text.color(s));
+      im.setLore(ls);
+      it.setItemMeta(im);
+    }
     return it;
   }
 
