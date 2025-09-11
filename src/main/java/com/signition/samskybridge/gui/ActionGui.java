@@ -1,3 +1,0 @@
-
-package com.signition.samskybridge.gui;
-public class ActionGui{}
