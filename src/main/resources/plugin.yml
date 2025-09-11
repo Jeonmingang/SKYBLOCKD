@@ -1,11 +1,14 @@
 name: SamSkyBridge-IslandOnly
 main: com.signition.samskybridge.Main
-version: 1.0.26-island-v17+ci28
+version: 1.0.26-island-v17
 api-version: 1.16
-author: signition
-softdepend: [BentoBox, LuckPerms, PlaceholderAPI, Vault]
+softdepend: [Vault, BentoBox, BSkyBlock]
+
 commands:
   섬:
-    description: 섬 명령어
-    usage: /섬 리로드
-    aliases: [island, sb]
+    description: Island main command
+    usage: /섬
+
+permissions:
+  samskybridge.admin:
+    default: op

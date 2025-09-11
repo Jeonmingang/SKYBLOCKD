@@ -1,45 +1,52 @@
 package com.signition.samskybridge.listener;
 
 import com.signition.samskybridge.Main;
-import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.level.LevelService;
-import com.signition.samskybridge.util.Text;
+import com.signition.samskybridge.place.PlacedTracker;
+import com.signition.samskybridge.xpguard.RecycleGuardService;
+import com.signition.samskybridge.util.Configs;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 
-public class BlockXPListener implements Listener {
+import java.util.List;
+
+public final class BlockXPListener implements Listener {
     private final Main plugin;
-    private final DataStore store;
-    private final LevelService levels;
-    private final DropPickupTracker tracker;
+    private final LevelService level;
+    private final PlacedTracker placedTracker;
+    private final RecycleGuardService recycleGuard;
+    private final List<String> allowedWorlds;
 
-    public BlockXPListener(Main plugin, DataStore store, LevelService levels, DropPickupTracker tracker){
+    public BlockXPListener(Main plugin, LevelService level, PlacedTracker placedTracker, RecycleGuardService recycleGuard){
         this.plugin = plugin;
-        this.store = store;
-        this.levels = levels;
-        this.tracker = tracker;
+        this.level = level;
+        this.placedTracker = placedTracker;
+        this.recycleGuard = recycleGuard;
+        // pull once at startup; use Configs.ensureDefaults to guarantee keys exist
+        this.allowedWorlds = plugin.getConfig().getStringList("xp.allowed-worlds");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBreak(BlockBreakEvent e){
+    public void onPlace(BlockPlaceEvent e){
         Player p = e.getPlayer();
-        int amount = levels.getXpFor(e.getBlock().getType());
-        if (amount <= 0) return;
+        World w = e.getBlockPlaced().getWorld();
+        if (w == null) return;
+        if (!allowedWorlds.isEmpty() && !allowedWorlds.contains(w.getName())) return;
 
-        // simple anti-recycle: if recently picked up & same location, skip
-        if (tracker.isRecycleLoop(p, e.getBlock().getLocation())) return;
+        // If placing using a recycled item (pickup from player-placed drop), deny XP once per recycled item.
+        boolean denyXp = recycleGuard.consumeIfRecycled(p.getUniqueId(), e.getBlockPlaced().getType());
 
-        levels.grantXp(p, amount);
-        int level = levels.levelOf(p);
-        int xp = levels.xpOf(p);
-        int next = levels.nextRequired(level);
-        p.sendMessage(Text.col("&7[ &a섬 &7]&r &a+" + amount + "xp &7(현재 &f" + xp + "&7/&f" + next + "&7, Lv.&b" + level + "&7)"));
+        if (!denyXp){
+            // Award XP normally
+            level.onPlace(e);
+        }
 
-        // update tab list prefix
-        String pref = plugin.getRankingService().tabPrefixFor(p);
-        p.setPlayerListName(Text.col(pref + p.getName()));
+        // Mark location as player-placed for future drop tagging
+        placedTracker.markPlaced(e.getBlockPlaced().getLocation());
     }
 }
