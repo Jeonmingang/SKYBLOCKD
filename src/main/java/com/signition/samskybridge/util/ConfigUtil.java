@@ -1,0 +1,1 @@
+package com.signition.samskybridge.util; public class ConfigUtil{}
