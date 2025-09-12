@@ -23,3 +23,9 @@ xp:
     minecraft:diamond_ore: 8
     minecraft:emerald_ore: 10
     minecraft:obsidian: 3
+
+tab_prefix:
+  force: true
+  refresh_ticks: 200
+  format: "&7[ &a섬 &7] &r"
+  format_dynamic: "&7[ &a섬 랭킹 &f<rank> &7| &bLv.<level> &7] &r"

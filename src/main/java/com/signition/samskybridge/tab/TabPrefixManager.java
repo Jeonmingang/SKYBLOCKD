@@ -53,14 +53,27 @@ public final class TabPrefixManager {
         }
     }
 
+    
+    
     private String resolve(String fmt, UUID uid){
         long level = 0L;
-        int rank = ranking.getRank(uid);
+        int r = ranking.getRank(uid);
         IslandData is = store.findByMember(uid).orElse(null);
         if (is != null) level = is.getLevel();
-        String s = fmt.replace("<rank>", String.valueOf(rank)).replace("<level>", String.valueOf(level));
+
+        String unranked = plugin.getConfig().getString("ranking.unranked-label", "등록안됨");
+        boolean templateHasSuffix = fmt != null && fmt.contains("<rank>위");
+
+        String rankLabel;
+        if (r < 0) rankLabel = unranked;
+        else rankLabel = templateHasSuffix ? String.valueOf(r) : (r + "위");
+
+        String s = (fmt == null ? "" : fmt).replace("<rank>", rankLabel)
+                                           .replace("<level>", String.valueOf(level));
         return s;
     }
+
+
 
     private String color(String s){
         return ChatColor.translateAlternateColorCodes('&', s == null ? "" : s);
