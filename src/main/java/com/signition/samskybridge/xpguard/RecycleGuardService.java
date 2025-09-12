@@ -1,3 +1,4 @@
+
 package com.signition.samskybridge.xpguard;
 
 import org.bukkit.Material;
@@ -15,15 +16,18 @@ public final class RecycleGuardService {
 
     private final Map<UUID, EnumMap<Material, Integer>> recycled = new ConcurrentHashMap<>();
 
-    /** Adds recycled count for a material when player picks up tagged items. */
-    public void add(UUID playerId, Material mat, int amount){
-        if (playerId == null || mat == null || amount <= 0) return;
+    /** Adds count of recycled items for a player. */
+    public void add(UUID playerId, Material mat, int count){
+        if (playerId == null || mat == null || count <= 0) return;
         EnumMap<Material, Integer> m = recycled.computeIfAbsent(playerId, k -> new EnumMap<>(Material.class));
-        m.put(mat, m.getOrDefault(mat, 0) + amount);
+        m.put(mat, m.getOrDefault(mat, 0) + count);
     }
 
-    /** Returns true and consumes 1 recycled item if present for that material. */
-    public boolean consumeIfRecycled(UUID playerId, Material mat){
+    /**
+     * Consumes one recycled item of the given material for the player, returning true if consumed.
+     * If consumed, award should be denied once for this placement.
+     */
+    public boolean consume(UUID playerId, Material mat){
         if (playerId == null || mat == null) return false;
         EnumMap<Material, Integer> m = recycled.get(playerId);
         if (m == null) return false;

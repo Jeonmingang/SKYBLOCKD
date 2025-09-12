@@ -1,14 +1,12 @@
-name: SamSkyBridge-IslandOnly
+name: SkyblockdXP
 main: com.signition.samskybridge.Main
-version: 1.0.31-island-v3
+version: 1.1.0-island-v1
 api-version: 1.16
-softdepend: [Vault, BentoBox, BSkyBlock]
-
+author: minkang
 commands:
-  섬:
-    description: Island main command
-    usage: /섬
-
-permissions:
-  samskybridge.admin:
-    default: op
+  xpreload:
+    description: Reload SkyblockdXP config
+    usage: /xpreload
+  xpx:
+    description: Show your current custom XP stats
+    usage: /xpx

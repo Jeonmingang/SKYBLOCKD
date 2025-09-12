@@ -6,6 +6,10 @@ import org.bukkit.World;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Tracks locations that have already paid out XP for a placement.
+ * Optional TTL removes entries after some time to free memory.
+ */
 public final class SlotGuardService {
     private final Map<String, Long> awarded = new ConcurrentHashMap<String, Long>();
     private volatile long ttlMillis = -1L; // <0 permanent
@@ -32,5 +36,9 @@ public final class SlotGuardService {
 
     public void mark(Location loc){
         awarded.put(keyOf(loc), System.currentTimeMillis());
+    }
+
+    public void clear(Location loc){
+        awarded.remove(keyOf(loc));
     }
 }

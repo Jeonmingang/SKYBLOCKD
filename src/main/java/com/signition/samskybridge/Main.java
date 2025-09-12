@@ -1,81 +1,64 @@
 
 package com.signition.samskybridge;
 
-import com.signition.samskybridge.cmd.IslandCommand;
-import com.signition.samskybridge.data.DataStore;
-import com.signition.samskybridge.level.LevelService;
-import com.signition.samskybridge.rank.RankingService;
-import com.signition.samskybridge.listener.BlockXPListener;
-import com.signition.samskybridge.place.PlacedTracker;
-import com.signition.samskybridge.listener.ChatListener;
-import com.signition.samskybridge.listener.GuiListener;
-import com.signition.samskybridge.listener.JoinListener;
-import org.bukkit.plugin.java.JavaPlugin;
+import com.signition.samskybridge.listeners.BlockPlaceXPListener;
+import com.signition.samskybridge.listeners.BlockBreakRecycleListener;
 import com.signition.samskybridge.xpguard.RecycleGuardService;
-import com.signition.samskybridge.listener.ClearOnQuitListener;
-import com.signition.samskybridge.listener.DropAndPickupListener;
+import com.signition.samskybridge.xpguard.SlotGuardService;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import com.signition.samskybridge.tab.TabPrefixRefresher;
-import com.signition.samskybridge.tab.TabPrefixManager;
+public class Main extends JavaPlugin {
 
-public final class Main extends JavaPlugin {
-  private DataStore dataStore;
-  private LevelService levelService;
-  private RankingService rankingService;
-  private GuiListener guiListener;
-  private PlacedTracker placedTracker;
-  private TabPrefixRefresher tab;
-  private TabPrefixManager tabMgr;
+    private static Main instance;
+    private RecycleGuardService recycle;
+    private SlotGuardService slots;
 
-  @Override
-  public void onEnable(){
-    saveDefaultConfig();
-        com.signition.samskybridge.util.Configs.ensureDefaults(this);
-    this.dataStore = new DataStore(this);
-    this.levelService = new LevelService(this, dataStore);
-    this.rankingService = new RankingService(this, dataStore);
+    @Override
+    public void onEnable() {
+        instance = this;
+        saveDefaultConfig();
 
-    IslandCommand cmd = new IslandCommand(this, dataStore, levelService, rankingService);
-    getCommand("섬").setExecutor(cmd);
-    getCommand("섬").setTabCompleter(cmd);
+        recycle = new RecycleGuardService();
+        slots = new SlotGuardService();
+        slots.configureSeconds(getConfig().getInt("guards.slot-ttl-seconds", 86400));
 
-    this.guiListener = new GuiListener(this);
-        this.placedTracker = new PlacedTracker();
-    
-        RecycleGuardService recycleGuard = new RecycleGuardService();
-getServer().getPluginManager().registerEvents(new BlockXPListener(this, levelService, placedTracker, recycleGuard), this);
-getServer().getPluginManager().registerEvents(new DropAndPickupListener(this, placedTracker, recycleGuard), this);
-getServer().getPluginManager().registerEvents(new ChatListener(this, dataStore), this);
-    getServer().getPluginManager().registerEvents(guiListener, this);
-    getServer().getPluginManager().registerEvents(new JoinListener(this), this);
-    getServer().getPluginManager().registerEvents(new ClearOnQuitListener(recycleGuard), this);
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceXPListener(this, recycle, slots), this);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakRecycleListener(this, recycle, slots), this);
 
-    // schedule ranking refresh
-    int ticks = getConfig().getInt("ranking.refresh-ticks", 6000);
-    getServer().getScheduler().runTaskTimer(this, new Runnable(){ public void run(){ rankingService.refresh(); }}, ticks, ticks);
-        // Tab prefix refresher
-        if (getConfig().getBoolean("tab_prefix.force", false)){
-            this.tab = new TabPrefixRefresher(this);
-            String fmt = getConfig().getString("tab_prefix.format", "&7[ &a섬 &7] &r");
-            int refresh = getConfig().getInt("tab_prefix.refresh_ticks", 200);
-            tab.start(fmt, refresh);
-            getLogger().info("[TabPrefix] enabled");
-            // Dynamic manager with <rank>/<level>
-            String fmt2 = getConfig().getString("tab_prefix.format_dynamic", "&7[ &a섬 랭킹 <rank>위 &7| &fLv.&b<level> &7]");
-            this.tabMgr = new TabPrefixManager(this, dataStore, rankingService);
-            tabMgr.start(fmt2, refresh);
-        } else { try { org.bukkit.scoreboard.Scoreboard b = org.bukkit.Bukkit.getScoreboardManager().getMainScoreboard(); org.bukkit.scoreboard.Team t=b.getTeam("samsky_all"); if(t!=null){ t.setPrefix(""); t.unregister(); } } catch(Throwable ignore){} getLogger().info("[TabPrefix] disabled"); }
-  }
+        getLogger().info("[SkyblockdXP] Enabled v" + getDescription().getVersion());
+    }
 
-  @Override
-  public void onDisable(){
-        if (tab != null) tab.stop();
-    if (tabMgr != null) tabMgr.stop();
-    if (dataStore != null) dataStore.save();
-  }
+    @Override
+    public void onDisable() {
+        getLogger().info("[SkyblockdXP] Disabled.");
+    }
 
-  public DataStore getDataStore(){ return dataStore; }
-  public LevelService getLevelService(){ return levelService; }
-  public RankingService getRankingService(){ return rankingService; }
-  public GuiListener getGuiListener(){ return guiListener; }
+    public static Main get() { return instance; }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        String n = cmd.getName().toLowerCase();
+        if ("xpreload".equals(n)) {
+            reloadConfig();
+            slots.configureSeconds(getConfig().getInt("guards.slot-ttl-seconds", 86400));
+            sender.sendMessage("§a[SkyblockdXP] config reloaded.");
+            return true;
+        } else if ("xpx".equals(n)) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Player only.");
+                return true;
+            }
+            Player p = (Player) sender;
+            int req = BlockPlaceXPListener.requiredForNext(p);
+            int cur = BlockPlaceXPListener.getStoredExp(p);
+            int lvl = BlockPlaceXPListener.getStoredLevel(p);
+            sender.sendMessage("§b[SkyblockdXP] Lv §e" + lvl + " §7| §f" + cur + "§7/§f" + req);
+            return true;
+        }
+        return false;
+    }
 }
