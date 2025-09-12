@@ -61,4 +61,10 @@ public class Main extends JavaPlugin {
         }
         return false;
     }
+
+    public com.signition.samskybridge.listener.GuiListener getGuiListener(){ return this.guiListener; }
+
+    public com.signition.samskybridge.data.DataStore getDataStore(){ return this.dataStore; }
+
+    public com.signition.samskybridge.ranking.RankingService getRankingService(){ return this.rankingService; }
 }

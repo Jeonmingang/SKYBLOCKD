@@ -47,4 +47,8 @@ public final class RecycleGuardService {
     public void clear(UUID playerId){
         if (playerId != null) recycled.remove(playerId);
     }
+
+    public boolean consumeIfRecycled(java.util.UUID playerId, org.bukkit.Material mat){
+        return consume(playerId, mat);
+    }
 }

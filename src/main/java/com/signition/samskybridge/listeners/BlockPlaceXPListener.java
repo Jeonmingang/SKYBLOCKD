@@ -153,4 +153,22 @@ public final class BlockPlaceXPListener implements Listener {
     public static int requiredForNext(Player p){
         return new BlockPlaceXPListener(Main.get(), new RecycleGuardService(), new SlotGuardService()).requiredForNext(p);
     }
+
+    // Unified requiredForNext: public static, reads config from Main.get()
+    public static int requiredForNext(org.bukkit.entity.Player p){
+        com.signition.samskybridge.Main plugin = com.signition.samskybridge.Main.get();
+        if (plugin == null) return 1;
+        int base = plugin.getConfig().getInt("leveling.base", 100);
+        String mode = plugin.getConfig().getString("leveling.growth.mode", "exponential");
+        double percent = plugin.getConfig().getDouble("leveling.growth.percent", 20.0D);
+        int per = plugin.getConfig().getInt("leveling.growth.per-level", 25);
+        int lvl = getStoredLevel(p);
+        if ("linear".equalsIgnoreCase(mode)){
+            return Math.max(1, base + (lvl - 1) * per);
+        } else {
+            double factor = Math.pow(1.0 + (percent/100.0), (lvl - 1));
+            return Math.max(1, (int)Math.round(base * factor));
+        }
+    }
+
 }

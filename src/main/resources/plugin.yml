@@ -1,7 +1,7 @@
 name: SkyblockdXP
 main: com.signition.samskybridge.Main
-version: 1.1.0-island-v1
-api-version: 1.16
+version: 1.0.33-island-v5
+api-version: 1.0.33-island-v5
 author: minkang
 commands:
   xpreload:
