@@ -1,6 +1,6 @@
 name: SamSkyBridge-IslandOnly
 main: com.signition.samskybridge.Main
-version: 1.0.29-island-v19
+version: 1.0.29-island-v1
 api-version: 1.16
 softdepend: [Vault, BentoBox, BSkyBlock]
 
