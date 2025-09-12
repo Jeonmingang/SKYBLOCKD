@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.signition</groupId>
   <artifactId>SamSkyBridge-IslandOnly</artifactId>
-  <version>1.0.29-island-v1</version>
+  <version>1.0.30-island-v1</version>
   <name>SamSkyBridge-IslandOnly</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
