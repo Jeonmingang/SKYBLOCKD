@@ -1,1 +1,20 @@
-package com.signition.samskybridge.upgrade; public class UpgradeService{ public void open(org.bukkit.entity.Player p){ p.sendMessage("업그레이드 GUI는 추후 제공됩니다."); }}
+
+package com.signition.samskybridge.upgrade;
+
+import com.signition.samskybridge.Main;
+import com.signition.samskybridge.gui.UpgradeGui;
+import org.bukkit.entity.Player;
+
+public class UpgradeService {
+    private final Main plugin;
+    private final UpgradeGui gui;
+
+    public UpgradeService(Main plugin){
+        this.plugin = plugin;
+        this.gui = new UpgradeGui(plugin, plugin.getDataStore());
+    }
+
+    public void open(Player p){
+        gui.open(p);
+    }
+}
