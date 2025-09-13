@@ -1,0 +1,89 @@
+# SamSkyBridge 기본 설정
+lang: ko
+save-interval-ticks: 1200
+rank-refresh-interval-ticks: 1200
+
+economy:
+  enabled: true
+  costs:
+    size:
+      base: 10000
+      multiplier: 1.25
+      level-required-base: 5
+      level-required-step: 2   # 반지름 10씩 늘 때마다 +2레벨 요구
+    team:
+      base: 5000
+      multiplier: 1.5
+      level-required-base: 3
+      level-required-step: 1
+
+leveling:
+  base-required-xp: 1000
+  increase-percent: 1.5     # 다음 레벨 필요치 +1.5%
+  track-placements: true
+
+barrier:
+  show-seconds: 6
+  step: 2.0
+  particle-per-block: false
+
+scoreboard:
+  prefix-format: "&7[ &a섬 랭킹 &f<rank>위 &7] "
+
+gui:
+  title-upgrade: "섬 업그레이드"
+  size-item-name: "&f섬 크기 업그레이드"
+  team-item-name: "&f팀원 수 업그레이드"
+  back-item-name: "&7닫기"
+
+storage:
+  data-file: "data/islands.yml"
+
+
+integration:
+  bentobox:
+    enabled: true
+    gamemode-id: "bskyblock"   # 'acidisland', 'boxed' 등 서버 환경에 맞게
+
+
+# --- Added by ChatGPT (v0.5.0) ---
+ranking:
+  unranked-label: 등록안됨
+  tab-prefix: '&7[ &a섬 랭킹 &f<rank>위 &7| &bLv.<level> &7] &r'
+
+xp:
+  allowed-worlds:
+    - bskyblock_world
+
+tab_prefix:
+  force: true
+  refresh_ticks: 200
+  format: '&7[ &a섬 &7] &r'
+  format_dynamic: '&7[ &a섬 랭킹 &f<rank> &7| &bLv.<level> &7] &r'
+
+# anti-loop window in milliseconds for repeated placements on same coordinate by same player
+leveling:
+  anti-loop-ms: 5000
+
+level: {}
+
+
+messages:
+  ranking:
+    header: "&a섬 랭킹 TOP <n>"
+    line: "&f<rank>. &a<name> &7- &fLv.<level> &7(경험치 <xp>) &8| &7크기 <size> &7| 인원 <team>"
+  level:
+    status: "&a섬 레벨 &fLv.<level> &7(<xp>/<need>, <percent>%)"
+
+
+# (선택) 단계별 업그레이드 값을 직접 지정하려면 아래처럼 steps를 사용하세요.
+# steps가 존재하면 base/per 대신 steps가 우선 적용됩니다.
+upgrade:
+  size:
+    # steps: [50, 60, 70, 85, 100, 120]   # 예시
+    # base-range: 50
+    # per-level: 10
+  team:
+    # steps: [4, 5, 6, 8, 10]            # 예시
+    # base-members: 4
+    # per-level: 1
