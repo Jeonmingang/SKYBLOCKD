@@ -30,4 +30,9 @@ public class VaultHook {
         if (economy == null) return true; // treat as free if no economy
         return economy.withdrawPlayer(playerName, amount).transactionSuccess();
     }
+
+    public boolean deposit(String playerName, double amount){
+        if (economy == null) return true;
+        return economy.depositPlayer(playerName, amount).transactionSuccess();
+    }
 }

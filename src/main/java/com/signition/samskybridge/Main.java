@@ -62,5 +62,4 @@ public class Main extends JavaPlugin {
     public VaultHook getVault(){ return vault; }
     public BentoSync getBento(){ return bento; }
     public com.signition.samskybridge.data.DataStore getDataStore(){ return dataStore; }
-    public com.signition.samskybridge.util.VaultHook getVault(){ return vault; }
-}
+    }

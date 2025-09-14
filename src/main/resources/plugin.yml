@@ -2,8 +2,8 @@
 
 name: SamSkyBridge
 main: com.signition.samskybridge.Main
-version: 0.8.0
-api-version: 0.8.0
+version: 0.8.1
+api-version: 0.8.1
 author: signition
 commands:
   섬:
