@@ -1,94 +1,100 @@
-# SamSkyBridge 기본 설정
-lang: ko
-save-interval-ticks: 1200
-rank-refresh-interval-ticks: 1200
+# --- SamSkyBridge v0.9.0 default config ---
+# MC 1.16.5 / Java 8
 
-economy:
-  enabled: true
-  costs:
-    size:
-      base: 10000
-      multiplier: 1.25
-      level-required-base: 5
-      level-required-step: 2   # 반지름 10씩 늘 때마다 +2레벨 요구
-    team:
-      base: 5000
-      multiplier: 1.5
-      level-required-base: 3
-      level-required-step: 1
-
-leveling:
-  base-required-xp: 1000
-  increase-percent: 1.5     # 다음 레벨 필요치 +1.5%
-  track-placements: true
-
-barrier:
-  show-seconds: 6
-  step: 2.0
-  particle-per-block: false
-
-scoreboard:
-  prefix-format: "&7[ &a섬 랭킹 &f<rank>위 &7] "
-
-gui:
-  title-upgrade: "섬 업그레이드"
-  size-item-name: "&f섬 크기 업그레이드"
-  team-item-name: "&f팀원 수 업그레이드"
-  back-item-name: "&7닫기"
-
-storage:
-  data-file: "data/islands.yml"
-
-
-integration:
-  bentobox:
-    enabled: true
-    gamemode-id: "bskyblock"   # 'acidisland', 'boxed' 등 서버 환경에 맞게
-
-
-# --- Added by ChatGPT (v0.5.0) ---
 ranking:
   unranked-label: 등록안됨
-  tab-prefix: '&7[ &a섬 랭킹 &f<rank>위 &7| &bLv.<level> &7] &r'
-
-xp:
-  allowed-worlds:
-    - bskyblock_world
+  tab-prefix: '&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r'
 
 tab_prefix:
   force: true
   refresh_ticks: 200
   format: '&7[ &a섬 &7] &r'
-  format_dynamic: '&7[ &a섬 랭킹 &f<rank> &7| &bLv.<level> &7] &r'
+  format_dynamic: '&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r'
 
-# anti-loop window in milliseconds for repeated placements on same coordinate by same player
-leveling:
+xp:
+  # 경험치 지급 월드
+  allowed-worlds:
+    - bskyblock_world
+  # 같은 위치 반복 설치 방지(ms)
   anti-loop-ms: 5000
+  chat:
+    notify: true
+  # 블럭별 경험치 (config가 blocks.yml보다 우선)
+  blocks:
+    STONE: 1
+    COBBLESTONE: 1
+    OAK_LOG: 1
+    COAL_ORE: 2
+    IRON_ORE: 3
+    GOLD_ORE: 4
+    REDSTONE_ORE: 2
+    LAPIS_ORE: 3
+    DIAMOND_ORE: 8
+    EMERALD_ORE: 10
+    OBSIDIAN: 3
 
-level: {}
+leveling:
+  base-required-xp: 1000.0
+  increase-percent: 20.0     # 다음 레벨 필요 경험치 증가율(%) (예: 20 -> 매 레벨 20% 증가)
+  anti-loop-ms: 5000         # (호환용) 기존 키 유지
 
+upgrade:
+  gui:
+    slots:
+      team: 12
+      size: 14
+
+  team:
+    title: '&b섬 인원 업그레이드'
+    lore:
+      - '&7현재 한도: &f{current}명'
+      - '&7다음 단계: &a{next}명'
+      - '&7요구 레벨: &bLv.{reqLevel}'
+      - '&7필요 금액: &a{cost}'
+      - '&7업그레이드 레벨: &d{stepNow}/{stepMax}'
+      - '&8클릭: 업그레이드'
+    base-members: 2
+    per-level: 1
+    cost-base: 15000.0
+    cost-multiplier: 1.35
+    required-level-base: 2
+    required-level-step: 2
+    # steps: [2,3,4,5,6,8,10]  # (선택) 직접 단계 지정
+
+  size:
+    title: '&e섬 크기 업그레이드'
+    lore:
+      - '&7현재 보호반경: &f{range} 블럭'
+      - '&7다음 단계: &a{next} 블럭'
+      - '&7요구 레벨: &bLv.{reqLevel}'
+      - '&7필요 금액: &a{cost}'
+      - '&7업그레이드 레벨: &d{stepNow}/{stepMax}'
+      - '&8클릭: 업그레이드'
+    base-range: 50
+    per-level: 10
+    cost-base: 20000.0
+    cost-multiplier: 1.25
+    required-level-base: 2
+    required-level-step: 2
+    # steps: [50,60,70,85,100,120]
+
+  sync:
+    bento:
+      range: false   # true로 하면 크기 업글 시 is admin range <플레이어> <반경> 실행
 
 messages:
+  xp:
+    gain: "&a+<xp> XP &7(다음 레벨까지 <remain> | <percent>%)"
   ranking:
     header: "&a섬 랭킹 TOP <n>"
     line: "&f<rank>. &a<name> &7- &fLv.<level> &7(경험치 <xp>) &8| &7크기 <size> &7| 인원 <team>"
-  level:
-    status: "&a섬 레벨 &fLv.<level> &7(<xp>/<need>, <percent>%)"
-
-
-# (선택) 단계별 업그레이드 값을 직접 지정하려면 아래처럼 steps를 사용하세요.
-# steps가 존재하면 base/per 대신 steps가 우선 적용됩니다.
-upgrade:
-  size:
-    # steps: [50, 60, 70, 85, 100, 120]   # 예시
-    # base-range: 50
-    # per-level: 10
-  team:
-    # steps: [4, 5, 6, 8, 10]            # 예시
-    # base-members: 4
-    # per-level: 1
-
+  upgrade:
+    not-enough-level: "&c요구 레벨 Lv.<need> 부족"
+    not-enough-money: "&c잔액 부족: <cost>"
+    size-success: "&a섬 크기 업그레이드: 반지름 <radius>"
+    team-success: "&a섬 인원 업그레이드: 최대 <max>"
 
 gui:
+  title-upgrade: "섬 업그레이드"
   market:
     title: "섬 매물"
