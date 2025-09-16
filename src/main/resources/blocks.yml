@@ -1,0 +1,14 @@
+# 블럭별 경험치 (필요에 맞게 추가/수정)
+COBBLESTONE: 1
+STONE: 1
+OAK_LOG: 3
+SPRUCE_LOG: 3
+BIRCH_LOG: 3
+OAK_PLANKS: 1
+IRON_ORE: 8
+GOLD_ORE: 12
+DIAMOND_ORE: 40
+
+# Pixelmon 예시(서버의 실제 Material 이름으로 수정)
+PIXELMON_ALUMINUM_ORE: 20
+PIXELMON_HEALER: 80      # 키우미집/치유기류 예시
