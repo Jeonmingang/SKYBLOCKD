@@ -1,0 +1,95 @@
+# --- SamSkyBridge v0.9.0 default config ---
+# MC 1.16.5 / Java 8
+
+ranking:
+  unranked-label: 등록안됨
+  tab-prefix: '&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r'
+
+tab_prefix:
+  force: true
+  refresh_ticks: 200
+  format: '&7[ &a섬 &7] &r'
+  format_dynamic: '&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r'
+
+
+leveling:
+  base-required-xp: 1000.0
+  increase-percent: 20.0     # 다음 레벨 필요 경험치 증가율(%) (예: 20 -> 매 레벨 20% 증가)
+  anti-loop-ms: 5000         # (호환용) 기존 키 유지
+
+upgrade:
+  gui:
+    slots:
+      team: 12
+      size: 14
+
+  team:
+    title: '&b섬 인원 업그레이드'
+    lore:
+      - '&7현재 한도: &f{current}명'
+      - '&7다음 단계: &a{next}명'
+      - '&7요구 레벨: &bLv.{reqLevel}'
+      - '&7필요 금액: &a{cost}'
+      - '&7업그레이드 레벨: &d{stepNow}/{stepMax}'
+      - '&8클릭: 업그레이드'
+    base-members: 2
+    per-level: 1
+    cost-base: 15000.0
+    cost-multiplier: 1.35
+    required-level-base: 2
+    required-level-step: 2
+    # steps: [2,3,4,5,6,8,10]  # (선택) 직접 단계 지정
+
+  size:
+    title: '&e섬 크기 업그레이드'
+    lore:
+      - '&7현재 보호반경: &f{range} 블럭'
+      - '&7다음 단계: &a{next} 블럭'
+      - '&7요구 레벨: &bLv.{reqLevel}'
+      - '&7필요 금액: &a{cost}'
+      - '&7업그레이드 레벨: &d{stepNow}/{stepMax}'
+      - '&8클릭: 업그레이드'
+    base-range: 50
+    per-level: 10
+    cost-base: 20000.0
+    cost-multiplier: 1.25
+    required-level-base: 2
+    required-level-step: 2
+    # steps: [50,60,70,85,100,120]
+
+  sync:
+    bento:
+      range: false   # true로 하면 크기 업글 시 is admin range <플레이어> <반경> 실행
+
+messages:
+  xp:
+  ranking:
+    header: "&a섬 랭킹 TOP <n>"
+    line: "&f<rank>. &a<name> &7- &fLv.<level> &7(경험치 <xp>) &8| &7크기 <size> &7| 인원 <team>"
+  upgrade:
+    not-enough-level: "&c요구 레벨 Lv.<need> 부족"
+    not-enough-money: "&c잔액 부족: <cost>"
+    size-success: "&a섬 크기 업그레이드: 반지름 <radius>"
+    team-success: "&a섬 인원 업그레이드: 최대 <max>"
+
+gui:
+  title-upgrade: "섬 업그레이드"
+  market:
+    title: "섬 매물"
+  level:
+    status: "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7, &f<percent>%&7)"
+    leveled-up: "&a레벨업! 현재 레벨: &f<level>"
+    xp-purchase-success: "&a경험치 <amount> 구매! 현재 XP: <xp> (Lv.<level>)"
+
+upgrade:
+  xp:
+    amount: 100
+    price: 1000.0
+    title: "&d경험치 구매"
+    lore:
+      - "&7구매량: &f{amount} XP"
+      - "&7가격: &a{price}"
+      - "&8클릭: 구매"
+
+leveling:
+  table: {}
