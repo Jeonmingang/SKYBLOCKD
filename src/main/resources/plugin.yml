@@ -2,7 +2,7 @@
 
 name: SamSkyBridge
 main: com.signition.samskybridge.Main
-version: 1.0.1
+version: 1.0.3
 api-version: 1.16
 author: signition
 commands:
@@ -15,6 +15,8 @@ commands:
       /섬 관리 승급 <닉>
       /섬 관리 강등 <닉>
       /섬 레벨
+      /섬 설치 광산 (섬장만가능)
+      /섬 설치 농장 (섬장만가능)
       /섬 랭킹
       /섬 업그레이드
       /섬 초대 <닉>
