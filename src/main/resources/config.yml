@@ -1,0 +1,152 @@
+# SamSkyBridge v0.13.20
+# Minecraft 1.16.5 / Java 8
+
+rank-refresh-interval-ticks: 1200
+save-interval-ticks: 1200
+
+integration:
+  bentobox:
+    enabled: true
+    gamemode-id: "bskyblock"
+
+island-chat:
+  enabled: true
+  members-only: true
+  command-aliases: ["섬","is"]
+  format: "&a[섬채팅] &f{player}&7: &f{message}"
+
+ranking:
+  unranked-label: "등록안됨"
+  tab-prefix: "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r"
+
+tab_prefix:
+  force: true
+  refresh_ticks: 200
+  format: "&7[ &a섬 &7] &r"
+  format_dynamic: "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r"
+
+leveling:
+  table: {}
+  base-required-xp: 1000
+  increase-percent: 20.0
+
+xp:
+  allowed-worlds: ["bskyblock_world"]
+  anti-loop-ms: 5000
+  chat:
+    notify: true
+
+barrier:
+  show-seconds: 6
+  step: 1.0
+
+economy:
+  costs:
+    size:
+      multiplier: 1.25
+    team:
+      multiplier: 1.5
+
+gui:
+  title-upgrade: "&a[ 섬 업그레이드 ]"
+  market:
+    title: "섬 매물"
+
+scoreboard:
+  prefix-format: "&7[ &a섬 랭킹 &f<rank>위 &7] "
+
+messages:
+  not-player: "플레이어만 사용가능"
+  level:
+    status: "섬 레벨 <level> / XP <xp>/<need> (<percent>%)"
+    leveled-up: "&a레벨업! 현재 레벨: <level>"
+  upgrade:
+    not-enough-money: "&c잔액이 부족합니다. 필요: <cost>"
+    not-enough-level: "&c섬 레벨이 부족합니다. 필요: Lv.<need>"
+    size-success: "&a섬 크기 업그레이드 완료! 반경: <radius>"
+    team-success: "&a팀 인원 업그레이드 완료! 한도: <max>"
+  xp:
+    bought: "&a경험치를 구매했습니다: +<amount> XP"
+
+features:
+  require:
+    island-worlds: ["bskyblock_world"]
+    owner-only: true
+
+  # ===== Mines =====
+  mine:
+    title: "&a광산"
+    max-level: 5
+    marker:
+      enabled: true
+      block: "GLOWSTONE"
+    # 레벨별 등장 '확률'(%) 표기 — 합계 100이 아니어도 자동 정규화
+    ores:
+      0: ["COAL_ORE:90","IRON_ORE:10"]
+      1: ["COAL_ORE:70","IRON_ORE:20","GOLD_ORE:10"]
+      2: ["COAL_ORE:50","IRON_ORE:30","GOLD_ORE:15","DIAMOND_ORE:5"]
+
+  # ===== Farms =====
+  farm:
+    title: "&a농장"
+    max-level: 5
+    marker:
+      enabled: true
+      block: "HAY_BLOCK"
+    install:
+      base-radius: 1       # 1 => 3x3
+      per-level: 0         # 레벨당 증가 반경
+      seed-item: "WHEAT_SEEDS"
+      require-dirt: true
+      consume-dirt: true
+    replant:
+      delay-ticks: 10
+    growth:
+      extra-stage-chance-base: 0.00
+      extra-stage-chance-per-level: 0.05
+    # 레벨별 작물 '확률'(%) 표기
+    crops:
+      0: ["WHEAT:100"]
+      1: ["WHEAT:60","CARROTS:40"]
+      2: ["WHEAT:40","CARROTS:40","POTATOES:20"]
+
+  messages:
+    only-on-island-world: "&c섬 월드에서만 사용 가능합니다."
+    owner-only: "&c섬장만 사용할 수 있습니다."
+
+upgrade:
+  size:
+    title: "&a섬 크기 업그레이드"
+    steps: []              # 예: [50,60,70] 지정 시 단계 기반. 비우면 base/per 기반.
+    base-range: 50
+    per-level: 10
+    cost-base: 20000
+    cost-multiplier: 1.25
+    required-level-base: 2
+    required-level-step: 2
+  team:
+    title: "&a팀 인원 업그레이드"
+    steps: []              # 예: [2,3,4,...]
+    base-members: 2
+    per-level: 1
+    cost-base: 20000
+    cost-multiplier: 1.25
+    required-level-base: 2
+    required-level-step: 2
+  xp:
+    title: "&a경험치 구매"
+    amount: 100
+    price: 1000
+  sync:
+    bento:
+      range: true
+
+tablist:
+  enabled: false
+  only-in-island-worlds: true
+  same-island-highlight: true
+  owner-prefix: "&6[섬장]&f "
+  member-prefix: "&a[섬원]&f "
+  visitor-prefix: "&7[방문자]&f "
+  same-island-owner-prefix: "&e[우리섬장]&f "
+  same-island-member-prefix: "&b[우리섬원]&f "
