@@ -1,0 +1,143 @@
+# SamSkyBridge v0.13.19 (generated)
+# Minecraft 1.16.5 / Java 8
+
+# Scheduler
+rank-refresh-interval-ticks: 1200   # 랭킹 리프레시 주기
+save-interval-ticks: 1200           # 데이터 자동 저장 주기
+
+# Integration
+integration:
+  bentobox:
+    enabled: true
+    gamemode-id: "bskyblock"   # BentoBox의 BSkyBlock 애드온 ID
+
+# Island chat
+island-chat:
+  enabled: true
+  members-only: true
+  command-aliases: ["섬","is"]
+  format: "&a[섬채팅] &f{player}&7: &f{message}"
+
+# Ranking / Tab prefix
+ranking:
+  unranked-label: "등록안됨"
+  tab-prefix: "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r"
+
+tab_prefix:
+  force: true
+  refresh_ticks: 200
+  format: "&7[ &a섬 &7] &r"
+  format_dynamic: "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r"
+
+# Leveling
+leveling:
+  table: {}                # 특정 레벨별 필요 경험치 오버라이드
+  base-required-xp: 1000     # 1레벨 기준 필요 경험치
+  increase-percent: 20.0     # 레벨 당 필요 경험치 증가율(%)
+
+xp:
+  allowed-worlds: ["bskyblock_world"]
+  anti-loop-ms: 5000
+  chat:
+    notify: true
+
+# Barrier
+barrier:
+  show-seconds: 6
+  step: 1.0
+
+# Economy
+economy:
+  costs:
+    size:
+      multiplier: 1.25
+    team:
+      multiplier: 1.5
+
+# GUI / Titles
+gui:
+  title-upgrade: "&a[ 섬 업그레이드 ]"
+  market:
+    title: "섬 매물"
+
+scoreboard:
+  prefix-format: "&7[ &a섬 랭킹 &f<rank>위 &7] "
+
+# Messages
+messages:
+  not-player: "플레이어만 사용가능"
+  level:
+    status: "섬 레벨 <level> / XP <xp>/<need> (<percent>%)"
+    leveled-up: "&a레벨업! 현재 레벨: <level>"
+  upgrade:
+    not-enough-money: "&c잔액이 부족합니다."
+    not-enough-level: "&c섬 레벨이 부족합니다."
+    size-success: "&a섬 크기 업그레이드 성공! 현재: <size>"
+    team-success: "&a팀 인원 업그레이드 성공! 현재: <team>"
+  xp:
+    bought: "&a경험치를 구매했습니다: +<amount> XP"
+
+# Features (mine/farm)
+features:
+  require:
+    island-worlds: ["bskyblock_world"]
+    owner-only: true
+  mine:
+    title: "&a광산"
+    max-level: 5
+    cost:
+      base: 5000
+      multiplier: 1.25
+  farm:
+    title: "&a농장"
+    max-level: 5
+    cost:
+      base: 5000
+      multiplier: 1.25
+    require:
+      base: 0
+      per-step: 1
+    replant:
+      delay-ticks: 10
+    growth:
+      extra-stage-chance-base: 0.0
+      extra-stage-chance-per-level: 0.0
+  messages:
+    only-on-island-world: "&c섬 월드에서만 사용 가능합니다."
+    owner-only: "&c섬장만 사용할 수 있습니다."
+
+# Upgrades
+upgrade:
+  size:
+    title: "&a섬 크기 업그레이드"
+    cost-base: 10000
+    cost-multiplier: 1.25
+    required-level-base: 1
+    required-level-step: 1
+    per-level: 1
+  team:
+    title: "&a팀 인원 업그레이드"
+    base-members: 1
+    per-level: 1
+    cost-base: 10000
+    cost-multiplier: 1.25
+    required-level-base: 1
+    required-level-step: 1
+  xp:
+    title: "&a경험치 구매"
+    amount: 100
+    price: 1000
+  sync:
+    bento:
+      range: true
+
+# Tablist highlights (optional)
+tablist:
+  enabled: false
+  only-in-island-worlds: true
+  same-island-highlight: true
+  owner-prefix: "&6[섬장]&f "
+  member-prefix: "&a[섬원]&f "
+  visitor-prefix: "&7[방문자]&f "
+  same-island-owner-prefix: "&e[우리섬장]&f "
+  same-island-member-prefix: "&b[우리섬원]&f "
