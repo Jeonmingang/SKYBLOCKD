@@ -30,6 +30,7 @@ public class RankingService {
         return list;
     }
 
+    
     /** Optional helper for /섬 랭킹 간단 출력 */
     public void sendTop(Player p, int page){
         List<IslandData> list = getSortedIslands();
@@ -40,10 +41,12 @@ public class RankingService {
         p.sendMessage(Text.color("&6[ 섬 랭킹 ] &7페이지 " + page));
         for (int i = from; i < to; i++){
             IslandData is = list.get(i);
-            p.sendMessage(Text.color("&f" + (i+1) + ". &e" + is.getOwnerName() + " &7Lv" + is.getLevel() + " &8XP " + is.getXp()));
+            String ownerName = is.getOwnerName();
+            p.sendMessage(Text.color("&f" + (i+1) + ". &e" + (ownerName==null?"-":ownerName) + " &7Lv" + is.getLevel() + " &8XP " + is.getXp()));
         }
         p.sendMessage(Text.color("&7총 " + total + "개 섬"));
     }
+    
 
     public void refreshRanking(){ /* no-op */ }
 }

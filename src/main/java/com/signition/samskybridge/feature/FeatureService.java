@@ -319,6 +319,13 @@ public boolean isInAnyFarmRegion(org.bukkit.Location loc){
 }
 
 
+    public int getMaxMineLevel(){
+        return this.plugin.getConfig().getInt("features.mine.max-level", 5);
+    }
+    public int getMaxFarmLevel(){
+        return this.plugin.getConfig().getInt("features.farm.max-level", 5);
+    }
+
 public static boolean islandOwnerStatic(org.bukkit.entity.Player p){
     return INSTANCE != null && INSTANCE.islandOwner(p);
 }
@@ -327,6 +334,5 @@ public static boolean islandMemberStatic(org.bukkit.entity.Player p){
 }
 public static boolean isIslandWorldStatic(org.bukkit.World w){
     return INSTANCE != null && INSTANCE.isIslandWorld(w);
-    public int getMaxMineLevel(){ return this.plugin.getConfig().getInt("features.mine.max-level", 5); }
-    public int getMaxFarmLevel(){ return this.plugin.getConfig().getInt("features.farm.max-level", 5); }
+}
 }

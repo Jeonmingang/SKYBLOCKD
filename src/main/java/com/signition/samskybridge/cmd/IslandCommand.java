@@ -255,12 +255,10 @@ case "설정": {
                 if ("보기".equals(args[1])){
                     p.sendMessage(Text.color("&7increase-percent: &f"+plugin.getConfig().getDouble("leveling.increase-percent",1.5)));
                     p.sendMessage(Text.color("&7barrier.show-seconds: &f"+plugin.getConfig().getInt("barrier.show-seconds",6)));
-                    p.sendMessage(Text.color("&7economy.size: base &f"+plugin.getConfig().getDouble("economy.costs.size.base",10000.0)+" &7multiplier &f"+plugin.getConfig().getDouble("economy.costs.size.multiplier",1.25)));
-                    p.sendMessage(Text.color("&7economy.team: base &f"+plugin.getConfig().getDouble("economy.costs.team.base",5000.0)+" &7multiplier &f"+plugin.getConfig().getDouble("economy.costs.team.multiplier",1.5)));
+                    p.sendMessage(Text.color("&7economy.size.multiplier: &f"+plugin.getConfig().getDouble("economy.costs.size.multiplier",1.25)));
+                    p.sendMessage(Text.color("&7economy.team.multiplier: &f"+plugin.getConfig().getDouble("economy.costs.team.multiplier",1.5)));
                     p.sendMessage(Text.color("&7scoreboard.prefix-format: &f"+plugin.getConfig().getString("scoreboard.prefix-format","&7[ &a섬 랭킹 &f<rank>위 &7] ")));
-                    return true;
                 }
-                // /섬 설정 바리어 시간 <초>
                 if ("바리어".equals(args[1]) && args.length>=4 && "시간".equals(args[2])){
                     try{
                         int v = Integer.parseInt(args[3]);
@@ -320,87 +318,5 @@ case "설정": {
 
 
 
-// --- injected: level-and-ranking-templates ---
-
-    org.bukkit.configuration.file.FileConfiguration cfg = this.plugin.getConfig();
-    org.bukkit.configuration.ConfigurationSection sec = cfg.getConfigurationSection("display.level");
-    if (sec == null) return;
-    String header = sec.getString("header", "&6[ 섬 레벨 정보 ]");
-    java.util.List<String> lines = sec.getStringList("lines");
-    int level = this.is.getLevel();
-    long xp = this.is.getXp();
-    long next = this.level.requiredXpForLevel(is.getLevel());
-    int progress = (int)Math.min(100, Math.round((xp * 100.0) / Math.max(1, next)));
-    int sizeLevel = this.is.getSize();
-    int memberLevel = this.is.getTeamMax();
-
-    int mineLevel = plugin.getFeatureService().getMineLevel(is.getId());
-    int farmLevel = plugin.getFeatureService().getFarmLevel(is.getId());
-    p.sendMessage(color(header));
-    for (String raw : lines) {
-        com.signition.samskybridge.data.IslandData is = this.level.getIslandOf(p);
-        String s = raw
-            .replace("{level}", String.valueOf(level))
-            .replace("{xp}", String.valueOf(xp))
-            .replace("{next}", String.valueOf(next))
-            .replace("{progress}", String.valueOf(progress))
-            .replace("{size_level}", String.valueOf(sizeLevel))
-            .replace("{member_level}", String.valueOf(memberLevel))
-            .replace("{mine_level}", String.valueOf(mineLevel))
-            .replace("{farm_level}", String.valueOf(farmLevel));
-        p.sendMessage(color(s));
-    }
-}
-private void sendRankingWithTemplate(org.bukkit.entity.Player p, int page) {
-    org.bukkit.configuration.file.FileConfiguration cfg = this.plugin.getConfig();
-    org.bukkit.configuration.ConfigurationSection sec = cfg.getConfigurationSection("display.ranking");
-    if (sec == null) return;
-    int pageSize = Math.max(1, sec.getInt("page-size", 10));
-    boolean ownersOnly = sec.getBoolean("owners-only", true);
-    boolean showMembers = sec.getBoolean("show-members", true);
-    boolean showUpg = sec.getBoolean("show-upgrade-progress", true);
-    String sep = sec.getString("member-sep", ", ");
-    java.util.List<com.signition.samskybridge.data.IslandData> ranking = this.rankingService.getSortedIslands();
-    java.util.List<com.signition.samskybridge.data.IslandData> filtered = new java.util.ArrayList<com.signition.samskybridge.data.IslandData>();
-    for (com.signition.samskybridge.data.IslandData is : ranking) {
-        if (!ownersOnly || is.getOwner() != null) filtered.add(is);
-    }
-    int total = filtered.size();
-    int from = Math.max(0, (page - 1) * pageSize);
-    int to = Math.min(total, from + pageSize);
-    p.sendMessage(color(sec.getString("header", "&6[ 섬 랭킹 ] &7페이지 {page}").replace("{page}", String.valueOf(page))));
-    for (int i = from; i < to; i++) {
-        com.signition.samskybridge.data.IslandData is = filtered.get(i);
-        int rank = i + 1;
-        String ownerName = is.getOwnerName();
-        int lvl = this.is.getLevel();
-        long xp = this.is.getXp();
-        long next = this.level.requiredXpForLevel(is.getLevel());
-        int upgProgress = 0;
-        if (showUpg) {
-            int maxSum = this.upgradeService.getMaxSizeLevel() + this.upgradeService.getMaxMemberLevel()
-                       + com.signition.samskybridge.feature.FeatureService.getMaxMineLevel() + com.signition.samskybridge.feature.FeatureService.getMaxFarmLevel();
-            int haveSum = this.is.getSize() + this.is.getTeamMax()
-                        + plugin.getFeatureService().getMineLevel(is.getId()) + plugin.getFeatureService().getFarmLevel(is.getId());
-            upgProgress = maxSum == 0 ? 0 : (int)Math.round(haveSum * 100.0 / maxSum);
-        }
-        String members = "-";
-        if (showMembers) {
-            java.util.List<String> ms = is.getMemberNames();
-            members = (ms == null || ms.isEmpty()) ? "-" : org.apache.commons.lang.StringUtils.join(ms, sep);
-        }
-        String fmt = sec.getString("line",
-            "&f{rank}. &e{owner} &7Lv{level}&8 /XP {xp}/{next} &7(업그 {upgrade_progress}%) &8[팀원:{members}]");
-        String out = fmt.replace("{rank}", String.valueOf(rank))
-            .replace("{owner}", ownerName == null ? "-" : ownerName)
-            .replace("{level}", String.valueOf(lvl))
-            .replace("{xp}", String.valueOf(xp))
-            .replace("{next}", String.valueOf(next))
-            .replace("{upgrade_progress}", String.valueOf(upgProgress))
-            .replace("{members}", members);
-        p.sendMessage(color(out));
-    }
-    p.sendMessage(color(sec.getString("footer", "&7총 {total}개 섬").replace("{total}", String.valueOf(total))));
-}
 
 }
