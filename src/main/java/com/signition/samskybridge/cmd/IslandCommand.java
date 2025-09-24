@@ -63,6 +63,14 @@ public class IslandCommand implements CommandExecutor {
         if (args.length == 0){ sendHelp(p, 1); return true; }
 
         switch (args[0]) {
+
+case "랭킹": {
+    int page = 1;
+    try { if (args.length >= 2) page = Integer.parseInt(args[1]); } catch (Throwable ignore) {}
+    sendRankingWithTemplate(p, Math.max(1, page));
+    return true;
+}
+
             case "페이지": {
                 int pg = 1;
                 try { if (args.length > 1) pg = Integer.parseInt(args[1]); } catch(Exception ignore){}
@@ -214,4 +222,73 @@ public class IslandCommand implements CommandExecutor {
             }
         }
     }
+}
+
+// --- injected: ranking template helper (non-invasive) ---
+private void sendRankingWithTemplate(org.bukkit.entity.Player p, int page) {
+    org.bukkit.configuration.file.FileConfiguration cfg = this.plugin.getConfig();
+    org.bukkit.configuration.ConfigurationSection sec = cfg.getConfigurationSection("display.ranking");
+    int pageSize = sec != null ? Math.max(1, sec.getInt("page-size", 10)) : 10;
+    boolean ownersOnly = sec != null && sec.getBoolean("owners-only", true);
+    boolean showMembers = sec != null && sec.getBoolean("show-members", true);
+    boolean showUpg = sec != null && sec.getBoolean("show-upgrade-progress", true);
+    String sep = sec != null ? sec.getString("member-sep", ", ") : ", ";
+
+    java.util.List<com.signition.samskybridge.data.IslandData> list;
+    try { list = this.rankingService.getSortedIslands(); }
+    catch (Throwable t) { list = new java.util.ArrayList<com.signition.samskybridge.data.IslandData>(); }
+
+    java.util.List<com.signition.samskybridge.data.IslandData> filtered = new java.util.ArrayList<com.signition.samskybridge.data.IslandData>();
+    for (com.signition.samskybridge.data.IslandData is : list) {
+        if (!ownersOnly || is.getOwner() != null) filtered.add(is);
+    }
+    int total = filtered.size();
+    int from = Math.max(0, (page - 1) * pageSize);
+    int to = Math.min(total, from + pageSize);
+
+    String header = sec != null ? sec.getString("header", "&6[ 섬 랭킹 ] &7페이지 {page}") : "&6[ 섬 랭킹 ] &7페이지 {page}";
+    p.sendMessage(Text.color(header.replace("{page}", String.valueOf(page))));
+
+    for (int i = from; i < to; i++) {
+        com.signition.samskybridge.data.IslandData is = filtered.get(i);
+        int rankNo = i + 1;
+        String ownerName = is.getOwnerName();
+        int lvl = 0; long xp = 0; long next = 0;
+        try {
+            lvl = is.getLevel(); xp = is.getXp(); next = this.level.requiredXpForLevel(lvl);
+        } catch (Throwable ignore) {}
+        int upgProgress = 0;
+        if (showUpg) {
+            int maxSum = 0, haveSum = 0;
+            try {
+                maxSum = this.upgrade.getMaxSizeLevel() + this.upgrade.getMaxMemberLevel()
+                       + this.feature.getMaxMineLevel() + this.feature.getMaxFarmLevel();
+                haveSum = is.getSize() + is.getTeamMax()
+                       + this.feature.getMineLevel(is.getId()) + this.feature.getFarmLevel(is.getId());
+            } catch (Throwable ignore) {}
+            upgProgress = maxSum == 0 ? 0 : (int)Math.round(haveSum * 100.0 / maxSum);
+        }
+        String members = "-";
+        if (showMembers) {
+            try {
+                java.util.List<String> ms = is.getMemberNames();
+                members = (ms == null || ms.isEmpty()) ? "-" : org.apache.commons.lang.StringUtils.join(ms, sep);
+            } catch (Throwable ignore) {}
+        }
+        String fmt = sec != null ? sec.getString("line",
+            "&f{rank}. &e{owner} &7Lv{level}&8 /XP {xp}/{next} &7(업그 {upgrade_progress}%) &8[팀원:{members}]")
+            : "&f{rank}. &e{owner} &7Lv{level}&8 /XP {xp}/{next} &7(업그 {upgrade_progress}%) &8[팀원:{members}]";
+        String out = fmt.replace("{rank}", String.valueOf(rankNo))
+                .replace("{owner}", ownerName == null ? "-" : ownerName)
+                .replace("{level}", String.valueOf(lvl))
+                .replace("{xp}", String.valueOf(xp))
+                .replace("{next}", String.valueOf(next))
+                .replace("{upgrade_progress}", String.valueOf(upgProgress))
+                .replace("{members}", members);
+        p.sendMessage(Text.color(out));
+    }
+    String footer = sec != null ? sec.getString("footer", "&7총 {total}개 섬") : "&7총 {total}개 섬";
+    p.sendMessage(Text.color(footer.replace("{total}", String.valueOf(total))));
+}
+
 }
