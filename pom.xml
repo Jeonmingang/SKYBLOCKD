@@ -28,7 +28,7 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>SamSkyBridge-0.13.27</finalName>
+    <finalName>SamSkyBridge-0.13.28</finalName>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
