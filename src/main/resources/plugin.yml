@@ -2,7 +2,7 @@
 
 name: SamSkyBridge
 main: com.signition.samskybridge.Main
-version: 0.13.29
+version: 0.14.0
 api-version: 1.16
 author: signition
 commands:
