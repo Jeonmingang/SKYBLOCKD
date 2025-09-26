@@ -1,112 +1,44 @@
-# SKYBLOCKD | consolidated configurable options (1.16.5 / Java 8)
-# ---------------------------------------------------------------
-# 이 파일은 당신이 보내준 v0.13.31c 기반 코드를 전제로 합니다.
-# '플러그인 재시작' 또는 '/samsky reload' 후 적용됩니다.
-
-plugin:
-  version: 0.13.32   # 플러그인 버전 표기를 위해 Main에서 참조하도록 하세요.
-
-islands:
-  world: "bskyblock_world"     # 섬 기능이 허용되는 월드 이름. 그 외 월드에서는 설치/업그레이드 차단.
+# Minimal keys added/updated by targeted patch.
+island-world: "bskyblock_world"
 
 features:
-  mine:
-    place:
-      only-in-island-world: true   # islands.world 에서만 설치 허용
-      only-owner-can-place: true   # 섬장만 설치 가능
-      only-inside-own-island: true # 자신의 섬 내부에서만 설치 가능
-    gui:
-      show-next-level-lore: true   # /섬 업그레이드 GUI에 다음 레벨 보상/확률 표시
-      lore-format:
-        - "&7다음 레벨 변경점:"
-        - "&8- &f광물 테이블:"
-        - "{TABLE}"               # 아래 weights 로부터 계산된 표를 여기 주입
-    levels:
-      # 예시: 각 레벨별 광물 가중치(%). 합계는 100일 필요는 없지만, 상대 확률로 사용됩니다.
-      "1":
-        STONE: 70
-        COAL_ORE: 20
-        IRON_ORE: 10
-      "2":
-        STONE: 50
-        COAL_ORE: 25
-        IRON_ORE: 15
-        GOLD_ORE: 10
-      "3":
-        STONE: 35
-        COAL_ORE: 25
-        IRON_ORE: 20
-        GOLD_ORE: 10
-        LAPIS_ORE: 10
-      "4":
-        STONE: 20
-        COAL_ORE: 20
-        IRON_ORE: 20
-        GOLD_ORE: 15
-        LAPIS_ORE: 10
-        REDSTONE_ORE: 15
-      "5":
-        STONE: 10
-        COAL_ORE: 15
-        IRON_ORE: 20
-        GOLD_ORE: 15
-        LAPIS_ORE: 10
-        REDSTONE_ORE: 15
-        DIAMOND_ORE: 10
-        EMERALD_ORE: 5
-    replant:
-      # 광산에는 적용되지 않지만, 키 구조 일관성을 위해 남겨둠.
-      delay-ticks: 4
-
   farm:
-    place:
-      only-in-island-world: true
-      only-owner-can-place: true
-      only-inside-own-island: true
-    harvest:
-      require-seed-in-inventory: true   # 인벤에 씨앗 없으면 채집 취소(무한 방지)
-      send-no-seed-message: true
+    replant:
+      delay-ticks: 4
     growth:
       extra-stage-chance-base: 0.0
       extra-stage-chance-per-level: 0.05
-    replant:
-      delay-ticks: 4
-
-tab:
-  enabled: true
-  refresh-interval-ticks: 40
-  owner-format: "&a섬 장 &7{rank}위 &b[lv.{level}] &f{name} &a{ping-bars}"
-  member-format: "&7섬 원 &7{rank}위 &b[lv.{level}] &f{name} &a{ping-bars}"
-  no-island-format: "&8등록없음 &7{name} &8{ping-bars}"
-  ping-bars:
-    1: "▁"
-    2: "▂▁"
-    3: "▃▂▁"
-    4: "▅▄▃▂▁"
-    5: "▇▆▅▄▃"
 
 upgrades:
-  # 요구 레벨이 만족되지 않으면 업그레이드 불가(돈만 차감되는 문제 방지)
-  require-level-to-upgrade: true
-  min-level:
-    mine:
-      "1": 0
-      "2": 4
-      "3": 6
-      "4": 8
-      "5": 10
-    farm:
+  mine:
+    level-required:
       "1": 0
       "2": 2
       "3": 4
       "4": 6
       "5": 8
-  messages:
-    not-enough-level: "&c요구 레벨(Lv.{need})이 부족합니다."
-    success: "&a업그레이드 완료! 현재 레벨: {level}"
-    not-owner: "&c섬장만 업그레이드할 수 있습니다."
-
-messages:
+    preview:
+      "1": "석탄:60% 철:40%"
+      "2": "석탄:40% 철:40% 금:20%"
+      "3": "석탄:20% 철:40% 금:30% 다이아:10%"
+      "4": "철:40% 금:35% 다이아:20% 에메랄드:5%"
+      "5": "금:40% 다이아:40% 에메랄드:20%"
   farm:
-    immature: "&c아직 익지 않았습니다."
-    no-seed: "&c씨앗이 없습니다."
+    level-required:
+      "1": 0
+      "2": 2
+      "3": 4
+      "4": 6
+      "5": 8
+    preview:
+      "1": "추가 성장 +0%"
+      "2": "추가 성장 +5%"
+      "3": "추가 성장 +10%"
+      "4": "추가 성장 +15%"
+      "5": "추가 성장 +20%"
+
+ranking:
+  tab-prefix:
+    owner: "&7[ &a섬장 &7] &r"
+    member: "&7[ &a섬원 &7] &r"
+    visitor: "&7[ 등록없음 ] &r"

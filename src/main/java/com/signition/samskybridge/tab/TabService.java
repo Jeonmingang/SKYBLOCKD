@@ -1,52 +1,71 @@
-
 package com.signition.samskybridge.tab;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
-public class TabService {
-    private final Plugin plugin;
-    private BukkitTask task;
-    public TabService(Plugin plugin) { this.plugin = plugin; }
-    public void start() {
-        if (!plugin.getConfig().getBoolean("tablist.enabled", false)) return;
-        stop();
-        task = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override public void run() { tick(); }
-        }, 40L, 80L);
+import com.signition.samskybridge.Main;
+import com.signition.samskybridge.feature.FeatureService;
+import com.signition.samskybridge.util.Text;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+
+/**
+ * Simple tab prefix updater (owner/member/visitor).
+ * Merge updateTabPrefix(...) into your existing scheduler/listener if you already manage tab UI.
+ */
+public class TabService implements Listener {
+
+    private final Main plugin;
+    private final FeatureService features;
+
+    public TabService(Main plugin) {
+        this.plugin = plugin;
+        this.features = plugin.getFeatureService();
     }
-    public void stop() { if (task != null) { task.cancel(); task = null; } }
-    private void tick() {
-        boolean onlyIslandWorlds = plugin.getConfig().getBoolean("tablist.only-in-island-worlds", true);
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (onlyIslandWorlds && !isInIslandWorld(p)) continue;
-            boolean owner = isIslandOwner(p);
-            boolean same = true; // simplified
-            String prefix;
-            if (owner) {
-                prefix = plugin.getConfig().getString(same ? "tablist.same-island-owner-prefix" : "tablist.owner-prefix", "");
-            } else if (isVisitor(p)) {
-                prefix = plugin.getConfig().getString("tablist.visitor-prefix", "");
-            } else {
-                prefix = plugin.getConfig().getString(same ? "tablist.same-island-member-prefix" : "tablist.member-prefix", "");
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override public void run() {
+                updateTabPrefix(e.getPlayer());
             }
-            String base = p.getName();
-            String listName = org.bukkit.ChatColor.translateAlternateColorCodes('&', prefix + base);
-            if (listName.length() > 16) listName = listName.substring(0, 16);
-            p.setPlayerListName(listName);
+        }, 1L);
+    }
+
+    @EventHandler
+    public void onWorld(PlayerChangedWorldEvent e) {
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            @Override public void run() {
+                updateTabPrefix(e.getPlayer());
+            }
+        }, 1L);
+    }
+
+    public void updateTabPrefix(Player p) {
+        String ownerPrefix = plugin.getConfig().getString("ranking.tab-prefix.owner", "&7[ &a섬장 &7] &r");
+        String memberPrefix = plugin.getConfig().getString("ranking.tab-prefix.member", "&7[ &a섬원 &7] &r");
+        String visitorPrefix = plugin.getConfig().getString("ranking.tab-prefix.visitor", "&7[ 등록없음 ] &r");
+
+        String prefix;
+        try {
+            if (features.islandOwner(p)) prefix = ownerPrefix;
+            else if (features.islandMember(p)) prefix = memberPrefix;
+            else prefix = visitorPrefix;
+        } catch (Throwable t) {
+            prefix = visitorPrefix;
         }
-    }
-    private boolean isInIslandWorld(Player p) {
-        try { return com.signition.samskybridge.feature.FeatureService.isIslandWorldStatic(p.getWorld()); }
-        catch (Throwable t) { return true; }
-    }
-    private boolean isIslandOwner(Player p) {
-        try { return com.signition.samskybridge.feature.FeatureService.islandOwnerStatic(p); }
-        catch (Throwable t) { return p.hasPermission("samskybridge.island.owner"); }
-    }
-    private boolean isVisitor(Player p) {
-        try { return !com.signition.samskybridge.feature.FeatureService.islandMemberStatic(p); }
-        catch (Throwable t) { return false; }
+
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+        Team team = board.getTeam("samskybridge_tab");
+        if (team == null) {
+            team = board.registerNewTeam("samskybridge_tab");
+        }
+        team.setPrefix(ChatColor.translateAlternateColorCodes('&', prefix));
+        if (!team.hasEntry(p.getName())) team.addEntry(p.getName());
+        p.setScoreboard(board);
     }
 }
