@@ -1,23 +1,25 @@
 worlds:
-  island-world: "bskyblock_world"
+  island-world: "bskyblock_world"   # 섬 기능 전용 월드명
 
 features:
   mine:
-    allowed-worlds: ["${worlds.island-world}"]
-    only-owner-install: true
-    only-on-own-island: true
-    allow-members-use: true
-    max-level: 5
+    # ⚠️ ${...} 치환이 코드에서 지원되지 않을 수 있어, 안전하게 실제 이름을 직접 씁니다.
+    allowed-worlds: ["bskyblock_world"]
+    only-owner-install: true        # 섬장만 설치
+    only-on-own-island: true        # 자신의 섬 내부에서만 설치
+    allow-members-use: true         # 섬원은 이용 가능
+    max-level: 5                    # 업그레이드 최대 레벨 (아래 upgrades.mine.levels 개수와 일치)
+
   farm:
-    allowed-worlds: ["${worlds.island-world}"]
+    allowed-worlds: ["bskyblock_world"]
     only-owner-install: true
     only-on-own-island: true
     allow-members-use: true
     max-level: 5
     replant:
-      delay-ticks: 4
-      require-seed: true
-      deny-when-missing: true
+      delay-ticks: 4                # 수확 후 자동 재심기 지연 (틱)
+      require-seed: true            # 씨앗 필요
+      deny-when-missing: true       # 씨앗 없으면 수확 취소 (무한 드랍 방지)
 
 upgrades:
   mine:
@@ -30,12 +32,15 @@ upgrades:
         - "&8- &7추가 보너스: &a{nextBonus}"
         - "&8- &7리젠 간격: &a{nextRegen}s"
         - "&7클릭: 업그레이드"
+    # NOTE: regen 값은 '초' 단위라고 가정(로어에 s 표기).
+    #   코드가 '틱'을 기대한다면 여기 값을 20배로 바꾸세요(예: 20s -> 400틱).
     levels:
-      1: {require-island-level: 4,  cost: 6250, bonus: "+5% 광물 보너스",  regen: 20}
-      2: {require-island-level: 7,  cost: 9500, bonus: "+10% 광물 보너스", regen: 18}
+      1: {require-island-level: 4,  cost: 6250,  bonus: "+5% 광물 보너스",  regen: 20}
+      2: {require-island-level: 7,  cost: 9500,  bonus: "+10% 광물 보너스", regen: 18}
       3: {require-island-level: 10, cost: 14500, bonus: "+15% 광물 보너스", regen: 16}
       4: {require-island-level: 13, cost: 21000, bonus: "+20% 광물 보너스", regen: 14}
       5: {require-island-level: 16, cost: 28000, bonus: "+25% 광물 보너스", regen: 12}
+
   farm:
     gui:
       lore-template:
@@ -47,8 +52,8 @@ upgrades:
         - "&8- &7자동재배 딜레이: &a{nextReplant}틱"
         - "&7클릭: 업그레이드"
     levels:
-      1: {require-island-level: 2,  cost: 4000, bonus: "+5% 성장",  replant: 4}
-      2: {require-island-level: 5,  cost: 8000, bonus: "+10% 성장", replant: 4}
+      1: {require-island-level: 2,  cost: 4000,  bonus: "+5% 성장",  replant: 4}
+      2: {require-island-level: 5,  cost: 8000,  bonus: "+10% 성장", replant: 4}
       3: {require-island-level: 9,  cost: 14000, bonus: "+15% 성장", replant: 3}
       4: {require-island-level: 12, cost: 21000, bonus: "+20% 성장", replant: 3}
       5: {require-island-level: 15, cost: 28000, bonus: "+25% 성장", replant: 2}
@@ -62,9 +67,9 @@ tablist:
   footer:
     - "&7디스코드: &bdiscord.gg/yourserver"
   name-format:
-    owner:  "&d[ 섬 랭킹 &a%island_rank%위 &7| &bLv.%island_level%&d] &f%player_name%"
-    member: "&a[ 섬원 &bLv.%island_level%위 ] &f%player_name%"
-    visitor:"&7[ 등록없음 &7| %player_name% ] &f%player_name%"
+    owner:  "&d[섬 랭킹 &a%island_rank%위 &d| &bLv.%island_level%&d] &f%player_name%"
+    member: "&a[섬원 &bLv.%island_level%&a] &f%player_name%"
+    visitor: "&7[등록없음] &f%player_name%"   # ← 콜론 뒤 공백 추가 (YAML 문법 안전)
 
 messages:
   not-island-world: "&c이 명령은 &e{world}&c(섬 월드)에서만 사용할 수 있습니다."
