@@ -1,0 +1,172 @@
+worlds:
+  island-world: bskyblock_world
+features:
+  mine:
+    allowed-worlds:
+    - bskyblock_world
+    only-owner-install: true
+    only-on-own-island: true
+    allow-members-use: true
+    max-level: 5
+    gui:
+      show-next-level-lore: true
+      lore-format:
+      - '&7다음 레벨 변경점:'
+      - '&8- &f광물 테이블:'
+      - '{TABLE}'
+      table-line: '&8  • &7{mat}&7: &a{chance}%'
+      table-max-lines: 12
+    levels:
+      '1':
+        regen-seconds: 20
+        weights:
+          STONE: 70
+          COAL_ORE: 20
+          IRON_ORE: 10
+      '2':
+        regen-seconds: 18
+        weights:
+          STONE: 50
+          COAL_ORE: 25
+          IRON_ORE: 15
+          GOLD_ORE: 10
+      '3':
+        regen-seconds: 16
+        weights:
+          STONE: 40
+          COAL_ORE: 25
+          IRON_ORE: 20
+          GOLD_ORE: 10
+          REDSTONE_ORE: 5
+      '4':
+        regen-seconds: 14
+        weights:
+          STONE: 35
+          COAL_ORE: 25
+          IRON_ORE: 20
+          GOLD_ORE: 10
+          REDSTONE_ORE: 5
+          LAPIS_ORE: 5
+      '5':
+        regen-seconds: 12
+        weights:
+          STONE: 30
+          COAL_ORE: 25
+          IRON_ORE: 20
+          GOLD_ORE: 10
+          REDSTONE_ORE: 5
+          LAPIS_ORE: 5
+          DIAMOND_ORE: 5
+  farm:
+    allowed-worlds:
+    - bskyblock_world
+    only-owner-install: true
+    only-on-own-island: true
+    allow-members-use: true
+    max-level: 5
+    replant:
+      delay-ticks: 4
+      require-seed: true
+      deny-when-missing: true
+upgrades:
+  mine:
+    gui:
+      lore-template:
+      - '&7현재 레벨: &f{now}/{max}'
+      - '&7요구 레벨: &fLv.{need}'
+      - '&7가격: &a{cost}'
+      - '&8다음 업그레이드 변화:'
+      - '&8- &7추가 보너스: &a{nextBonus}'
+      - '&8- &7리젠 간격: &a{nextRegen}s'
+      - '&7클릭: 업그레이드'
+      - '{nextOreTable}'
+      next-ore-table-line: '&8  • &7{mat}&7: &a{chance}%'
+      next-ore-table-title: '&8- &7광물 테이블:'
+      next-ore-table-max-lines: 12
+    levels:
+      1:
+        require-island-level: 4
+        cost: 6250
+        bonus: +5% 광물 보너스
+        regen: 20
+      2:
+        require-island-level: 7
+        cost: 9500
+        bonus: +10% 광물 보너스
+        regen: 18
+      3:
+        require-island-level: 10
+        cost: 14500
+        bonus: +15% 광물 보너스
+        regen: 16
+      4:
+        require-island-level: 13
+        cost: 21000
+        bonus: +20% 광물 보너스
+        regen: 14
+      5:
+        require-island-level: 16
+        cost: 28000
+        bonus: +25% 광물 보너스
+        regen: 12
+    gui-ore-table:
+      title: '&8- &7광물 테이블:'
+      line: '&8  • &7{mat}&7: &a{chance}%'
+      max-lines: 12
+  farm:
+    gui:
+      lore-template:
+      - '&7현재 레벨: &f{now}/{max}'
+      - '&7요구 레벨: &fLv.{need}'
+      - '&7가격: &a{cost}'
+      - '&8다음 업그레이드 변화:'
+      - '&8- &7추가 성장 확률: &a{nextBonus}'
+      - '&8- &7자동재배 딜레이: &a{nextReplant}틱'
+      - '&7클릭: 업그레이드'
+    levels:
+      1:
+        require-island-level: 2
+        cost: 4000
+        bonus: +5% 성장
+        replant: 4
+      2:
+        require-island-level: 5
+        cost: 8000
+        bonus: +10% 성장
+        replant: 4
+      3:
+        require-island-level: 9
+        cost: 14000
+        bonus: +15% 성장
+        replant: 3
+      4:
+        require-island-level: 12
+        cost: 21000
+        bonus: +20% 성장
+        replant: 3
+      5:
+        require-island-level: 15
+        cost: 28000
+        bonus: +25% 성장
+        replant: 2
+tablist:
+  enabled: true
+  update-interval-ticks: 40
+  header:
+  - '&b&lSKYBLOCKD &7| &f온라인: &a%server_online% &7/ &a%server_max_players%'
+  - '&7섬 레벨: &b%island_level%  &7랭킹: &a%island_rank%'
+  footer:
+  - '&7디스코드: &bdiscord.gg/yourserver'
+  name-format:
+    owner: '&d[섬 랭킹 &a%island_rank%위 &d| &bLv.%island_level%&d] &f%player_name%'
+    member: '&a[섬원 &bLv.%island_level%&a] &f%player_name%'
+    visitor: '&7[등록없음] &f%player_name%'
+messages:
+  not-island-world: '&c이 명령은 &e{world}&c(섬 월드)에서만 사용할 수 있습니다.'
+  must-be-owner: '&c섬장만 설치할 수 있습니다.'
+  must-be-inside-own-island: '&c자신의 섬 내부에서만 설치 가능합니다.'
+  need-seed: '&c씨앗이 없습니다.'
+chat:
+  aliases:
+  - 섬채팅
+  - islandchat
