@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class UpgradeUI {
+    private final Main plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(Main.class);
 
     private static Economy econ;
 
@@ -42,7 +43,7 @@ public class UpgradeUI {
     }
 
     public void open(Player p, IslandData data) {
-        Inventory inv = Bukkit.createInventory(p, 27, color("&b섬 업그레이드"));
+        Inventory inv = Bukkit.createInventory(p, 27, color(plugin.getConfig().getString("gui.title-upgrade", "$1")));
 
         if (econ == null) {
             RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
@@ -120,4 +121,35 @@ public class UpgradeUI {
 
         p.openInventory(inv);
     }
+
+
+// --- Templating from config ---
+private java.util.List<String> renderTemplate(java.util.List<String> tmpl, java.util.Map<String, String> vars) {
+    java.util.List<String> out = new java.util.ArrayList<>();
+    if (tmpl == null) return out;
+    for (String raw : tmpl) {
+        if (raw == null) continue;
+        String s = raw;
+        for (java.util.Map.Entry<String, String> e : vars.entrySet()) {
+            s = s.replace("{" + e.getKey() + "}", e.getValue());
+        }
+        out.add(color(s));
+    }
+    return out;
+}
+private java.util.List<String> getLoreTemplate(org.bukkit.configuration.file.FileConfiguration cfg, String path) {
+    if (cfg.isList(path)) return cfg.getStringList(path);
+    if (cfg.isConfigurationSection(path)) {
+        org.bukkit.configuration.ConfigurationSection sec = cfg.getConfigurationSection(path);
+        java.util.List<String> list = new java.util.ArrayList<>();
+        java.util.List<String> keys = new java.util.ArrayList<>(sec.getKeys(false));
+        java.util.Collections.sort(keys, (a,b) -> {
+            try { return Integer.compare(Integer.parseInt(a), Integer.parseInt(b)); } catch (Exception ex) { return a.compareTo(b); }
+        });
+        for (String k : keys) list.add(sec.getString(k, ""));
+        return list;
+    }
+    return java.util.Collections.emptyList();
+}
+
 }
