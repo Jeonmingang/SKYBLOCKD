@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>kr.minkang</groupId>
+  <groupId>com.signition</groupId>
   <artifactId>SamSkyBridge</artifactId>
-  <version>1.0.2</version>
+  <version>0.13.32</version>
   <packaging>jar</packaging>
 
   <name>SamSkyBridge</name>
@@ -27,6 +27,10 @@
       <id>sonatype</id>
       <url>https://oss.sonatype.org/content/groups/public/</url>
     </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
   <dependencies>
@@ -36,8 +40,14 @@
       <version>${spigot.version}</version>
       <scope>provided</scope>
     </dependency>
-    <!-- Vault dependency removed to allow CI/maven build without resolving Vault artifact.
-         Economy is optional at runtime; plugin checks presence of Vault before using it. -->
+
+    <!-- Vault API -->
+    <dependency>
+      <groupId>com.github.MilkBowl</groupId>
+      <artifactId>VaultAPI</artifactId>
+      <version>1.7</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -45,21 +55,26 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.13.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <encoding>UTF-8</encoding>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <phase>package</phase>
             <goals><goal>shade</goal></goals>
+            <configuration>
+              <minimizeJar>false</minimizeJar>
+              <relocations>
+              </relocations>
+            </configuration>
           </execution>
         </executions>
       </plugin>
