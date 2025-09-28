@@ -58,7 +58,7 @@ public class Main extends JavaPlugin implements TabExecutor {
                 msg(p, color("&c섬이 없습니다."));
                 return true;
             }
-            new UpgradeUI().open(p, d, this.getConfig());
+            new UpgradeUI().open(p, d);
             return true;
         }
 
@@ -70,7 +70,7 @@ public class Main extends JavaPlugin implements TabExecutor {
         }
 
         if (sub.equalsIgnoreCase("랭킹")) {
-            List<IslandData> list = storage.getAll();
+            List<IslandData> list = storage.getAllIslands();
             list.sort((a,b) -> {
                 int c = Integer.compare(b.level, a.level);
                 if (c != 0) return c;

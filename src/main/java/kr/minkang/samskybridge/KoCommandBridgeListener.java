@@ -93,7 +93,7 @@ public class KoCommandBridgeListener implements Listener {
 
     private String joinFrom(String[] arr, int idx) {
         if (idx >= arr.length) return "";
-        return java.util.stream.Collectors.joining(" ", java.util.Arrays.asList(arr).subList(idx, arr.length));
+        return String.join(" ", java.util.Arrays.copyOfRange(arr, idx, arr.length));
     }
 
     private String color(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
