@@ -6,6 +6,40 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class UpgradeUI {
+
+// Simple GUI opener to satisfy Main.java call: open(Player, IslandData)
+// You can expand this to a full-featured upgrade UI later.
+public void open(org.bukkit.entity.Player player, IslandData data) {
+    // Build a minimal inventory so the method is functional.
+    org.bukkit.inventory.Inventory inv = org.bukkit.Bukkit.createInventory(
+            player, 27, org.bukkit.ChatColor.GREEN + "섬 업그레이드");
+
+    // Example items showing island stats (size/team); replace with real upgrade buttons.
+    org.bukkit.inventory.ItemStack size = new org.bukkit.inventory.ItemStack(org.bukkit.Material.GRASS_BLOCK);
+    org.bukkit.inventory.meta.ItemMeta sm = size.getItemMeta();
+    if (sm != null) {
+        sm.setDisplayName(org.bukkit.ChatColor.YELLOW + "섬 크기: " + data.sizeRadius);
+        sm.setLore(java.util.Arrays.asList(
+                org.bukkit.ChatColor.GRAY + "업그레이드로 섬 크기를 확장하세요."
+        ));
+        size.setItemMeta(sm);
+    }
+    inv.setItem(11, size);
+
+    org.bukkit.inventory.ItemStack team = new org.bukkit.inventory.ItemStack(org.bukkit.Material.PLAYER_HEAD);
+    org.bukkit.inventory.meta.ItemMeta tm = team.getItemMeta();
+    if (tm != null) {
+        tm.setDisplayName(org.bukkit.ChatColor.AQUA + "팀 인원: " + data.teamMax);
+        tm.setLore(java.util.Arrays.asList(
+                org.bukkit.ChatColor.GRAY + "업그레이드로 팀 최대 인원을 늘리세요."
+        ));
+        team.setItemMeta(tm);
+    }
+    inv.setItem(15, team);
+
+    player.openInventory(inv);
+}
+
     private Economy economy;
     private Main main;
     private Storage storage;
