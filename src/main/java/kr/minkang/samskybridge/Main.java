@@ -25,9 +25,9 @@ public class Main extends JavaPlugin implements TabExecutor {
         saveDefaultConfig();
         this.storage = new Storage(this);
         this.integration = new Integration(this);
-        this.chatService = new ChatService(this, storage);
+        this.chatService = new ChatService(this);
         Bukkit.getPluginManager().registerEvents(chatService, this);
-        Bukkit.getPluginManager().registerEvents(new SimpleUpgradeClickListener(this, storage, integration), this);
+        Bukkit.getPluginManager().registerEvents(new SimpleUpgradeClickListener(this), this);
         Bukkit.getPluginManager().registerEvents(new KoCommandBridgeListener(), this);
         this.tabRefresher = new TabRefresher(this, storage);
         this.tabRefresher.start();
