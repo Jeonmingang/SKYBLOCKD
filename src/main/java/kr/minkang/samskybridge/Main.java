@@ -96,13 +96,58 @@ public class Main extends JavaPlugin implements TabExecutor {
         }
 
         if (sub.equalsIgnoreCase("채팅")) {
-            boolean on = chatService.toggle(p.getUniqueId());
-            msg(p, color(on ? cfg().getString("messages.chat-on", "&a섬 채팅이 켜졌습니다.")
-                            : cfg().getString("messages.chat-off", "&e섬 채팅이 꺼졌습니다.")));
+            chatService.toggle(p.getUniqueId());
             return true;
         }
 
-        return false; // 기타는 /is로 포워딩됨
+        
+
+if (args.length >= 1 && args[0].equalsIgnoreCase("레벨")) {
+    if (!(sender instanceof org.bukkit.entity.Player)) { sender.sendMessage("플레이어만 사용가능"); return true; }
+    org.bukkit.entity.Player p = (org.bukkit.entity.Player) sender;
+    IslandData d = storage.getIslandByPlayer(p.getUniqueId());
+    if (d == null) d = BentoBridge.resolveFromBento(this, p);
+    if (d == null) { p.sendMessage(color("&c섬이 없습니다.")); return true; }
+    int nextReq = Leveling.requiredXpForLevel(this, d.level + 1);
+    int remain = Math.max(0, nextReq - d.xp);
+    int gain = getConfig().getInt("upgrade.level.xp.per-purchase", 50);
+    double cost = getConfig().getDouble("upgrade.level.cost.per-purchase", 20000D);
+    p.sendMessage(color("&a[섬] &f현재 레벨: &b" + d.level));
+    p.sendMessage(color("&a[섬] &f경험치: &b" + d.xp + "&7 / &b" + nextReq + " &7(다음 레벨까지 &b" + remain + "&7)"));
+    p.sendMessage(color("&a[섬] &f구매 1회: &b+" + gain + " &7| 가격: &b" + (cost==((long)cost)? (long)cost : cost)));
+    p.sendMessage(color("&a[섬] &7업그레이드 GUI: &f/섬 업그레이드"));
+    return true;
+}
+
+if (args.length >= 1 && args[0].equalsIgnoreCase("설정")) {
+    if (!sender.isOp()) { sender.sendMessage("OP만 사용가능"); return true; }
+    if (args.length < 4) { sender.sendMessage("/섬 설정 <레벨|경험치|경험치추가|크기|팀> <닉네임> <값>"); return true; }
+    String item = args[1];
+    org.bukkit.OfflinePlayer target = org.bukkit.Bukkit.getOfflinePlayer(args[2]);
+    java.util.UUID uuid = target != null ? target.getUniqueId() : null;
+    if (uuid == null) { sender.sendMessage("대상 없음"); return true; }
+    IslandData d = storage.getIslandByPlayer(uuid);
+    if (d == null && sender instanceof org.bukkit.entity.Player) d = BentoBridge.resolveFromBento(this, (org.bukkit.entity.Player)sender);
+    if (d == null) { sender.sendMessage("섬 데이터를 찾지 못했습니다."); return true; }
+    try {
+        int val = Integer.parseInt(args[3]);
+        switch(item.toLowerCase()) {
+            case "레벨": d.level = Math.max(1, val); break;
+            case "경험치": d.xp = Math.max(0, val); break;
+            case "경험치추가": d.xp = Math.max(0, d.xp + val); break;
+            case "크기": d.sizeRadius = Math.max(1, val); break;
+            case "팀":
+                d.teamMax = Math.max(1, val);
+                applyOwnerTeamPerm(d.owner, d.teamMax);
+                break;
+            default: sender.sendMessage("/섬 설정 <레벨|경험치|경험치추가|크기|팀> <닉네임> <값>"); return true;
+        }
+        storage.write(d); storage.save();
+        sender.sendMessage("완료");
+    } catch (NumberFormatException ex) { sender.sendMessage("값은 숫자"); }
+    return true;
+}
+return false; // 기타는 /is로 포워딩됨
     }
 
     private void help(Player p) {

@@ -85,3 +85,45 @@ chat:
 
 integration:
   auto-import-from-bentobox: true
+
+
+tab_prefix:
+  force: true
+  refresh_ticks: 20
+  owner:  "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r"
+  member: "&7[ &a섬원 섬장의섬랭크 &f<rank>위 &7| 섬장의 &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r"
+
+nametag:
+  short-format: "&7[lv.<level>|#<rank>] "
+
+
+# =========================================
+# SKYBLOCKD 표시/연동 설정 (주석 읽고 선택 적용)
+# -----------------------------------------
+# <치환자>
+#   <rank>   : 섬 랭킹 (숫자 / 등록안됨)
+#   <level>  : 섬 레벨
+#   <size>   : 보호 반경(실제 적용값 우선)
+#   <team>   : 팀 최대 인원(실제 적용값 우선)
+# -----------------------------------------
+
+# [TAB 목록 접두사] - 길이 제한 없음
+tab_prefix:
+  force: true             # true면 항상 적용
+  refresh_ticks: 20       # 갱신 주기(tick). 20 = 1초
+  owner:  "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r"
+  member: "&7[ &a섬원 섬장의섬랭크 &f<rank>위 &7| 섬장의 &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r"
+  # --- 다른 프리셋 예시 ---
+  # owner:  "&a[섬장] &7#<rank> &bLv.<level> &7| &f크기 <size> &7| &f인원 <team>"
+  # member: "&a[섬원] &7#<rank> &bLv.<level> &7| &f크기 <size> &7| &f인원 <team>"
+
+# [머리 위 네임태그] - 스코어보드 prefix는 최대 16자! (짧게 쓰세요)
+nametag:
+  owner-format:  "&7[섬장 lv.<level>|#<rank>] "
+  member-format: "&7[섬원 lv.<level>|#<rank>] "
+  # 예) 완전 동일 포맷을 쓰고 싶다면 위 두 줄을 같은 내용으로 변경
+
+# [랭킹 라벨]
+ranking:
+  unranked-label: "등록안됨"
+
