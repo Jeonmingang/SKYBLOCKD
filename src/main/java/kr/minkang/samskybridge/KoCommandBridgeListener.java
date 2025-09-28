@@ -66,7 +66,7 @@ public class KoCommandBridgeListener implements Listener {
         if (!msg.startsWith("/섬")) return;
 
         Player p = e.getPlayer();
-        String[] parts = msg.trim().split("\s+");
+        String[] parts = msg.trim().split("\\s+");
         if (parts.length == 1) {
             sendHelp(p, 1);
             e.setCancelled(true);
