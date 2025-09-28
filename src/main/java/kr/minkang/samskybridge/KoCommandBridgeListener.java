@@ -15,10 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * /섬 단독: 한글 도움말 출력 후 이벤트 취소
- * /섬 업그레이드|레벨|랭킹|채팅: 패스스루(취소하지 않음) → Main.onCommand가 처리
- * /섬 <한국어/영어 서브명령...>: 기본은 /is <원문 그대로>로 포워딩
- *   - 한국어 별칭은 아래 매핑 규칙으로 영어 /is 명령으로 변환
+ * /섬       -> 한국어 도움말 출력 + 이벤트 취소
+ * /섬 업그레이드|레벨|랭킹|채팅 -> 패스스루(취소하지 않음) -> Main.onCommand
+ * /섬 <기타 한국어/영어 서브>   -> /is <매핑 또는 원문> 으로 포워딩
  */
 public class KoCommandBridgeListener implements Listener {
 
@@ -26,13 +25,13 @@ public class KoCommandBridgeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPre(PlayerCommandPreprocessEvent e) {
-        String msg = e.getMessage();
-        if (msg == null || !msg.startsWith("/섬")) return;
-
+        String raw = e.getMessage();
+        if (raw == null || !raw.startsWith("/섬")) return;
         Player p = e.getPlayer();
-        String[] parts = msg.trim().split("\\s+");
+        String[] parts = raw.trim().split("\\s+");
+
+        // /섬 -> 도움말 출력하고 취소
         if (parts.length == 1) {
-            // /섬 -> 한국어 도움말만 출력, 다른 안내 메시지 뜨지 않게 cancel
             sendHelp(p);
             e.setCancelled(true);
             return;
@@ -40,78 +39,48 @@ public class KoCommandBridgeListener implements Listener {
 
         String sub = parts[1];
 
-        // 우리 플러그인이 처리해야 하는 4개 명령은 패스스루
+        // 4개 로컬 명령은 패스스루
         if (PASSTHROUGH.contains(sub)) return;
 
-        // /섬 도움말 [페이지] 도 허용
+        // /섬 도움말 -> 도움말 표시
         if ("도움말".equalsIgnoreCase(sub) || "help".equalsIgnoreCase(sub)) {
             sendHelp(p);
             e.setCancelled(true);
             return;
         }
 
-        // === 한국어 → /is 영어 매핑 규칙 ===
+        // 한국어 별칭 매핑
         String mapped = null;
-        // 팀 관련
         if ("초대".equals(sub)) {
-            if (parts.length >= 3 && "수락".equals(parts[2])) {
-                mapped = "team accept";
-            } else if (parts.length >= 3 && "거절".equals(parts[2])) {
-                mapped = "team reject";
-            } else if (parts.length >= 3) {
-                mapped = "team invite " + joinFrom(parts, 2);
-            }
-        } else if ("추방".equals(sub)) {
-            mapped = "team kick " + joinFrom(parts, 2);
-        } else if ("탈퇴".equals(sub)) {
-            mapped = "team leave";
-        } else if ("알바".equals(sub)) {
-            mapped = "team coop " + joinFrom(parts, 2);
-        } else if ("알바해제".equals(sub)) {
-            mapped = "team uncoop " + joinFrom(parts, 2);
-        }
-        // 섬 기본
-        else if ("리셋".equals(sub)) {
-            mapped = "reset " + joinFrom(parts, 2);
-        } else if ("정보".equals(sub)) {
-            mapped = "info " + joinFrom(parts, 2);
-        } else if ("설정".equals(sub)) {
-            mapped = "settings " + joinFrom(parts, 2);
-        } else if ("이름설정".equals(sub)) {
-            mapped = "setname " + joinFrom(parts, 2);
-        } else if ("이름초기화".equals(sub)) {
-            mapped = "resetname";
-        } else if ("언어".equals(sub)) {
-            mapped = "language " + joinFrom(parts, 2);
-        } else if ("차단".equals(sub)) {
-            mapped = "ban " + joinFrom(parts, 2);
-        } else if ("언밴".equals(sub) || "해제".equals(sub)) {
-            mapped = "unban " + joinFrom(parts, 2);
-        } else if ("추방하기".equals(sub) || "퇴출".equals(sub)) {
-            mapped = "expel " + joinFrom(parts, 2);
-        } else if ("근처".equals(sub)) {
-            mapped = "near";
-        }
-        // 홈
-        else if ("집목록".equals(sub)) {
-            mapped = "homes";
-        } else if ("집".equals(sub)) {
-            mapped = "home " + joinFrom(parts, 2);
-        } else if ("집설정".equals(sub)) {
-            mapped = "sethome " + joinFrom(parts, 2);
-        } else if ("집삭제".equals(sub)) {
-            mapped = "deletehome " + joinFrom(parts, 2);
-        } else if ("집이름변경".equals(sub)) {
-            mapped = "renamehome " + joinFrom(parts, 2);
-        }
+            if (parts.length >= 3 && "수락".equals(parts[2])) mapped = "team accept";
+            else if (parts.length >= 3 && "거절".equals(parts[2])) mapped = "team reject";
+            else if (parts.length >= 3) mapped = "team invite " + joinFrom(parts, 2);
+        } else if ("추방".equals(sub)) mapped = "team kick " + joinFrom(parts, 2);
+        else if ("탈퇴".equals(sub)) mapped = "team leave";
+        else if ("알바".equals(sub)) mapped = "team coop " + joinFrom(parts, 2);
+        else if ("알바해제".equals(sub)) mapped = "team uncoop " + joinFrom(parts, 2);
+        else if ("리셋".equals(sub)) mapped = "reset " + joinFrom(parts, 2);
+        else if ("정보".equals(sub)) mapped = "info " + joinFrom(parts, 2);
+        else if ("설정".equals(sub)) mapped = "settings " + joinFrom(parts, 2);
+        else if ("이름설정".equals(sub)) mapped = "setname " + joinFrom(parts, 2);
+        else if ("이름초기화".equals(sub)) mapped = "resetname";
+        else if ("언어".equals(sub)) mapped = "language " + joinFrom(parts, 2);
+        else if ("차단".equals(sub)) mapped = "ban " + joinFrom(parts, 2);
+        else if ("언밴".equals(sub) || "해제".equals(sub)) mapped = "unban " + joinFrom(parts, 2);
+        else if ("추방하기".equals(sub) || "퇴출".equals(sub)) mapped = "expel " + joinFrom(parts, 2);
+        else if ("근처".equals(sub)) mapped = "near";
+        else if ("집목록".equals(sub)) mapped = "homes";
+        else if ("집".equals(sub)) mapped = "home " + joinFrom(parts, 2);
+        else if ("집설정".equals(sub)) mapped = "sethome " + joinFrom(parts, 2);
+        else if ("집삭제".equals(sub)) mapped = "deletehome " + joinFrom(parts, 2);
+        else if ("집이름변경".equals(sub)) mapped = "renamehome " + joinFrom(parts, 2);
 
-        // 최종 포워딩 명령 구성
         String forward;
         if (mapped != null) {
             forward = "is " + mapped.trim();
         } else {
-            // 한국어 매핑에 없으면 입력 그대로 /is 로 전달
-            String rest = msg.substring(2).trim(); // remove '/섬'
+            // 한국어 매핑 없으면 그대로 /is 로 전달
+            String rest = raw.substring(2).trim();
             if (rest.startsWith("섬")) rest = rest.substring(1).trim();
             forward = "is " + rest;
         }
