@@ -1,0 +1,79 @@
+
+# SamSkyBridge - 설정
+ranking:
+  unranked-label: "등록안됨"
+  tab-prefix: "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7] &r"
+
+tab_prefix:
+  force: true
+  refresh_ticks: 4
+  owner:  "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r"
+  member: "&7[ &a섬원 섬장의섬랭크 &f<rank>위 &7| 섬장의 &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r"
+
+upgrade:
+  team:
+    base-members: 2
+    per-level: 1
+    cost-base: 15000.0
+    cost-multiplier: 1.35
+    required-level-base: 2
+    required-level-step: 2
+  size:
+    base-radius: 50
+    per-level: 10
+    cost-base: 10000.0
+    cost-multiplier: 1.25
+    required-level-base: 2
+    required-level-step: 2
+  sync:
+    bento:
+      range: false   # true면 업글 시 자동으로 섬 반경 적용
+
+messages:
+  prefix: "&a[섬]&r "
+  not-owner: "&c섬장만 사용할 수 있습니다."
+  no-island: "&c섬이 없습니다."
+  chat-on: "&a섬 채팅이 켜졌습니다."
+  chat-off: "&e섬 채팅이 꺼졌습니다."
+  rank-format: "&f<rank>. &a<name> &7- &fLv.<level> &7(경험치 <xp>) &8| &7크기 <size> &7| 인원 <team>"
+  upgraded: "&a업그레이드 완료! &7(&f<type>&7)"
+  lack-level: "&c요구 레벨 &f<req>&c이 필요합니다."
+  lack-money: "&c필요 금액 &f<cost>&c이 부족합니다."
+
+
+gui:
+  title-upgrade: "섬 업그레이드"
+  items:
+    size:
+      name: "&a섬 크기 확장"
+      lore:
+        0: "&7현재 크기: &f{current}"
+        1: "&7다음 크기: &f{next}"
+        2: "&7요구 레벨: &f{reqLevel}"
+        3: "&7가격: &f{cost}"
+        4: ""
+        5: "&e클릭하면 업그레이드"
+    team:
+      name: "&b팀 최대 인원 확장"
+      lore:
+        0: "&7현재 인원: &f{current}"
+        1: "&7다음 인원: &f{next}"
+        2: "&7요구 레벨: &f{reqLevel}"
+        3: "&7가격: &f{cost}"
+        4: ""
+        5: "&e클릭하면 업그레이드"
+    level:
+      name: "&d섬 레벨 경험치 구매"
+      lore:
+        0: "&7현재 레벨: &f{level}"
+        1: "&7추가 경험치: &f{xpGain}"
+        2: "&7가격: &f{cost}"
+        3: ""
+        4: "&e클릭하면 레벨 경험치 구매"
+
+
+
+messages:
+  max-reached: "&e최대 단계에 도달했습니다."
+  level-purchased: "&a경험치 &f<xp>&a 를 획득했습니다!"
+

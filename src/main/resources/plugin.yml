@@ -1,0 +1,17 @@
+
+name: SamSkyBridge
+main: kr.minkang.samskybridge.Main
+version: 1.0.2
+api-version: 1.16
+author: minkang
+softdepend: [Vault,BentoBox,BSkyBlock]
+commands:
+  섬:
+    description: 섬 관련 명령어
+    aliases: [island, isl, sky, skyblock]
+    usage: /섬 <랭킹|업그레이드|채팅|레벨>
+permissions:
+  samsky.use:
+    default: true
+  samsky.admin:
+    default: op
