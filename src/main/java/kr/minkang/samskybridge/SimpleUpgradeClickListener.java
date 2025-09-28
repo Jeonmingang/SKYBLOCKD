@@ -1,3 +1,4 @@
+
 package kr.minkang.samskybridge;
 
 import net.milkbowl.vault.economy.Economy;
@@ -13,156 +14,140 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 /**
- * Handles clicks for the 업그레이드 GUI:
- * 11: size, 13: level xp buy, 15: team max
- * Cancels all moves (click/drag) inside the GUI.
+ * Handles clicks for the 업그레이드 GUI (title in config: gui.title-upgrade).
+ * Slots:
+ *  11 - Size (protection range)
+ *  13 - Island XP purchase
+ *  15 - Team max size
  */
 public class SimpleUpgradeClickListener implements Listener {
 
     private final Main plugin;
-    private Economy econ;
 
     public SimpleUpgradeClickListener(Main plugin) {
         this.plugin = plugin;
-        setupEconomy();
-        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    private void setupEconomy() {
-        try {
-            if (Bukkit.getPluginManager().getPlugin("Vault") != null) {
-                RegisteredServiceProvider<Economy> rsp = plugin.getServer()
-                        .getServicesManager().getRegistration(Economy.class);
-                if (rsp != null) econ = rsp.getProvider();
-            }
-        } catch (Throwable ignored) {}
-    }
-
-    @EventHandler
+    // -------------------- Events --------------------
+    @EventHandler(ignoreCancelled = true)
     public void onClick(InventoryClickEvent e) {
-        if (!(e.getWhoClicked() instanceof Player)) return;
-        if (e.getView() == null || e.getView().getTitle() == null) return;
-
-        String confTitle = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
-        String viewTitle = ChatColor.stripColor(e.getView().getTitle());
-        if (!viewTitle.equalsIgnoreCase(ChatColor.stripColor(confTitle))) return;
-
-        // Only process clicks in the top inventory
         Inventory top = e.getView().getTopInventory();
-        if (e.getClickedInventory() != top) { e.setCancelled(true); return; }
-        e.setCancelled(true);
+        if (top == null) return;
+        String title = ChatColor.stripColor(e.getView().getTitle());
+        String expect = ChatColor.stripColor(color(plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드")));
+        if (!title.equalsIgnoreCase(expect)) return; // not our GUI
 
+        e.setCancelled(true);
+        if (!(e.getWhoClicked() instanceof Player)) return;
         Player p = (Player) e.getWhoClicked();
-        int rawSlot = e.getRawSlot();
-        // Safety: out of top bounds
-        if (rawSlot < 0 || rawSlot >= top.getSize()) return;
 
         IslandData d = plugin.storage.getIslandByPlayer(p.getUniqueId());
         if (d == null) d = BentoBridge.resolveFromBento(plugin, p);
-        if (d == null) { p.sendMessage(color(prefix() + "&c섬이 없습니다.")); p.closeInventory(); return; }
+        if (d == null) { p.sendMessage(color("&c섬이 없습니다.")); return; }
 
-        if (rawSlot == 11) {
-            upgradeSize(p, d);
-        } else if (rawSlot == 13) {
-            buyLevelXp(p, d);
-        } else if (rawSlot == 15) {
-            upgradeTeam(p, d);
-        }
+        int slot = e.getRawSlot();
+        if (slot == 11) { upgradeSize(p, d); return; }
+        if (slot == 13) { buyXp(p, d); return; }
+        if (slot == 15) { upgradeTeam(p, d); return; }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onDrag(InventoryDragEvent e) {
-        if (e.getView() == null || e.getView().getTitle() == null) return;
-        String confTitle = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
-        String viewTitle = ChatColor.stripColor(e.getView().getTitle());
-        if (viewTitle.equalsIgnoreCase(ChatColor.stripColor(confTitle))) {
-            e.setCancelled(true);
-        }
+        String title = ChatColor.stripColor(e.getView().getTitle());
+        String expect = ChatColor.stripColor(color(plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드")));
+        if (title.equalsIgnoreCase(expect)) e.setCancelled(true);
     }
 
+    // -------------------- Actions --------------------
     private void upgradeSize(Player p, IslandData d) {
         int base = plugin.getConfig().getInt("upgrade.size.base-radius", 50);
         int step = plugin.getConfig().getInt("upgrade.size.step-radius", 10);
         int max = plugin.getConfig().getInt("upgrade.size.max-radius", 250);
 
-        int cur = d.sizeRadius <= 0 ? base : d.sizeRadius;
+        int cur = Math.max(base, d.sizeRadius);
         int next = Math.min(max, cur + step);
-        if (cur >= max) { p.sendMessage(color(prefix() + plugin.getConfig().getString("messages.max-reached", "&e최대 단계에 도달했습니다."))); return; }
+        if (cur >= max) { p.sendMessage(color(prefix()+"&e최대 단계에 도달했습니다.")); return; }
 
         int stepIndex = Math.max(1, ((cur - base) / Math.max(1, step)) + 1);
         int reqLv = plugin.getConfig().getInt("upgrade.size.require-level.per-step", 1) * stepIndex;
         double cost = plugin.getConfig().getDouble("upgrade.size.cost.per-step", 100000D) * stepIndex;
 
-        if (d.level < reqLv) { p.sendMessage(color(prefix() + "&c필요 레벨: " + reqLv)); return; }
-        if (!withdraw(p, cost)) { p.sendMessage(color(prefix() + "&c잔액 부족. 필요: " + format(cost))); return; }
+        if (d.level < reqLv) { p.sendMessage(color(prefix()+"&c필요 레벨: "+reqLv)); return; }
+        if (!withdraw(p, cost)) { p.sendMessage(color(prefix()+"&c잔액 부족: 필요 " + format(cost))); return; }
 
         d.sizeRadius = next;
-        plugin.storage.write(d);
-        plugin.storage.save();
+        plugin.storage.write(d); plugin.storage.save();
         BentoBridge.applyProtectionRange(plugin, p, next);
-        p.sendMessage(color(prefix() + "&a보호 반경이 &f" + next + "&a로 확장되었습니다."));
+        p.sendMessage(color(prefix()+"&a보호 반경이 &b" + cur + " -> " + next + " &a로 확장되었습니다!"));
+        // Refresh GUI (optional)
+        new UpgradeUI().open(p, d);
     }
 
     private void upgradeTeam(Player p, IslandData d) {
         int base = plugin.getConfig().getInt("upgrade.team.base-members", 2);
         int step = plugin.getConfig().getInt("upgrade.team.step-members", 1);
-        int max = plugin.getConfig().getInt("upgrade.team.max-members", 8);
+        int max = plugin.getConfig().getInt("upgrade.team.max-members", 10);
 
-        int cur = d.teamMax <= 0 ? base : d.teamMax;
+        int cur = Math.max(base, d.teamMax);
         int next = Math.min(max, cur + step);
-        if (cur >= max) { p.sendMessage(color(prefix() + plugin.getConfig().getString("messages.max-reached", "&e최대 단계에 도달했습니다."))); return; }
+        if (cur >= max) { p.sendMessage(color(prefix()+"&e최대 단계에 도달했습니다.")); return; }
 
         int stepIndex = Math.max(1, ((cur - base) / Math.max(1, step)) + 1);
         int reqLv = plugin.getConfig().getInt("upgrade.team.require-level.per-step", 1) * stepIndex;
         double cost = plugin.getConfig().getDouble("upgrade.team.cost.per-step", 100000D) * stepIndex;
 
-        if (d.level < reqLv) { p.sendMessage(color(prefix() + "&c필요 레벨: " + reqLv)); return; }
-        if (!withdraw(p, cost)) { p.sendMessage(color(prefix() + "&c잔액 부족. 필요: " + format(cost))); return; }
+        if (d.level < reqLv) { p.sendMessage(color(prefix()+"&c필요 레벨: "+reqLv)); return; }
+        if (!withdraw(p, cost)) { p.sendMessage(color(prefix()+"&c잔액 부족: 필요 " + format(cost))); return; }
 
         d.teamMax = next;
-        plugin.storage.write(d);
-        plugin.storage.save();
+        plugin.storage.write(d); plugin.storage.save();
         BentoBridge.applyTeamMax(plugin, p, next);
-        p.sendMessage(color(prefix() + "&a팀 최대 인원이 &f" + next + "&a명으로 확장되었습니다."));
+        p.sendMessage(color(prefix()+"&a팀 최대 인원이 &b" + cur + " -> " + next + " &a로 확장되었습니다!"));
+        new UpgradeUI().open(p, d);
     }
 
-    private void buyLevelXp(Player p, IslandData d) {
-        int xpGain = plugin.getConfig().getInt("upgrade.level.xp.per-purchase", 50);
-        double xpCost = plugin.getConfig().getDouble("upgrade.level.cost.per-purchase", 20000D);
+    private void buyXp(Player p, IslandData d) {
+        int gain = plugin.getConfig().getInt("upgrade.level.xp.per-purchase", 50);
+        double cost = plugin.getConfig().getDouble("upgrade.level.cost.per-purchase", 20000D);
 
-        if (!withdraw(p, xpCost)) { p.sendMessage(color(prefix() + "&c잔액 부족. 필요: " + format(xpCost))); return; }
+        if (!withdraw(p, cost)) { p.sendMessage(color(prefix()+"&c잔액 부족: 필요 " + format(cost))); return; }
 
-        d.xp += xpGain;
-        levelUpIfNeeded(d);
-        plugin.storage.write(d);
-        plugin.storage.save();
-
-        String msg = plugin.getConfig().getString("messages.gain-xp", "&a경험치 <xp> 를 획득했습니다!")
-                .replace("<xp>", String.valueOf(xpGain));
-        p.sendMessage(color(prefix() + msg));
-    }
-
-    private void levelUpIfNeeded(IslandData d) {
-        int guard = 0;
-        while (guard++ < 1000) {
-            int need = Leveling.requiredXpForLevel(plugin, d.level + 1);
-            if (d.xp >= need) { d.xp -= need; d.level++; }
-            else break;
+        d.xp += gain;
+        // Level up chain if enough
+        boolean leveled = false;
+        while (d.xp >= Leveling.requiredXpForLevel(plugin, d.level + 1)) {
+            d.xp -= Leveling.requiredXpForLevel(plugin, d.level + 1);
+            d.level++;
+            leveled = true;
         }
+        plugin.storage.write(d); plugin.storage.save();
+        p.sendMessage(color(prefix()+"&a경험치 +" + gain + (leveled ? " &7(레벨업!)" : "")));
+        new UpgradeUI().open(p, d);
     }
+
+    // -------------------- util --------------------
+    private String prefix(){ return "&a[섬] &r"; }
+
+    private String color(String s){ return ChatColor.translateAlternateColorCodes('&', s); }
 
     private boolean withdraw(Player p, double amount) {
-        if (amount <= 0) return true;
-        if (econ == null) return false;
+        Economy eco = economy();
+        if (eco == null) return true; // silent success if vault not present
+        EconomyResponse resp = eco.withdrawPlayer(p, amount);
+        return resp != null && resp.transactionSuccess();
+    }
+
+    private Economy economy() {
         try {
-            EconomyResponse r = econ.withdrawPlayer(p, amount);
-            return r != null && r.transactionSuccess();
+            RegisteredServiceProvider<Economy> rsp = plugin.getServer().getServicesManager().getRegistration(Economy.class);
+            return rsp == null ? null : rsp.getProvider();
         } catch (Throwable t) {
-            return false;
+            return null;
         }
     }
 
-    private String prefix() { return plugin.getConfig().getString("messages.prefix", "&a[섬]&r "); }
-    private String color(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
-    private String format(double d) { return (d == (long) d) ? String.format("%d", (long)d) : String.format("%,.0f", d); }
+    private String format(double v) {
+        if (Math.abs(v - Math.rint(v)) < 1e-6) return String.valueOf((long)Math.rint(v));
+        return String.format(java.util.Locale.KOREA, "%,.0f", v);
+    }
 }

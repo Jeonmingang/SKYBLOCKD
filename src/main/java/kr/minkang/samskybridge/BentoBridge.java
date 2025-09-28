@@ -8,32 +8,13 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
+/**
+ * BentoBox/BSkyBlock reflection helpers.
+ * This class does NOT require BentoBox at compile-time.
+ */
 public final class BentoBridge {
-    private BentoBridge() {}
 
-    private static Object findIslandAnyWorld(Object islandsManager, UUID owner) {
-        try {
-            // Try world-agnostic lookups first
-            for (String m : new String[]{"getIslandByOwner", "getIsland", "getIslandByUUID"}) {
-                try {
-                    java.lang.reflect.Method mm = islandsManager.getClass().getMethod(m, java.util.UUID.class);
-                    Object island = mm.invoke(islandsManager, owner);
-                    if (island != null) return island;
-                } catch (Throwable ignored) {}
-            }
-            // Fallback: iterate all worlds and try (World, UUID) signatures
-            for (org.bukkit.World w : org.bukkit.Bukkit.getWorlds()) {
-                for (String m : new String[]{"getIsland", "getPlayersIsland"}) {
-                    try {
-                        java.lang.reflect.Method mm = islandsManager.getClass().getMethod(m, org.bukkit.World.class, java.util.UUID.class);
-                        Object island = mm.invoke(islandsManager, w, owner);
-                        if (island != null) return island;
-                    } catch (Throwable ignored) {}
-                }
-            }
-        } catch (Throwable ignored) {}
-        return null;
-    }
+    private BentoBridge() {}
 
     public static boolean isAvailable() {
         try {
@@ -44,7 +25,6 @@ public final class BentoBridge {
         }
     }
 
-    /** Try to resolve & import island data from BentoBox to our Storage. */
     public static IslandData resolveFromBento(Main plugin, Player p) {
         try {
             if (!isAvailable()) return null;
@@ -56,48 +36,81 @@ public final class BentoBridge {
             catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
             Object islandsManager = getIslandsManager.invoke(bb);
 
-            Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-            Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
+            UUID owner = p.getUniqueId();
+
+            Object island = findIslandByOwnerAnyGameMode(islandsManager, owner);
             if (island == null) return null;
 
-            // owner
-            UUID owner = (UUID) island.getClass().getMethod("getOwner").invoke(island);
-
-            // teamMax
-            int teamMax = 0;
-            try {
-                Class<?> ranksClazz = Class.forName("world.bentobox.bentobox.managers.RanksManager");
-                int MEMBER_RANK = ranksClazz.getField("MEMBER_RANK").getInt(null);
-                Object limit = island.getClass().getMethod("getMaxMembers", int.class).invoke(island, MEMBER_RANK);
-                if (limit instanceof Integer) teamMax = (Integer) limit;
-            } catch (Throwable ignored) {}
-
-            // size
-            int size = 0;
-            try {
-                Object val = island.getClass().getMethod("getProtectionRange").invoke(island);
-                if (val instanceof Integer) size = (Integer) val;
-            } catch (Throwable ignored) {}
-
             IslandData d = plugin.storage.getIslandByPlayer(owner);
-            if (d == null) {
-                d = new IslandData(owner);
-                d.teamMax = teamMax > 0 ? teamMax : plugin.getConfig().getInt("upgrade.team.base-members", 2);
-                d.sizeRadius = size > 0 ? size : plugin.getConfig().getInt("upgrade.size.base-radius", 50);
-                d.level = 1; d.xp = 0;
-                plugin.storage.write(d);
-            } else {
-                if (teamMax > 0) d.teamMax = teamMax;
-                if (size > 0) d.sizeRadius = size;
-            }
+            if (d == null) d = new IslandData(owner);
+            // Try read protection size & team size if available through getters
+            d.sizeRadius = safeInt(island, "getProtectionRange", d.sizeRadius);
+            int members = safeInt(island, "getMaxMembers", -1);
+            if (members >= 0) d.teamMax = members;
+            plugin.storage.write(d);
+            plugin.storage.save();
+            // Ensure runtime owner permission for team size
+            plugin.applyOwnerTeamPerm(owner, d.teamMax);
             return d;
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
             return null;
         }
     }
 
-    /** Read protection range from BentoBox island, -1 if unknown. */
+    private static Object findIslandByOwnerAnyGameMode(Object islandsManager, UUID owner) {
+        try {
+            // BentoBox 1.16+: getIsland(World, UUID) exists per world; scan worlds
+            Method getIslandWorldUUID = null;
+            try { getIslandWorldUUID = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class); }
+            catch (NoSuchMethodException ignored) {}
+
+            if (getIslandWorldUUID != null) {
+                for (World w : Bukkit.getWorlds()) {
+                    try {
+                        Object isl = getIslandWorldUUID.invoke(islandsManager, w, owner);
+                        if (isl != null) return isl;
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // Alternate: getIslandByOwner(UUID)
+            try {
+                Method m = islandsManager.getClass().getMethod("getIslandByOwner", UUID.class);
+                Object isl = m.invoke(islandsManager, owner);
+                if (isl != null) return isl;
+            } catch (Throwable ignored) {}
+
+            // Fallback: getIslands(owner) -> first
+            try {
+                Method m = islandsManager.getClass().getMethod("getIslands", UUID.class);
+                Object list = m.invoke(islandsManager, owner);
+                if (list instanceof java.util.List) {
+                    java.util.List<?> l = (java.util.List<?>) list;
+                    if (!l.isEmpty()) return l.get(0);
+                }
+            } catch (Throwable ignored) {}
+
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    public static void applyProtectionRange(Main plugin, Player owner, int radius) {
+        // Command path works with stock BSkyBlock: /bsbadmin range set <ownerName> <radius>
+        try {
+            String name = owner.getName();
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "bsbadmin range set " + name + " " + radius);
+        } catch (Throwable ignored) {}
+    }
+
+    public static void applyTeamMax(Main plugin, Player owner, int teamMax) {
+        // Apply via permission attachment (and refresh at login handled by Main)
+        try {
+            plugin.applyOwnerTeamPerm(owner.getUniqueId(), teamMax);
+        } catch (Throwable ignored) {}
+    }
+
     public static int getProtectionRange(Player p) {
+        // get actual applied radius if possible, else -1
         try {
             if (!isAvailable()) return -1;
             Class<?> bbClazz = Class.forName("world.bentobox.bentobox.BentoBox");
@@ -108,17 +121,14 @@ public final class BentoBridge {
             catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
             Object islandsManager = getIslandsManager.invoke(bb);
 
-            Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-            Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
+            Object island = findIslandByOwnerAnyGameMode(islandsManager, p.getUniqueId());
             if (island == null) return -1;
-            Object val = island.getClass().getMethod("getProtectionRange").invoke(island);
-            return (val instanceof Integer) ? (Integer) val : -1;
-        } catch (Throwable t) {
+            return safeInt(island, "getProtectionRange", -1);
+        } catch (Throwable ignored) {
             return -1;
         }
     }
 
-    /** Read team max from BentoBox island, -1 if unknown. */
     public static int getTeamMax(Player p) {
         try {
             if (!isAvailable()) return -1;
@@ -130,72 +140,25 @@ public final class BentoBridge {
             catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
             Object islandsManager = getIslandsManager.invoke(bb);
 
-            Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-            Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
+            Object island = findIslandByOwnerAnyGameMode(islandsManager, p.getUniqueId());
             if (island == null) return -1;
-            Class<?> ranksClazz = Class.forName("world.bentobox.bentobox.managers.RanksManager");
-            int MEMBER_RANK = ranksClazz.getField("MEMBER_RANK").getInt(null);
-            Object limit = island.getClass().getMethod("getMaxMembers", int.class).invoke(island, MEMBER_RANK);
-            return (limit instanceof Integer) ? (Integer) limit : -1;
-        } catch (Throwable t) {
-            return -1;
+            int members = safeInt(island, "getMaxMembers", -1);
+            if (members >= 0) return members;
+        } catch (Throwable ignored) {}
+        // Fallback to permission check
+        int max = -1;
+        for (int i = 2; i <= 100; i++) {
+            if (p.hasPermission("bskyblock.team.maxsize." + i)) max = i;
         }
+        return max;
     }
 
-    /** Apply protection range via command or API based on config. */
-    public static void applyProtectionRange(Main plugin, Player p, int newRange) {
+    private static int safeInt(Object target, String methodName, int def) {
         try {
-            String mode = plugin.getConfig().getString("integration.size.apply", "command");
-            if ("command".equalsIgnoreCase(mode)) {
-                String ownerName = p.getName();
-                String cmd = plugin.getConfig().getString("integration.size.command", "bsbadmin range set <owner> <size>")
-                        .replace("<owner>", ownerName).replace("<size>", String.valueOf(newRange));
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-            } else {
-                // API path (best-effort reflection)
-                try {
-                    Class<?> bbClazz = Class.forName("world.bentobox.bentobox.BentoBox");
-                    Object bb = bbClazz.getMethod("getInstance").invoke(null);
-                    Method getIslandsManager;
-                    try { getIslandsManager = bbClazz.getMethod("getIslandsManager"); }
-                    catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
-                    Object islandsManager = getIslandsManager.invoke(bb);
-                    Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-                    Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
-                    if (island != null) {
-                        Method setRange = island.getClass().getMethod("setProtectionRange", int.class);
-                        setRange.invoke(island, newRange);
-                    }
-                } catch (Throwable ignore) {}
-            }
+            Method m = target.getClass().getMethod(methodName);
+            Object o = m.invoke(target);
+            if (o instanceof Number) return ((Number) o).intValue();
         } catch (Throwable ignored) {}
-    }
-
-    /** Apply team max: via permission or API based on config. */
-    public static void applyTeamMax(Main plugin, Player p, int newMax) {
-        try {
-            String mode = plugin.getConfig().getString("integration.team.apply", "permission");
-            if ("permission".equalsIgnoreCase(mode)) {
-                plugin.applyOwnerTeamPerm(p.getUniqueId(), newMax);
-            } else {
-                // API path (best-effort reflection)
-                try {
-                    Class<?> bbClazz = Class.forName("world.bentobox.bentobox.BentoBox");
-                    Object bb = bbClazz.getMethod("getInstance").invoke(null);
-                    Method getIslandsManager;
-                    try { getIslandsManager = bbClazz.getMethod("getIslandsManager"); }
-                    catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
-                    Object islandsManager = getIslandsManager.invoke(bb);
-                    Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-                    Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
-                    if (island != null) {
-                        Class<?> ranksClazz = Class.forName("world.bentobox.bentobox.managers.RanksManager");
-                        int MEMBER_RANK = ranksClazz.getField("MEMBER_RANK").getInt(null);
-                        Method setMaxMembers = island.getClass().getMethod("setMaxMembers", int.class, int.class);
-                        setMaxMembers.invoke(island, MEMBER_RANK, newMax);
-                    }
-                } catch (Throwable ignore) {}
-            }
-        } catch (Throwable ignored) {}
+        return def;
     }
 }
