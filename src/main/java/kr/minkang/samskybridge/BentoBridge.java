@@ -11,6 +11,30 @@ import java.util.UUID;
 public final class BentoBridge {
     private BentoBridge() {}
 
+    private static Object findIslandAnyWorld(Object islandsManager, UUID owner) {
+        try {
+            // Try world-agnostic lookups first
+            for (String m : new String[]{"getIslandByOwner", "getIsland", "getIslandByUUID"}) {
+                try {
+                    java.lang.reflect.Method mm = islandsManager.getClass().getMethod(m, java.util.UUID.class);
+                    Object island = mm.invoke(islandsManager, owner);
+                    if (island != null) return island;
+                } catch (Throwable ignored) {}
+            }
+            // Fallback: iterate all worlds and try (World, UUID) signatures
+            for (org.bukkit.World w : org.bukkit.Bukkit.getWorlds()) {
+                for (String m : new String[]{"getIsland", "getPlayersIsland"}) {
+                    try {
+                        java.lang.reflect.Method mm = islandsManager.getClass().getMethod(m, org.bukkit.World.class, java.util.UUID.class);
+                        Object island = mm.invoke(islandsManager, w, owner);
+                        if (island != null) return island;
+                    } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
     public static boolean isAvailable() {
         try {
             Class.forName("world.bentobox.bentobox.BentoBox");
@@ -33,7 +57,7 @@ public final class BentoBridge {
             Object islandsManager = getIslandsManager.invoke(bb);
 
             Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-            Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+            Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
             if (island == null) return null;
 
             // owner
@@ -85,7 +109,7 @@ public final class BentoBridge {
             Object islandsManager = getIslandsManager.invoke(bb);
 
             Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-            Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+            Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
             if (island == null) return -1;
             Object val = island.getClass().getMethod("getProtectionRange").invoke(island);
             return (val instanceof Integer) ? (Integer) val : -1;
@@ -107,7 +131,7 @@ public final class BentoBridge {
             Object islandsManager = getIslandsManager.invoke(bb);
 
             Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-            Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+            Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
             if (island == null) return -1;
             Class<?> ranksClazz = Class.forName("world.bentobox.bentobox.managers.RanksManager");
             int MEMBER_RANK = ranksClazz.getField("MEMBER_RANK").getInt(null);
@@ -137,7 +161,7 @@ public final class BentoBridge {
                     catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
                     Object islandsManager = getIslandsManager.invoke(bb);
                     Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-                    Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+                    Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
                     if (island != null) {
                         Method setRange = island.getClass().getMethod("setProtectionRange", int.class);
                         setRange.invoke(island, newRange);
@@ -163,7 +187,7 @@ public final class BentoBridge {
                     catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
                     Object islandsManager = getIslandsManager.invoke(bb);
                     Method getIsland = islandsManager.getClass().getMethod("getIsland", World.class, UUID.class);
-                    Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+                    Object island = findIslandAnyWorld(islandsManager, p.getUniqueId());
                     if (island != null) {
                         Class<?> ranksClazz = Class.forName("world.bentobox.bentobox.managers.RanksManager");
                         int MEMBER_RANK = ranksClazz.getField("MEMBER_RANK").getInt(null);

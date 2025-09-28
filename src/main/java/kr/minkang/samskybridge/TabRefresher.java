@@ -37,12 +37,15 @@ public class TabRefresher {
         IslandData myIsland = storage.getIslandByPlayer(p.getUniqueId());
         String prefix;
         if (myIsland == null) {
+            String unranked = plugin.getConfig().getString("ranking.unranked-label", "등록안됨");
             prefix = plugin.getConfig().getString("ranking.tab-prefix")
-                .replace("<rank>", plugin.getConfig().getString("ranking.unranked-label"))
+                .replace("<rankDisplay>", unranked)
+                .replace("<rank>", unranked)
                 .replace("<level>", "0");
         } else if (myIsland.owner.equals(p.getUniqueId())) {
             int rank = computeRank(myIsland);
             prefix = plugin.getConfig().getString("tab_prefix.owner")
+                    .replace("<rankDisplay>", String.valueOf(rank) + "위")
                     .replace("<rank>", String.valueOf(rank))
                     .replace("<level>", String.valueOf(myIsland.level))
                     .replace("<size>", String.valueOf(myIsland.sizeRadius))
@@ -50,6 +53,7 @@ public class TabRefresher {
         } else {
             int rank = computeRank(storage.getIslandByOwner(myIsland.owner));
             prefix = plugin.getConfig().getString("tab_prefix.member")
+                    .replace("<rankDisplay>", String.valueOf(rank) + "위")
                     .replace("<rank>", String.valueOf(rank))
                     .replace("<level>", String.valueOf(myIsland.level))
                     .replace("<size>", String.valueOf(myIsland.sizeRadius))

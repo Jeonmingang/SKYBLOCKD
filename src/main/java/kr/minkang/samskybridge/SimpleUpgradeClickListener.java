@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class SimpleUpgradeClickListener implements Listener {
@@ -19,8 +20,13 @@ public class SimpleUpgradeClickListener implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         if (e.getView() == null || e.getView().getTitle() == null) return;
-        if (!ChatColor.stripColor(e.getView().getTitle()).equalsIgnoreCase(ChatColor.stripColor(plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드")))) return;
+        String confTitle = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
+        String viewTitle = ChatColor.stripColor(e.getView().getTitle());
+        if (!viewTitle.equalsIgnoreCase(ChatColor.stripColor(confTitle))) return;
+        // Our GUI: block all moves by default
         e.setCancelled(true);
+        // Only react to clicks on the top inventory (GUI)
+        if (e.getClickedInventory() == null || !e.getClickedInventory().equals(e.getView().getTopInventory())) return;
         if (!(e.getWhoClicked() instanceof Player)) return;
 
         Player p = (Player) e.getWhoClicked();
@@ -141,3 +147,13 @@ private boolean withdraw(Player p, double amount) {
     private String color(String s) { return org.bukkit.ChatColor.translateAlternateColorCodes('&', s); }
     private String format(double d) { return (d == (long) d) ? String.format("%d", (long)d) : String.format("%,.0f", d); }
 }
+
+    @EventHandler
+    public void onDrag(InventoryDragEvent e) {
+        if (e.getView() == null || e.getView().getTitle() == null) return;
+        String confTitle = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
+        String viewTitle = ChatColor.stripColor(e.getView().getTitle());
+        if (viewTitle.equalsIgnoreCase(ChatColor.stripColor(confTitle))) {
+            e.setCancelled(true);
+        }
+    }
