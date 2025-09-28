@@ -37,9 +37,18 @@ public class Main extends JavaPlugin implements TabExecutor {
             getCommand("섬").setExecutor(this);
             getCommand("섬").setTabCompleter(this);
         }
-    }
 
-    @Override
+        // Import/resolve islands for already-online players (reload-safe)
+        for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) {
+            kr.minkang.samskybridge.IslandData d = storage.getIslandByPlayer(online.getUniqueId());
+            if (d == null) d = kr.minkang.samskybridge.BentoBridge.resolveFromBento(this, online);
+            if (d != null) {
+                int teamMax = kr.minkang.samskybridge.BentoBridge.getTeamMax(online);
+                if (teamMax > 0) applyOwnerTeamPerm(d.owner, teamMax);
+            }
+        }
+    }
+@Override
 public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
     if (!cmd.getName().equalsIgnoreCase("섬")) return false;
     if (!(sender instanceof Player)) {
@@ -50,17 +59,7 @@ public boolean onCommand(CommandSender sender, Command cmd, String label, String
     if (args.length == 0) {
         help(p);
         return true;
-    
-        // Import/resolve islands for already-online players (reload-safe)
-        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
-            kr.minkang.samskybridge.IslandData d = storage.getIslandByPlayer(p.getUniqueId());
-            if (d == null) d = kr.minkang.samskybridge.BentoBridge.resolveFromBento(this, p);
-            if (d != null) {
-                int teamMax = kr.minkang.samskybridge.BentoBridge.getTeamMax(p);
-                if (teamMax > 0) applyOwnerTeamPerm(d.owner, teamMax);
-            }
         }
-}
     String sub = args[0];
 
     if (sub.equalsIgnoreCase("업그레이드")) {
