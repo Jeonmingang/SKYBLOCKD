@@ -19,7 +19,7 @@ public class SimpleUpgradeClickListener implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         if (e.getView() == null || e.getView().getTitle() == null) return;
-        if (!ChatColor.stripColor(e.getView().getTitle()).equalsIgnoreCase("섬 업그레이드")) return;
+        if (!ChatColor.stripColor(e.getView().getTitle()).equalsIgnoreCase(ChatColor.stripColor(plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드")))) return;
         e.setCancelled(true);
         if (!(e.getWhoClicked() instanceof Player)) return;
 
