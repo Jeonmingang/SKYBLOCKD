@@ -2,7 +2,6 @@
 package kr.minkang.samskybridge;
 
 import org.bukkit.Bukkit;
-
 import java.util.UUID;
 
 public class Integration {
@@ -12,23 +11,19 @@ public class Integration {
         this.plugin = plugin;
     }
 
-    /**
-     * Sync size/team to external plugins by executing configurable server commands.
-     * Commands support placeholders:
-     *  <owner> - owner name
-     *  <size>  - radius/size value
-     *  <team>  - team max members
-     *
-     * Example config commands:
-     *  upgrade.sync.commands.size: "bsbadmin range set <owner> <size>"
-     *  upgrade.sync.commands.team: "bsbadmin setmaxmembers <owner> <team>"
-     */
-    public void syncRangeToBento(UUID owner, int radius) {
-        executeTemplate("upgrade.sync.commands.size", owner, radius, -1);
+    /** Apply size range to external plugins via command template */
+    public void syncRange(UUID owner, int radius) {
+        executeTemplate("integration.sync.range", owner, radius, 0);
     }
 
-    public void syncTeamToExternal(UUID owner, int teamMax) {
-        executeTemplate("upgrade.sync.commands.team", owner, -1, teamMax);
+    /** Apply team max to external plugins via command template */
+    public void syncTeam(UUID owner, int teamMax) {
+        executeTemplate("integration.sync.team", owner, 0, teamMax);
+    }
+
+    /** Apply both values via command template */
+    public void syncAll(UUID owner, int radius, int teamMax) {
+        executeTemplate("integration.sync.all", owner, radius, teamMax);
     }
 
     private void executeTemplate(String path, UUID owner, int radius, int teamMax) {

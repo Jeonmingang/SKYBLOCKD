@@ -39,3 +39,41 @@ messages:
   upgraded: "&a업그레이드 완료! &7(&f<type>&7)"
   lack-level: "&c요구 레벨 &f<req>&c이 필요합니다."
   lack-money: "&c필요 금액 &f<cost>&c이 부족합니다."
+
+
+gui:
+  title-upgrade: "섬 업그레이드"
+  items:
+    size:
+      name: "&a섬 크기 확장"
+      lore:
+        0: "&7현재 크기: &f{current}"
+        1: "&7다음 크기: &f{next}"
+        2: "&7요구 레벨: &f{reqLevel}"
+        3: "&7가격: &f{cost}"
+        4: ""
+        5: "&e클릭하면 업그레이드"
+    team:
+      name: "&b팀 최대 인원 확장"
+      lore:
+        0: "&7현재 인원: &f{current}"
+        1: "&7다음 인원: &f{next}"
+        2: "&7요구 레벨: &f{reqLevel}"
+        3: "&7가격: &f{cost}"
+        4: ""
+        5: "&e클릭하면 업그레이드"
+    level:
+      name: "&d섬 레벨 경험치 구매"
+      lore:
+        0: "&7현재 레벨: &f{level}"
+        1: "&7추가 경험치: &f{xpGain}"
+        2: "&7가격: &f{cost}"
+        3: ""
+        4: "&e클릭하면 레벨 경험치 구매"
+
+
+
+messages:
+  max-reached: "&e최대 단계에 도달했습니다."
+  level-purchased: "&a경험치 &f<xp>&a 를 획득했습니다!"
+
