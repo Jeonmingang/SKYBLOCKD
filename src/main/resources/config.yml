@@ -82,3 +82,6 @@ chat:
   owner-tag: "&6[ 섬장 ]"
   member-tag: "&b[ 섬원 ]"
   format: "{tag} &f{player} &7: {message}"
+
+integration:
+  auto-import-from-bentobox: true

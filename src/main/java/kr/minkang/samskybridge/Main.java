@@ -53,7 +53,8 @@ public class Main extends JavaPlugin implements TabExecutor {
         String sub = args[0];
 
         if (sub.equalsIgnoreCase("업그레이드")) {
-            IslandData d = storage.getIslandByOwner(p.getUniqueId());
+            IslandData d = storage.getIslandByPlayer(p.getUniqueId());
+        if (d == null) d = BentoBridge.resolveFromBento(this, p);
             if (d == null) {
                 msg(p, color("&c섬이 없습니다."));
                 return true;
@@ -63,7 +64,8 @@ public class Main extends JavaPlugin implements TabExecutor {
         }
 
         if (sub.equalsIgnoreCase("레벨")) {
-            IslandData d = storage.getIslandByOwner(p.getUniqueId());
+            IslandData d = storage.getIslandByPlayer(p.getUniqueId());
+        if (d == null) d = BentoBridge.resolveFromBento(this, p);
             if (d == null) { msg(p, color("&c섬이 없습니다.")); return true; }
             msg(p, color("&b섬 레벨: &f" + d.level + " &7(경험치 " + d.xp + ")"));
             return true;

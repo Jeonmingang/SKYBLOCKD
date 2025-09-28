@@ -38,7 +38,8 @@ public class ChatService implements Listener {
         Player p = e.getPlayer();
         if (!islandChatOn.contains(p.getUniqueId())) return;
 
-        IslandData d = storage.getIslandByOwner(p.getUniqueId());
+        IslandData d = storage.getIslandByPlayer(p.getUniqueId());
+        if (d == null) d = BentoBridge.resolveFromBento(plugin, p);
         if (d == null) {
             islandChatOn.remove(p.getUniqueId());
             return;
