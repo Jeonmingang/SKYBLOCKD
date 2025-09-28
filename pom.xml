@@ -5,7 +5,7 @@
 
   <groupId>com.signition</groupId>
   <artifactId>SamSkyBridge</artifactId>
-  <version>0.13.35</version>
+  <version>0.14</version>
   <packaging>jar</packaging>
 
   <name>SamSkyBridge</name>
