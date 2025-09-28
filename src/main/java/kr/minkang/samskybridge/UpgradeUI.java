@@ -121,12 +121,17 @@ public class UpgradeUI implements Listener {
             return;
         }
         if (econ != null) econ.withdrawPlayer(p, cost);
-        if (type.equals("team")) d.teamMax += per;
-        else d.sizeRadius += per;
-
-        // Optional: sync to BentoBox range
-        if (type.equals("size") && plugin.getConfig().getBoolean("upgrade.sync.bento.range", false)) {
-            integration.syncRangeToBento(p.getUniqueId(), d.sizeRadius);
+        if (type.equals("team")) {
+            d.teamMax += per;
+            if (plugin.getConfig().getBoolean("upgrade.sync.bento.range", false)) {
+                integration.syncTeamToExternal(p.getUniqueId(), d.teamMax);
+            }
+        } else {
+            d.sizeRadius += per;
+            // Optional: sync to BentoBox range
+            if (plugin.getConfig().getBoolean("upgrade.sync.bento.range", false)) {
+                integration.syncRangeToBento(p.getUniqueId(), d.sizeRadius);
+            }
         }
         plugin.msg(p, plugin.getConfig().getString("messages.upgraded").replace("<type>", type));
     }

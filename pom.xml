@@ -36,12 +36,8 @@
       <version>${spigot.version}</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>net.milkbowl.vault</groupId>
-      <artifactId>VaultAPI</artifactId>
-      <version>1.7</version>
-      <scope>provided</scope>
-    </dependency>
+    <!-- Vault dependency removed to allow CI/maven build without resolving Vault artifact.
+         Economy is optional at runtime; plugin checks presence of Vault before using it. -->
   </dependencies>
 
   <build>
