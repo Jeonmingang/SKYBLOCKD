@@ -11,7 +11,7 @@ public class JoinImportListener implements Listener {
     @EventHandler public void onJoin(PlayerJoinEvent e) {
         if (!BentoBridge.isAvailable()) return;
         Player p = e.getPlayer();
-        if (plugin.storage().getIslandByPlayer(p.getUniqueId()) == null) {
+        if (plugin.storage.getIslandByPlayer(p.getUniqueId()) == null) {
             BentoBridge.resolveFromBento(plugin, p);
         }
     }

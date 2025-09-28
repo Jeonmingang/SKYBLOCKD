@@ -79,8 +79,8 @@ public final class BentoBridge {
             d.teamMax = Math.max(baseMembers, currentTeam);
             // level/xp are our plugin's scope; keep defaults for now
             // Persist to storage for future fast access
-            plugin.storage().write(d);
-            plugin.storage().save();
+            plugin.storage.write(d);
+            plugin.storage.save();
             return d;
         } catch (Throwable t) {
             // Any reflection failure -> treat as not available
