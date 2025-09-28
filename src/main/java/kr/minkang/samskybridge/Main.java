@@ -39,8 +39,6 @@ public class Main extends JavaPlugin implements TabExecutor {
     }
 
     @Override
-    
-@Override
 public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
     if (!cmd.getName().equalsIgnoreCase("섬")) return false;
     if (!(sender instanceof Player)) {
