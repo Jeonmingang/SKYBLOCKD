@@ -24,17 +24,19 @@ public class NametagService implements Listener {
     }
 
     public void refreshAll() {
-        for (Player p : Bukkit.getOnlinePlayers()) refreshFor(p);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            refreshFor(p);
+        }
     }
 
     public void refreshFor(Player p) {
         IslandData d = plugin.storage.getIslandByPlayer(p.getUniqueId());
         if (d == null) d = BentoBridge.resolveFromBento(plugin, p);
+
         int level = d != null ? d.level : 0;
         int team = d != null ? d.teamMax : -1;
         int size = d != null ? d.sizeRadius : -1;
 
-        // Try pulling "real" values from BentoBox if available
         int realSize = BentoBridge.getProtectionRange(p);
         if (realSize > 0) size = realSize;
         int realTeam = BentoBridge.getTeamMax(p);
@@ -43,44 +45,38 @@ public class NametagService implements Listener {
         boolean isOwner = d != null && d.owner != null && d.owner.equals(p.getUniqueId());
 
         String rank = plugin.getConfig().getString("ranking.unranked-label", "등록안됨");
-        // Best effort: if storage has ranking service, try to fetch via reflection
         try {
             java.lang.reflect.Method getRank = plugin.storage.getClass().getMethod("getRank", java.util.UUID.class);
             Object r = getRank.invoke(plugin.storage, p.getUniqueId());
             if (r != null) rank = String.valueOf(r);
-        } catch (Throwable ignore) { }
+        } catch (Throwable ignored) {}
 
         String ownerFmt = plugin.getConfig().getString("tab_prefix.owner",
                 "&7[ &a섬 랭킹 &f<rank>위 &7| &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r");
         String memberFmt = plugin.getConfig().getString("tab_prefix.member",
                 "&7[ &a섬원 섬장의섬랭크 &f<rank>위 &7| 섬장의 &blv.<level> &7| 크기 <size> &7| 인원 <team> &7] &r");
-        String fmt = isOwner ? ownerFmt : memberFmt;
 
-        String prefix = fmt.replace("<rank>", rank).replace("<level>", String.valueOf(level))
+        String prefix = (isOwner ? ownerFmt : memberFmt)
+                .replace("<rank>", rank)
+                .replace("<level>", String.valueOf(level))
                 .replace("<size>", size > 0 ? String.valueOf(size) : "-")
                 .replace("<team>", team > 0 ? String.valueOf(team) : "-");
+
         String un = plugin.getConfig().getString("ranking.unranked-label", "등록안됨");
         prefix = prefix.replace(un + "위", un);
 
-
         p.setPlayerListName(color(prefix + p.getName()));
 
-        // Nametag (head) - length-safe short format
-        
-    String ownerTag = plugin.getConfig().getString("nametag.owner-format", "&7[섬장 lv.<level>|#<rank>] ");
-    String memberTag = plugin.getConfig().getString("nametag.member-format", "&7[섬원 lv.<level>|#<rank>] ");
-    String nameTag = (isOwner ? ownerTag : memberTag)
-            .replace("<rank>", rank)
-            .replace("<level>", String.valueOf(level));
-    nameTag = color(nameTag);
-    String un = plugin.getConfig().getString("ranking.unranked-label", "등록안됨");
-    nameTag = nameTag.replace(un + "위", un);
-    applyScoreboardPrefix(p, nameTag);
-}
-
+        String ownerTag = plugin.getConfig().getString("nametag.owner-format", "&7[섬장 lv.<level>|#<rank>] ");
+        String memberTag = plugin.getConfig().getString("nametag.member-format", "&7[섬원 lv.<level>|#<rank>] ");
+        String nameTag = (isOwner ? ownerTag : memberTag)
+                .replace("<rank>", rank).replace("<level>", String.valueOf(level));
+        nameTag = color(nameTag);
+        nameTag = nameTag.replace(un + "위", un);
+        applyScoreboardPrefix(p, nameTag);
+    }
 
     private void applyScoreboardPrefix(Player p, String pref) {
-        // 1.16 스코어보드 prefix 길이 제한(최대 16) 대응: 잘라냅니다.
         String prefix = ChatColor.translateAlternateColorCodes('&', pref);
         if (prefix.length() > 16) prefix = prefix.substring(0, 16);
         Scoreboard sb = Bukkit.getScoreboardManager().getMainScoreboard();
