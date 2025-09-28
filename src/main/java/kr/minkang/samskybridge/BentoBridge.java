@@ -87,4 +87,47 @@ public final class BentoBridge {
             return null;
         }
     }
+
+    /**
+     * Apply new protection range to BentoBox island of this player.
+     */
+    public static boolean applyProtectionRange(Main plugin, org.bukkit.entity.Player p, int newRange) {
+        try {
+            if (!isAvailable()) return false;
+            Class<?> bbClazz = Class.forName("world.bentobox.bentobox.BentoBox");
+            Object bb = bbClazz.getMethod("getInstance").invoke(null);
+            java.lang.reflect.Method getIslandsManager;
+            try { getIslandsManager = bbClazz.getMethod("getIslandsManager"); }
+            catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
+            Object islandsManager = getIslandsManager.invoke(bb);
+            java.lang.reflect.Method getIsland = islandsManager.getClass().getMethod("getIsland", org.bukkit.World.class, java.util.UUID.class);
+            Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+            if (island == null) return false;
+            island.getClass().getMethod("setProtectionRange", int.class).invoke(island, newRange);
+            islandsManager.getClass().getMethod("save", Class.forName("world.bentobox.bentobox.database.objects.Island")).invoke(islandsManager, island);
+            return true;
+        } catch (Throwable t) { return false; }
+    }
+    /**
+     * Apply new team limit (per MEMBER_RANK) to BentoBox island of this player.
+     */
+    public static boolean applyTeamMax(Main plugin, org.bukkit.entity.Player p, int teamMax) {
+        try {
+            if (!isAvailable()) return false;
+            Class<?> bbClazz = Class.forName("world.bentobox.bentobox.BentoBox");
+            Object bb = bbClazz.getMethod("getInstance").invoke(null);
+            java.lang.reflect.Method getIslandsManager;
+            try { getIslandsManager = bbClazz.getMethod("getIslandsManager"); }
+            catch (NoSuchMethodException e) { getIslandsManager = bbClazz.getMethod("getIslands"); }
+            Object islandsManager = getIslandsManager.invoke(bb);
+            java.lang.reflect.Method getIsland = islandsManager.getClass().getMethod("getIsland", org.bukkit.World.class, java.util.UUID.class);
+            Object island = getIsland.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+            if (island == null) return false;
+            Class<?> ranksClazz = Class.forName("world.bentobox.bentobox.managers.RanksManager");
+            int MEMBER_RANK = ranksClazz.getField("MEMBER_RANK").getInt(null);
+            island.getClass().getMethod("setMaxMembers", int.class, java.lang.Integer.class).invoke(island, MEMBER_RANK, java.lang.Integer.valueOf(teamMax));
+            islandsManager.getClass().getMethod("save", Class.forName("world.bentobox.bentobox.database.objects.Island")).invoke(islandsManager, island);
+            return true;
+        } catch (Throwable t) { return false; }
+    }
 }

@@ -1,4 +1,3 @@
-
 package kr.minkang.samskybridge;
 
 import net.milkbowl.vault.economy.Economy;
@@ -12,91 +11,89 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class UpgradeUI {
 
-    public void open(Player player, IslandData data) {
-        String title = Bukkit.getPluginManager().getPlugin("SamSkyBridge").getConfig().getString("gui.title-upgrade", "섬 업그레이드");
-        Inventory inv = Bukkit.createInventory(player, 27, ChatColor.GREEN + title);
+    private Economy econ;
 
-        // config
+    public void open(Player p, IslandData data) {
+        Inventory inv = Bukkit.createInventory(p, 27, color("&b섬 업그레이드"));
+
+        if (econ == null) {
+            RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
+            if (rsp != null) econ = rsp.getProvider();
+        }
+
         Main plugin = (Main) Bukkit.getPluginManager().getPlugin("SamSkyBridge");
-        int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 11);
-        int teamSlot = plugin.getConfig().getInt("upgrade.gui.slots.team", 15);
-        int levelSlot = plugin.getConfig().getInt("upgrade.gui.slots.level", 13);
 
-        // size card
-        int baseR = plugin.getConfig().getInt("upgrade.size.base-radius", 50);
-        int stepR = plugin.getConfig().getInt("upgrade.size.step-radius", 10);
-        int maxR = plugin.getConfig().getInt("upgrade.size.max-radius", 250);
-        int nextR = Math.min(maxR, data.sizeRadius + stepR);
-        int stepIndexR = Math.max(0, (data.sizeRadius - baseR) / Math.max(1, stepR)) + 1;
-        int reqLvR = plugin.getConfig().getInt("upgrade.size.require-level.base", 5) + plugin.getConfig().getInt("upgrade.size.require-level.per-step", 1) * stepIndexR;
-        double costR = plugin.getConfig().getDouble("upgrade.size.cost.base", 50000D) + plugin.getConfig().getDouble("upgrade.size.cost.per-step", 25000D) * stepIndexR;
-        ItemStack size = card(Material.GRASS_BLOCK,
-                color(plugin.getConfig().getString("gui.items.size.name", "&a섬 크기 확장")),
-                Arrays.asList(
-                        color(plugin.getConfig().getString("gui.items.size.lore.0", "&7현재 크기: &f{current}").replace("{current}", String.valueOf(data.sizeRadius))),
-                        color(plugin.getConfig().getString("gui.items.size.lore.1", "&7다음 크기: &f{next}").replace("{next}", String.valueOf(nextR))),
-                        color(plugin.getConfig().getString("gui.items.size.lore.2", "&7요구 레벨: &f{reqLevel}").replace("{reqLevel}", String.valueOf(reqLvR))),
-                        color(plugin.getConfig().getString("gui.items.size.lore.3", "&7가격: &f{cost}").replace("{cost}", String.format("%.0f", costR))),
-                        color(plugin.getConfig().getString("gui.items.size.lore.4", "")),
-                        color(plugin.getConfig().getString("gui.items.size.lore.5", "&e클릭하면 업그레이드"))
-                ));
-        inv.setItem(sizeSlot, size);
+        int baseS = plugin.getConfig().getInt("upgrade.size.base-radius", 50);
+        int stepS = plugin.getConfig().getInt("upgrade.size.step-radius", 10);
+        int maxS = plugin.getConfig().getInt("upgrade.size.max-radius", 250);
+        int nextS = Math.min(maxS, data.sizeRadius + stepS);
+        int stepIndexS = Math.max(0, (data.sizeRadius - baseS) / Math.max(1, stepS)) + 1;
+        int reqLvS = plugin.getConfig().getInt("upgrade.size.require-level.per-step", 1) * stepIndexS;
+        double costS = plugin.getConfig().getDouble("upgrade.size.cost.per-step", 100000D) * stepIndexS;
 
-        // team card
+        ItemStack size = card(Material.MAP,
+                color(plugin.getConfig().getString("gui.items.size.name", "&a보호 반경 확장")),
+                java.util.Arrays.asList(
+                        color(plugin.getConfig().getString("gui.items.size.lore.0", "&7현재 반경: &f{current}").replace("{current}", String.valueOf(data.sizeRadius))),
+                        color(plugin.getConfig().getString("gui.items.size.lore.1", "&7다음 반경: &f{next}").replace("{next}", String.valueOf(nextS))),
+                        color(plugin.getConfig().getString("gui.items.size.lore.2", "&7필요 레벨: &f{lv}").replace("{lv}", String.valueOf(reqLvS))),
+                        color(plugin.getConfig().getString("gui.items.size.lore.3", "&7가격: &f{cost}").replace("{cost}", format(costS)))
+                )
+        );
+
         int baseT = plugin.getConfig().getInt("upgrade.team.base-members", 2);
         int stepT = plugin.getConfig().getInt("upgrade.team.step-members", 1);
         int maxT = plugin.getConfig().getInt("upgrade.team.max-members", 10);
         int nextT = Math.min(maxT, data.teamMax + stepT);
         int stepIndexT = Math.max(0, (data.teamMax - baseT) / Math.max(1, stepT)) + 1;
-        int reqLvT = plugin.getConfig().getInt("upgrade.team.require-level.base", 3) + plugin.getConfig().getInt("upgrade.team.require-level.per-step", 1) * stepIndexT;
-        double costT = plugin.getConfig().getDouble("upgrade.team.cost.base", 100000D) + plugin.getConfig().getDouble("upgrade.team.cost.per-step", 50000D) * stepIndexT;
+        int reqLvT = plugin.getConfig().getInt("upgrade.team.require-level.per-step", 1) * stepIndexT;
+        double costT = plugin.getConfig().getDouble("upgrade.team.cost.per-step", 50000D) * stepIndexT;
+
         ItemStack team = card(Material.PLAYER_HEAD,
                 color(plugin.getConfig().getString("gui.items.team.name", "&b팀 최대 인원 확장")),
-                Arrays.asList(
+                java.util.Arrays.asList(
                         color(plugin.getConfig().getString("gui.items.team.lore.0", "&7현재 인원: &f{current}").replace("{current}", String.valueOf(data.teamMax))),
                         color(plugin.getConfig().getString("gui.items.team.lore.1", "&7다음 인원: &f{next}").replace("{next}", String.valueOf(nextT))),
-                        color(plugin.getConfig().getString("gui.items.team.lore.2", "&7요구 레벨: &f{reqLevel}").replace("{reqLevel}", String.valueOf(reqLvT))),
-                        color(plugin.getConfig().getString("gui.items.team.lore.3", "&7가격: &f{cost}").replace("{cost}", String.format("%.0f", costT))),
-                        color(plugin.getConfig().getString("gui.items.team.lore.4", "")),
-                        color(plugin.getConfig().getString("gui.items.team.lore.5", "&e클릭하면 업그레이드"))
-                ));
-        inv.setItem(teamSlot, team);
+                        color(plugin.getConfig().getString("gui.items.team.lore.2", "&7필요 레벨: &f{lv}").replace("{lv}", String.valueOf(reqLvT))),
+                        color(plugin.getConfig().getString("gui.items.team.lore.3", "&7가격: &f{cost}").replace("{cost}", format(costT)))
+                )
+        );
 
-        // level purchase card
-        int gain = plugin.getConfig().getInt("upgrade.level.purchase.xp-gain", 100);
-        double base = plugin.getConfig().getDouble("upgrade.level.purchase.cost.base", 10000D);
-        double perLv = plugin.getConfig().getDouble("upgrade.level.purchase.cost.per-level", 2000D);
-        double costLv = base + perLv * data.level;
+        int xpGain = plugin.getConfig().getInt("upgrade.level.xp.per-purchase", 50);
+        double xpCost = plugin.getConfig().getDouble("upgrade.level.cost.per-purchase", 20000D);
         ItemStack level = card(Material.EXPERIENCE_BOTTLE,
-                color(plugin.getConfig().getString("gui.items.level.name", "&d섬 레벨 경험치 구매")),
-                Arrays.asList(
-                        color(plugin.getConfig().getString("gui.items.level.lore.0", "&7현재 레벨: &f{level}").replace("{level}", String.valueOf(data.level))),
-                        color(plugin.getConfig().getString("gui.items.level.lore.1", "&7추가 경험치: &f{xpGain}").replace("{xpGain}", String.valueOf(gain))),
-                        color(plugin.getConfig().getString("gui.items.level.lore.2", "&7가격: &f{cost}").replace("{cost}", String.format("%.0f", costLv))),
-                        color(plugin.getConfig().getString("gui.items.level.lore.3", "")),
-                        color(plugin.getConfig().getString("gui.items.level.lore.4", "&e클릭하면 레벨 경험치 구매"))
-                ));
-        inv.setItem(levelSlot, level);
+                color(plugin.getConfig().getString("gui.items.level.name", "&d섬 경험치 구매")),
+                java.util.Arrays.asList(
+                        color(plugin.getConfig().getString("gui.items.level.lore.0", "&7획득 경험치: &f{xp}").replace("{xp}", String.valueOf(xpGain))),
+                        color(plugin.getConfig().getString("gui.items.level.lore.1", "&7가격: &f{cost}").replace("{cost}", format(xpCost)))
+                )
+        );
 
-        player.openInventory(inv);
+        inv.setItem(11, size);
+        inv.setItem(15, team);
+        inv.setItem(13, level);
+
+        p.openInventory(inv);
     }
 
-    private ItemStack card(Material mat, String name, List<String> lore) {
-        ItemStack it = new ItemStack(mat);
-        ItemMeta im = it.getItemMeta();
+    private org.bukkit.inventory.ItemStack card(Material mat, String name, java.util.List<String> lore) {
+        ItemStack is = new ItemStack(mat);
+        ItemMeta im = is.getItemMeta();
         if (im != null) {
             im.setDisplayName(name);
             im.setLore(lore);
-            it.setItemMeta(im);
+            is.setItemMeta(im);
         }
-        return it;
+        return is;
     }
 
-    private String color(String s) {
-        return ChatColor.translateAlternateColorCodes('&', s);
+    private String format(double d) {
+        if (d == (long) d) return String.format("%d", (long) d);
+        return String.format("%,.0f", d);
     }
+
+    private String color(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
 }

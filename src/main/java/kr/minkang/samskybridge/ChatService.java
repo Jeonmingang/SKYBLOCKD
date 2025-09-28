@@ -1,4 +1,3 @@
-
 package kr.minkang.samskybridge;
 
 import org.bukkit.Bukkit;
@@ -15,40 +14,46 @@ import java.util.UUID;
 public class ChatService implements Listener {
 
     private final Main plugin;
-    private final Storage storage;
-    private final Set<UUID> islandChatOn = new HashSet<>();
+    private final Set<UUID> toggled = new HashSet<>();
 
-    public ChatService(Main plugin, Storage storage) {
+    public ChatService(Main plugin) {
         this.plugin = plugin;
-        this.storage = storage;
     }
 
     public boolean toggle(UUID uuid) {
-        if (islandChatOn.contains(uuid)) {
-            islandChatOn.remove(uuid);
+        if (toggled.contains(uuid)) {
+            toggled.remove(uuid);
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) p.sendMessage(color(prefix() + plugin.getConfig().getString("messages.chat-off", "&e섬 채팅이 꺼졌습니다.")));
             return false;
         } else {
-            islandChatOn.add(uuid);
+            toggled.add(uuid);
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) p.sendMessage(color(prefix() + plugin.getConfig().getString("messages.chat-on", "&a섬 채팅이 켜졌습니다.")));
             return true;
         }
     }
 
+    public boolean isOn(UUID uuid) { return toggled.contains(uuid); }
+
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
-        if (!islandChatOn.contains(p.getUniqueId())) return;
+        if (!toggled.contains(p.getUniqueId())) return;
 
-        IslandData d = storage.getIslandByPlayer(p.getUniqueId());
+        IslandData d = plugin.storage.getIslandByPlayer(p.getUniqueId());
         if (d == null) d = BentoBridge.resolveFromBento(plugin, p);
-        if (d == null) {
-            islandChatOn.remove(p.getUniqueId());
-            return;
+        if (d == null) return;
+
+        String tag = plugin.getConfig().getString("chat.member-tag", "&b[ 섬원 ]");
+        if (d.owner != null && d.owner.equals(p.getUniqueId())) {
+            tag = plugin.getConfig().getString("chat.owner-tag", "&6[ 섬장 ]");
         }
+        String fmt = plugin.getConfig().getString("chat.format", "{tag} &f{player} &7: {message}");
+        String msg = fmt.replace("{tag}", tag).replace("{player}", p.getName()).replace("{message}", e.getMessage());
+        msg = color(msg);
 
         e.setCancelled(true);
-        String prefix = plugin.getConfig().getString("messages.chat-prefix", "&a[섬] ");
-        String msg = ChatColor.translateAlternateColorCodes('&', prefix) + p.getName() + ChatColor.GRAY + ": " + e.getMessage();
-
         send(d.owner, msg);
         for (UUID u : d.members) send(u, msg);
         Bukkit.getConsoleSender().sendMessage("[섬채팅] " + p.getName() + ": " + e.getMessage());
@@ -61,4 +66,7 @@ public class ChatService implements Listener {
             t.sendMessage(msg);
         }
     }
+
+    private String prefix() { return plugin.getConfig().getString("messages.prefix", "&a[섬]&r "); }
+    private String color(String s) { return ChatColor.translateAlternateColorCodes('&', s); }
 }
