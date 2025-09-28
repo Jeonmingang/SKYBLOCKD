@@ -32,7 +32,17 @@ public class KoCommandBridgeListener implements Listener {
         }
         String sub = parts[1];
 
-        if (PASSTHROUGH.contains(sub)) return;
+        if (PASSTHROUGH.contains(sub)) {
+            // Force our command with namespace to avoid being eaten by other plugins
+            e.setCancelled(true);
+            String rest = raw.substring(2).trim();
+            if (rest.startsWith("섬")) rest = rest.substring(1).trim();
+            final org.bukkit.plugin.Plugin self = org.bukkit.Bukkit.getPluginManager().getPlugin("SamSkyBridge");
+            final String ns = (self != null ? self.getName().toLowerCase() : "samskybridge");
+            final String cmd = ns + ":섬 " + rest;
+            org.bukkit.Bukkit.getScheduler().runTask(self, () -> p.performCommand(cmd));
+            return; }
+
 
         if ("도움말".equalsIgnoreCase(sub) || "help".equalsIgnoreCase(sub)) {
             sendHelp(p);
