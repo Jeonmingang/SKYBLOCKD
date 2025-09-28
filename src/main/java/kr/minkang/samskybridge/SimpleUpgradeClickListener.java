@@ -29,7 +29,7 @@ public class SimpleUpgradeClickListener implements Listener {
     }
 
     // -------------------- Events --------------------
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(InventoryClickEvent e) {
         Inventory top = e.getView().getTopInventory();
         if (top == null) return;
@@ -51,7 +51,7 @@ public class SimpleUpgradeClickListener implements Listener {
         if (slot == 15) { upgradeTeam(p, d); return; }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDrag(InventoryDragEvent e) {
         String title = ChatColor.stripColor(e.getView().getTitle());
         String expect = ChatColor.stripColor(color(plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드")));

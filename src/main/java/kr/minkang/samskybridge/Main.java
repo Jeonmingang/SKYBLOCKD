@@ -29,6 +29,7 @@ public class Main extends JavaPlugin implements TabExecutor {
         Bukkit.getPluginManager().registerEvents(chatService, this);
         Bukkit.getPluginManager().registerEvents(new SimpleUpgradeClickListener(this), this);
         Bukkit.getPluginManager().registerEvents(new KoCommandBridgeListener(), this);
+        Bukkit.getPluginManager().registerEvents(new JoinImportListener(this), this);
         this.tabRefresher = new TabRefresher(this, storage);
         this.tabRefresher.start();
 
@@ -49,7 +50,17 @@ public boolean onCommand(CommandSender sender, Command cmd, String label, String
     if (args.length == 0) {
         help(p);
         return true;
-    }
+    
+        // Import/resolve islands for already-online players (reload-safe)
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            kr.minkang.samskybridge.IslandData d = storage.getIslandByPlayer(p.getUniqueId());
+            if (d == null) d = kr.minkang.samskybridge.BentoBridge.resolveFromBento(this, p);
+            if (d != null) {
+                int teamMax = kr.minkang.samskybridge.BentoBridge.getTeamMax(p);
+                if (teamMax > 0) applyOwnerTeamPerm(d.owner, teamMax);
+            }
+        }
+}
     String sub = args[0];
 
     if (sub.equalsIgnoreCase("업그레이드")) {
