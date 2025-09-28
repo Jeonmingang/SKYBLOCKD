@@ -1,7 +1,6 @@
 
 package kr.minkang.samskybridge;
 
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -23,7 +22,7 @@ public class UpgradeUI implements Listener {
     private final Main plugin;
     private final Storage storage;
     private final Integration integration;
-    private final Economy econ;
+    private final Object econProvider; // reflection-based provider (Vault optional)
     private final String title = ChatColor.DARK_AQUA + "섬 업그레이드";
 
     public UpgradeUI(Main plugin, Storage storage, Integration integration) {
@@ -34,10 +33,17 @@ public class UpgradeUI implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    private Economy setupEconomy() {
-        if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) return null;
-        RegisteredServiceProvider<Economy> rsp = plugin.getServer().getServicesManager().getRegistration(Economy.class);
-        return rsp == null ? null : rsp.getProvider();
+    private Object setupEconomy() {
+        try {
+            if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) return null;
+            Class<?> ecoClass = Class.forName("net.milkbowl.vault.economy.Economy");
+            Object reg = plugin.getServer().getServicesManager().getRegistration(ecoClass);
+            if (reg == null) return null;
+            java.lang.reflect.Method m = reg.getClass().getMethod("getProvider");
+            return m.invoke(reg);
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     public void open(Player p, IslandData d) {
@@ -116,11 +122,19 @@ public class UpgradeUI implements Listener {
             plugin.msg(p, plugin.getConfig().getString("messages.lack-level").replace("<req>", String.valueOf(req)));
             return;
         }
-        if (econ != null && econ.getBalance(p) < cost) {
-            plugin.msg(p, plugin.getConfig().getString("messages.lack-money").replace("<cost>", String.format("%.0f", cost)));
-            return;
+        if (econProvider != null) {
+            try {
+                java.lang.reflect.Method mb = econProvider.getClass().getMethod("getBalance", org.bukkit.OfflinePlayer.class);
+                double bal = ((Number) mb.invoke(econProvider, p)).doubleValue();
+                if (bal < cost) { plugin.msg(p, plugin.getConfig().getString("messages.lack-money").replace("<cost>", String.format("%.0f", cost))); return; }
+            } catch (Throwable ignored) { /* if reflection fails, allow operation (no econ) */ }
         }
-        if (econ != null) econ.withdrawPlayer(p, cost);
+        if (econProvider != null) {
+            try {
+                java.lang.reflect.Method wd = econProvider.getClass().getMethod("withdrawPlayer", org.bukkit.OfflinePlayer.class, double.class);
+                wd.invoke(econProvider, p, cost);
+            } catch (Throwable ignored) { /* ignore */ }
+        }
         if (type.equals("team")) {
             d.teamMax += per;
             if (plugin.getConfig().getBoolean("upgrade.sync.bento.range", false)) {
