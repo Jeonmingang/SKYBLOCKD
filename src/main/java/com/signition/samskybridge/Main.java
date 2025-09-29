@@ -35,7 +35,8 @@ public class Main extends JavaPlugin {
     private BentoSync bento;
 
     @Override
-    public void onEnable(){                if (this.levelService == null) this.levelService = new com.signition.samskybridge.level.LevelService(this);
+    public void onEnable(){        org.bukkit.plugin.PluginManager pm = getServer().getPluginManager();
+                if (this.levelService == null) this.levelService = new com.signition.samskybridge.level.LevelService(this, this.dataStore);
                 if (this.vaultHook == null) this.vaultHook = new com.signition.samskybridge.util.VaultHook(this);
 
         getLogger().info(Text.color("&aSamSkyBridge enabled."));
