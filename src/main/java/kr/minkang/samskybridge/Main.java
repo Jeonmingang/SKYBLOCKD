@@ -22,32 +22,7 @@ public class Main extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onEnable() {
-        // Auto-wired listeners for Tab/Nametag
-        org.bukkit.plugin.PluginManager pm = getServer().getPluginManager();
-
-        pm.registerEvents(new com.signition.samskybridge.tab.TabService(this), this);
-
-        pm.registerEvents(new com.signition.samskybridge.tab.TablistService(this), this);
-
-        pm.registerEvents(new kr.minkang.samskybridge.TabRefresher(this), this);
-
-        pm.registerEvents(new kr.minkang.samskybridge.NametagService(this), this);
-
-        saveDefaultConfig();
-        this.storage = new Storage(this);
-        this.integration = new Integration(this);
-        this.chatService = new ChatService(this);
-        Bukkit.getPluginManager().registerEvents(chatService, this);
-        Bukkit.getPluginManager().registerEvents(new SimpleUpgradeClickListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new KoCommandBridgeListener(), this);
-        Bukkit.getPluginManager().registerEvents(new JoinImportListener(this), this);
-        this.tabRefresher = new TabRefresher(this, storage);
-        this.tabRefresher.start();
-
-        if (getCommand("섬") != null) {
-            getCommand("섬").setExecutor(this);
-            getCommand("섬").setTabCompleter(this);
-        }
+}
 
         // Import/resolve islands for already-online players (reload-safe)
         for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) {

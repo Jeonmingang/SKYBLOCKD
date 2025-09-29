@@ -29,50 +29,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable(){
-        // Auto-wired listeners for Tab/Nametag
-        org.bukkit.plugin.PluginManager pm = getServer().getPluginManager();
-
-        pm.registerEvents(new com.signition.samskybridge.tab.TabService(this), this);
-
-        pm.registerEvents(new kr.minkang.samskybridge.TabRefresher(this), this);
-
-        pm.registerEvents(new kr.minkang.samskybridge.NametagService(this), this);
-
-        inst = this;
-        saveDefaultConfig();
-        saveResource("messages_ko.yml", false);
-
-        this.vault = new VaultHook(this);
-        this.bento = new BentoSync(this);
-        this.dataStore = new DataStore(this);
-        features = new com.signition.samskybridge.feature.FeatureService(this, dataStore);
-        this.levelService = new LevelService(this, dataStore);
-        this.upgradeService = new UpgradeService(this, dataStore, levelService, vault);
-        this.rankingService = new RankingService(this, dataStore);
-
-        getCommand("섬").setExecutor(new IslandCommand(this, dataStore, levelService, upgradeService, rankingService));
-
-        // Island chat listeners
-        this.chatService = new com.signition.samskybridge.chat.IslandChatService(this);
-        Bukkit.getPluginManager().registerEvents(this.chatService, this);
-        Bukkit.getPluginManager().registerEvents(new com.signition.samskybridge.chat.IslandChatCommandHook(this.chatService), this);
-
-        Bukkit.getPluginManager().registerEvents(new GuiListener(this, upgradeService), this);
-        Bukkit.getPluginManager().registerEvents(new com.signition.samskybridge.listener.FeatureListener(this, features), this);
-        Bukkit.getPluginManager().registerEvents(new PortalBlocker(this), this);
-        Bukkit.getPluginManager().registerEvents(new JoinListener(this, dataStore, bento), this);
-
-        long ticks = getConfig().getLong("rank-refresh-interval-ticks", 1200L);
-        Bukkit.getScheduler().runTaskTimer(this, () -> rankingService.refreshRanking(), 60L, ticks);
-
-        long saveTicks = getConfig().getLong("save-interval-ticks", 1200L);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> dataStore.save(), 100L, saveTicks);
-
-                // Tablist service
-        if (getConfig().getBoolean("tablist.enabled", false)){
-            this.tablistService = new com.signition.samskybridge.tab.TablistService(this);
-            this.tablistService.start();
-        }
+}
         getLogger().info(Text.color("&aSamSkyBridge enabled."));
     }
 

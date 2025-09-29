@@ -106,7 +106,7 @@ private java.util.Map<String, Double> parseDist(java.util.List<String> defs){
                     .replace("{stepNow}", String.valueOf(sizeStepNow))
                     .replace("{stepMax}", sizeStepMax==1000? "∞" : String.valueOf(sizeStepMax));
         }
-        inv.setItem(slotSize, named(new ItemStack(Material.MAP),
+        inv.setItem(slotSize, named(new ItemStack(Material.GRASS_BLOCK),
                 plugin.getConfig().getString("upgrade.size.title","&e섬 크기 업그레이드"),
                 sizeLoreArr));
 
