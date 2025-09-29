@@ -86,9 +86,9 @@ public class NametagBridge implements Listener {
             // decide group
             Team target = teamVisitor;
             if (bento != null) {
-                if (bento.isOwner(p)) {
+                if (bento.isOwner(p, p.getLocation())) {
                     target = teamOwner;
-                } else if (bento.isMember(p)) {
+                } else if (bento.isMember(p, p.getLocation())) {
                     target = teamMember;
                 } else {
                     target = teamVisitor;

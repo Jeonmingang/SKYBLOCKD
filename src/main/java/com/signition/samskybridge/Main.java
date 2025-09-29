@@ -19,6 +19,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 
 public class Main extends JavaPlugin {
+    private com.signition.samskybridge.util.VaultHook vaultHook;
+
     private com.signition.samskybridge.nametag.NametagBridge nametagBridge;
 
     private com.signition.samskybridge.chat.IslandChatService chatService;
@@ -33,7 +35,9 @@ public class Main extends JavaPlugin {
     private BentoSync bento;
 
     @Override
-    public void onEnable(){
+    public void onEnable(){                if (this.levelService == null) this.levelService = new com.signition.samskybridge.level.LevelService(this);
+                if (this.vaultHook == null) this.vaultHook = new com.signition.samskybridge.util.VaultHook(this);
+
         getLogger().info(Text.color("&aSamSkyBridge enabled."));
     
 // --- Minimal wiring (listener registration + tablist scheduler), no feature changes ---
@@ -41,13 +45,13 @@ try {
     if (this.dataStore == null) this.dataStore = new com.signition.samskybridge.data.DataStore(this);
 } catch (Throwable ignored){}
 try {
-    if (this.upgradeService == null) this.upgradeService = new com.signition.samskybridge.upgrade.UpgradeService(this);
+    if (this.upgradeService == null) this.upgradeService = new com.signition.samskybridge.upgrade.UpgradeService(this, this.dataStore, this.levelService, this.vaultHook, this.bento);
 } catch (Throwable ignored){}
 try {
     if (this.bento == null) this.bento = new com.signition.samskybridge.integration.BentoSync(this);
 } catch (Throwable ignored){}
 
-org.bukkit.plugin.PluginManager pm = getServer().getPluginManager();
+pm = getServer().getPluginManager();
 try { pm.registerEvents(new com.signition.samskybridge.listener.JoinListener(this, this.dataStore, this.bento), this); } catch (Throwable ignored) {}
 try { pm.registerEvents(new com.signition.samskybridge.listener.GuiListener(this, this.upgradeService), this); } catch (Throwable ignored) {}
 try { pm.registerEvents(new com.signition.samskybridge.listener.PortalBlocker(this), this); } catch (Throwable ignored) {}
@@ -61,7 +65,7 @@ try {
 // --- NametagBridge wiring (minimal, config-driven) ---
 try {
     if (this.nametagBridge == null) this.nametagBridge = new com.signition.samskybridge.nametag.NametagBridge(this, this.bento);
-    org.bukkit.plugin.PluginManager pm = getServer().getPluginManager();
+    pm = getServer().getPluginManager();
     pm.registerEvents(this.nametagBridge, this);
     this.nametagBridge.start();
 } catch (Throwable ignored) {}
