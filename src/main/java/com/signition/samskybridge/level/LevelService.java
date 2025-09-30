@@ -60,6 +60,8 @@ public class LevelService {
     /**
      * XP required to go from (nextLevel-1) -> nextLevel.
      * For nextLevel <= 1, returns 0.
+     *
+     * NOTE: Alias method {@link #requiredXpForLevel(int)} exists for older code.
      */
     public long getNextXpRequirement(int nextLevel){
         if (nextLevel <= 1) return 0L;
@@ -67,6 +69,14 @@ public class LevelService {
         double inc = (baseXp + perLevel * k) * Math.pow(growth, Math.max(0, k - 1));
         long need = (long)Math.max(1L, Math.floor(inc));
         return need;
+    }
+
+    /**
+     * Backward-compat alias used by UpgradeService/IslandCommand.
+     * Semantics: XP needed to reach the given level from the previous one.
+     */
+    public long requiredXpForLevel(int level){
+        return getNextXpRequirement(level);
     }
 
     /** Current XP toward next level for given island owner UUID. */
@@ -106,6 +116,14 @@ public class LevelService {
         if (owner == null || amount <= 0) return;
         IslandData is = store.getOrCreate(owner, null);
         addXpInternal(null, is, amount);
+    }
+
+    /**
+     * Backward-compat API used by UpgradeService: when XP를 "구매"로 추가할 때 호출.
+     * (오프라인 알림 없음)
+     */
+    public void applyXpPurchase(IslandData island, long amount){
+        addXpInternal(null, island, amount);
     }
 
     private void addXpInternal(Player maybeOnline, IslandData is, long amount){
