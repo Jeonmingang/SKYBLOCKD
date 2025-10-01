@@ -131,4 +131,24 @@ void onChat(AsyncPlayerChatEvent e) {
         }
     }
 
+
+    public void reload() {
+        String base = "island-chat.";
+        this.leaderPrefix = plugin.getConfig().getString(base + "leader-prefix", this.leaderPrefix != null ? this.leaderPrefix : "&6[섬장]");
+        this.memberPrefix = plugin.getConfig().getString(base + "member-prefix", this.memberPrefix != null ? this.memberPrefix : "&a[섬]");
+        this.format = plugin.getConfig().getString(base + "format", this.format != null ? this.format : "{prefix}&f {name}: &7{message}");
+        this.spyEnabled = plugin.getConfig().getBoolean(base + "spy.enabled", this.spyEnabled);
+        this.spyPerm = plugin.getConfig().getString(base + "spy.permission", this.spyPerm != null ? this.spyPerm : "samsky.chat.spy");
+        this.spyPrefix = plugin.getConfig().getString(base + "spy.prefix", this.spyPrefix != null ? this.spyPrefix : "&8[Spy]&7 ");
+    }
+
+
+    private com.signition.samskybridge.data.IslandData resolveIsland(java.util.UUID uuid){
+        try {
+            return plugin.getDataStore().getIsland(uuid);
+        } catch (Throwable t){
+            return null;
+        }
+    }
+
 }
