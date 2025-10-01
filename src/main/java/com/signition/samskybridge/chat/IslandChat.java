@@ -25,6 +25,12 @@ public class IslandChat implements Listener {
     private final Main plugin;
     private final DataStore store;
     private final Map<UUID, Boolean> toggled = new ConcurrentHashMap<>();
+    private String leaderPrefix = "&6[섬장]";
+    private String memberPrefix = "&a[섬]";
+    private String format = "{prefix}&f {name}: &7{message}";
+    private boolean spyEnabled = true;
+    private String spyPerm = "samsky.chat.spy";
+    private String spyPrefix = "&8[Spy]&7 ";
 
     public IslandChat(Main plugin, DataStore store) {
         this.plugin = plugin;
@@ -122,12 +128,10 @@ public class IslandChat implements Listener {
     }
 
     public void reload() {
-        // Re-read chat settings from config
-        String base = "chat.";
-        this.channel = plugin.getConfig().getString(base + "channel", this.channel);
-        this.format = plugin.getConfig().getString(base + "format", this.format);
+        String base = "island-chat.";
         this.leaderPrefix = plugin.getConfig().getString(base + "leader-prefix", this.leaderPrefix);
         this.memberPrefix = plugin.getConfig().getString(base + "member-prefix", this.memberPrefix);
+        this.format = plugin.getConfig().getString(base + "format", this.format);
         this.spyEnabled = plugin.getConfig().getBoolean(base + "spy.enabled", this.spyEnabled);
         this.spyPerm = plugin.getConfig().getString(base + "spy.permission", this.spyPerm);
         this.spyPrefix = plugin.getConfig().getString(base + "spy.prefix", this.spyPrefix);

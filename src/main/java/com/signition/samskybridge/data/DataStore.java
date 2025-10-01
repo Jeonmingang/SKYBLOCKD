@@ -26,7 +26,7 @@ public class DataStore {
     }
 
     public IslandData getIsland(java.util.UUID id) {
-        return get(id, null);
+        return islands.get(id);
     }
     
 
