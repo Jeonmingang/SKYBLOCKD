@@ -47,94 +47,86 @@ public class IslandChat implements Listener {
     }
 
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent e) {
+    public 
+void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
         // Only reroute if toggled ON
         if (!toggled.getOrDefault(p.getUniqueId(), false)) return;
 
+        // Cancel vanilla chat
+        e.setCancelled(true);
+        String msg = ChatColor.translateAlternateColorCodes('&', e.getMessage());
+
+        // Try BentoBox first
+        try {
+            world.bentobox.bentobox.managers.IslandsManager im = world.bentobox.bentobox.BentoBox.getInstance().getIslands();
+            world.bentobox.bentobox.database.objects.Island island = im.getIsland(p.getWorld(), p.getUniqueId());
+            if (island != null){
+                java.util.UUID owner = island.getOwner();
+                java.util.Set<java.util.UUID> members = new java.util.HashSet<>(island.getMemberSet());
+                // include owner too
+                if (owner != null) members.add(owner);
+
+                // build prefix by role
+                boolean isLeader = owner != null && owner.equals(p.getUniqueId());
+                String pref = isLeader ? leaderPrefix : memberPrefix;
+                String out = format.replace("{prefix}", ChatColor.translateAlternateColorCodes('&', pref))
+                                   .replace("{name}", p.getName())
+                                   .replace("{message}", msg);
+                out = ChatColor.translateAlternateColorCodes('&', out);
+
+                // send to team
+                for (java.util.UUID id : members){
+                    org.bukkit.entity.Player rec = org.bukkit.Bukkit.getPlayer(id);
+                    if (rec != null) rec.sendMessage(out);
+                }
+                // spies
+                if (spyEnabled){
+                    String spy = ChatColor.translateAlternateColorCodes('&', spyPrefix) + ChatColor.stripColor(out);
+                    for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()){
+                        if (online.hasPermission(spyPerm) && (owner == null || !owner.equals(online.getUniqueId())) && !members.contains(online.getUniqueId())){
+                            online.sendMessage(spy);
+                        }
+                    }
+                }
+                return;
+            }
+        } catch (Throwable ignore) {}
+
+        // Fallback to DataStore
         IslandData is = resolveIsland(p.getUniqueId());
         if (is == null) {
             p.sendMessage("§c섬이 없습니다.");
             return;
         }
 
-        // Example basic route to island members; customize format as needed
-        e.setCancelled(true);
-        String raw = e.getMessage();
-        String msg = ChatColor.translateAlternateColorCodes('&', raw);
+        boolean isLeader = is.getOwner() != null && is.getOwner().equals(p.getUniqueId());
+        String pref = isLeader ? leaderPrefix : memberPrefix;
+        String out = format.replace("{prefix}", ChatColor.translateAlternateColorCodes('&', pref))
+                           .replace("{name}", p.getName())
+                           .replace("{message}", msg);
+        out = ChatColor.translateAlternateColorCodes('&', out);
 
-        // Broadcast to island members (owner + members)
-        try {
-            if (is.getOwner() != null) {
-                Player owner = Bukkit.getPlayer(is.getOwner());
-                if (owner != null) owner.sendMessage("§b[섬채팅] §f" + p.getName() + ": §7" + msg);
+        // owner
+        if (is.getOwner() != null){
+            org.bukkit.entity.Player owner = org.bukkit.Bukkit.getPlayer(is.getOwner());
+            if (owner != null) owner.sendMessage(out);
+        }
+        // members
+        if (is.getMembers() != null){
+            for (java.util.UUID id : is.getMembers()){
+                if (id.equals(p.getUniqueId())) continue;
+                org.bukkit.entity.Player mem = org.bukkit.Bukkit.getPlayer(id);
+                if (mem != null) mem.sendMessage(out);
             }
-        } catch (Throwable ignored) {}
-
-        try {
-            if (is.getMembers() != null) {
-                for (UUID m : is.getMembers()) {
-                    if (m.equals(p.getUniqueId())) continue;
-                    Player mem = Bukkit.getPlayer(m);
-                    if (mem != null) {
-                        mem.sendMessage("§b[섬채팅] §f" + p.getName() + ": §7" + msg);
-                    }
-                }
-            }
-        } catch (Throwable ignored) {}
-        // Also mirror to server console/log
-        Bukkit.getLogger().info("[IslandChat] " + p.getName() + ": " + com.signition.samskybridge.util.Text.stripColor(msg));
-    }
-
-    /** Try to get a player's island from DataStore without compile-time coupling. */
-    private IslandData resolveIsland(UUID uuid) {
-        // Try common method names with different signatures via reflection
-        String[] names = new String[] {"getIsland", "getIslandByPlayer", "findIsland", "getPlayerIsland"};
-        Class<?>[] params = new Class<?>[] {java.util.UUID.class, org.bukkit.entity.Player.class};
-        for (String n : names) {
-            for (Class<?> param : params) {
-                try {
-                    Method m = store.getClass().getMethod(n, param);
-                    Object arg = (param == UUID.class) ? uuid : Bukkit.getPlayer(uuid);
-                    Object res = m.invoke(store, arg);
-                    if (res instanceof IslandData) return (IslandData) res;
-                } catch (NoSuchMethodException ignored) {
-                } catch (Throwable t) {
-                    // ignore and try next
+        }
+        // spies
+        if (spyEnabled){
+            String spy = ChatColor.translateAlternateColorCodes('&', spyPrefix) + ChatColor.stripColor(out);
+            for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()){
+                if (online.hasPermission(spyPerm)){
+                    online.sendMessage(spy);
                 }
             }
         }
-        // Fallback: scan islands if accessor exists (getIslands / getAll / values())
-        try {
-            // try getIslands(): Map<UUID, IslandData>
-            Method m = store.getClass().getMethod("getIslands");
-            Object mapObj = m.invoke(store);
-            if (mapObj instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<?,?> map = (Map<?,?>) mapObj;
-                for (Object v : map.values()) {
-                    if (v instanceof IslandData) {
-                        IslandData is = (IslandData) v;
-                        try {
-                            if (uuid.equals(is.getOwner())) return is;
-                            if (is.getMembers() != null && is.getMembers().contains(uuid)) return is;
-                        } catch (Throwable ignored) {}
-                    }
-                }
-            }
-        } catch (Throwable ignored) {}
-
-        return null;
     }
-
-    public void reload() {
-        String base = "island-chat.";
-        this.leaderPrefix = plugin.getConfig().getString(base + "leader-prefix", this.leaderPrefix);
-        this.memberPrefix = plugin.getConfig().getString(base + "member-prefix", this.memberPrefix);
-        this.format = plugin.getConfig().getString(base + "format", this.format);
-        this.spyEnabled = plugin.getConfig().getBoolean(base + "spy.enabled", this.spyEnabled);
-        this.spyPerm = plugin.getConfig().getString(base + "spy.permission", this.spyPerm);
-        this.spyPrefix = plugin.getConfig().getString(base + "spy.prefix", this.spyPrefix);
-    }
-    
-}
