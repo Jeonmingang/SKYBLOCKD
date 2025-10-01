@@ -66,12 +66,14 @@ public class UpgradeService {
         ConfigurationSection tiers = plugin.getConfig().getConfigurationSection("size.tiers");
         if (tiers == null) tiers = plugin.getConfig().getConfigurationSection("upgrade.size.tiers");
         if (tiers != null) {
+            int bestRange = Integer.MAX_VALUE; double bestCost = 0.0; int bestNeed = 0;
             for (String k : tiers.getKeys(false)){
                 int range = tiers.getInt(k + ".range", current);
                 int need  = tiers.getInt(k + ".need", 0);
                 double c  = tiers.getDouble(k + ".cost", 0.0);
-                if (range > current) { nextRange = range; reqLevel = need; cost = c; break; }
+                if (range > current && range < bestRange){ bestRange = range; bestNeed = need; bestCost = c; }
             }
+            if (bestRange != Integer.MAX_VALUE){ nextRange = bestRange; reqLevel = bestNeed; cost = bestCost; }
         } else {
             nextRange = plugin.getConfig().getInt("size.base-range", plugin.getConfig().getInt("upgrade.size.base-range", current+10));
             reqLevel  = plugin.getConfig().getInt("size.required", 1);
@@ -135,6 +137,13 @@ public class UpgradeService {
         im.setDisplayName(Text.color("&b경험치 구매 (&f" + amt + "&b)"));
         List<String> lore = new ArrayList<>();
         lore.add(Text.color("&7가격: &a" + String.format("%,.0f", cost)));
+        java.util.UUID id = p.getUniqueId();
+        int lv = level.getLevel(id);
+        long curXp = level.getCurrentXp(id);
+        long needXp = Math.max(0L, level.getNextXpRequirement(lv+1) - curXp);
+        lore.add(Text.color("&7현재 경험치: &f" + String.format("%,d", curXp)));
+        lore.add(Text.color("&7다음 레벨까지: &f" + String.format("%,d", needXp)));
+        lore.add(Text.color("&8클릭: 구매"));
         lore.add(Text.color("&8클릭: 구매"));
         im.setLore(lore);
         it.setItemMeta(im);
@@ -152,12 +161,14 @@ public class UpgradeService {
         ConfigurationSection tiers = plugin.getConfig().getConfigurationSection("size.tiers");
         if (tiers == null) tiers = plugin.getConfig().getConfigurationSection("upgrade.size.tiers");
         if (tiers != null) {
+            int bestRange = Integer.MAX_VALUE; double bestCost = 0.0; int bestNeed = 0;
             for (String k : tiers.getKeys(false)){
                 int range = tiers.getInt(k + ".range", current);
                 int need  = tiers.getInt(k + ".need", 0);
                 double c  = tiers.getDouble(k + ".cost", 0.0);
-                if (range > current) { nextRange = range; reqLevel = need; cost = c; break; }
+                if (range > current && range < bestRange){ bestRange = range; bestNeed = need; bestCost = c; }
             }
+            if (bestRange != Integer.MAX_VALUE){ nextRange = bestRange; reqLevel = bestNeed; cost = bestCost; }
         }
         if (nextRange <= current) { p.sendMessage("§c업그레이드 가능한 다음 크기가 없습니다."); return; }
         if (level.getLevel(p.getUniqueId()) < reqLevel) { p.sendMessage("§c요구 레벨 Lv." + reqLevel + " 필요"); return; }
@@ -205,9 +216,19 @@ public class UpgradeService {
         if (!withdraw(p, cost)) { p.sendMessage("§c잔액 부족"); return; }
         IslandData is = level.getIslandOf(p);
         if (is == null) return;
+        java.util.UUID id = p.getUniqueId();
+        int before = level.getLevel(id);
         level.applyXpPurchase(is, amt); // 자동 레벨업 처리
+        int after = level.getLevel(id);
         store.save();
         p.sendMessage(Text.color("&a경험치 &f" + amt + "&a 를 구매했습니다."));
+        if (after > before){
+            p.sendMessage(Text.color("&6레벨업! &fLv." + before + " &7-> &eLv." + after));
+        } else {
+            long cur = level.getCurrentXp(id);
+            long need = Math.max(0L, level.getNextXpRequirement(after+1) - cur);
+            p.sendMessage(Text.color("&7다음 레벨까지 남은 경험치: &f" + String.format("%,d", need)));
+        }
         open(p);
     }
 

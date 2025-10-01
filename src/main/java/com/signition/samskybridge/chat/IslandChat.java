@@ -77,5 +77,15 @@ public class IslandChat implements Listener {
         }
     }
 
-    private static String color(String s){ return s.replace("&","§"); }
+    public void reload(){
+        FileConfiguration c = plugin.getConfig();
+        this.leaderPrefix = color(c.getString("island-chat.leader-prefix","&6[섬장]"));
+        this.memberPrefix = color(c.getString("island-chat.member-prefix","&a[섬]"));
+        this.fmt = c.getString("island-chat.format", "{prefix}&f {name}: &7{message}");
+        this.spyEnabled = c.getBoolean("island-chat.spy.enabled", true);
+        this.spyPerm = c.getString("island-chat.spy.permission", "samsky.chat.spy");
+        this.spyPrefix = color(c.getString("island-chat.spy.prefix", "&8[Spy]&7 "));
+    }
+
+private static String color(String s){ return s.replace("&","§"); }
 }

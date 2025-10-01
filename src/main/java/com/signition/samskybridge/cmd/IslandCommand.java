@@ -31,10 +31,58 @@ public class IslandCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
-        if (!(sender instanceof Player)){
-            sender.sendMessage("Only players.");
+        if (!(sender instanceof Player)){ sender.sendMessage("콘솔은 사용할 수 없습니다."); return true; }
+        Player p = (Player)sender;
+        if (args.length == 0){
+            p.sendMessage(Text.color("&b/섬 업그레이드 &7- GUI 열기"));
+            p.sendMessage(Text.color("&b/섬 레벨 &7- 레벨/경험치 보기"));
+            p.sendMessage(Text.color("&b/섬 채팅 &7- 섬 채팅 토글"));
+            p.sendMessage(Text.color("&b/섬 랭킹 &7- 상위 랭킹 보기"));
+            p.sendMessage(Text.color("&b/섬 설정 리로드 &7- 설정 다시읽기"));
+            p.sendMessage(Text.color("&b/섬 초대 <닉>, 수락, 탈퇴, 강퇴 <닉>, 승급 <닉>, 강등 <닉>"));
             return true;
         }
+        String sub = args[0];
+        switch (sub){
+            case "업그레이드":
+                upgrade.open(p); return true;
+            case "레벨":
+                showLevel(p); return true;
+            case "채팅":
+                boolean on = plugin.getChat().toggle(p);
+                p.sendMessage(on ? "§a섬 채팅을 켰습니다." : "§c섬 채팅을 껐습니다.");
+                return true;
+            case "랭킹":
+                int topN = plugin.getConfig().getInt("ranking.top-n", 10);
+                rank.sendTop(p, topN);
+                return true;
+            case "설정":
+                if (args.length>=2 && "리로드".equals(args[1])){
+                    plugin.reloadConfig();
+                    plugin.getChat().reload();
+                    p.sendMessage("§a설정을 다시 읽었습니다.");
+                    return true;
+                }
+                break;
+            case "초대":
+                if (args.length>=2){ org.bukkit.Bukkit.dispatchCommand(p, "island invite " + args[1]); return true; }
+                p.sendMessage("§c사용법: /섬 초대 <닉>"); return true;
+            case "수락":
+                org.bukkit.Bukkit.dispatchCommand(p, "island accept"); return true;
+            case "탈퇴":
+                org.bukkit.Bukkit.dispatchCommand(p, "island leave"); return true;
+            case "강퇴":
+                if (args.length>=2){ org.bukkit.Bukkit.dispatchCommand(p, "island kick " + args[1]); return true; }
+                p.sendMessage("§c사용법: /섬 강퇴 <닉>"); return true;
+            case "승급":
+                if (args.length>=2){ org.bukkit.Bukkit.dispatchCommand(p, "island promote " + args[1]); return true; }
+                p.sendMessage("§c사용법: /섬 승급 <닉>"); return true;
+            case "강등":
+                if (args.length>=2){ org.bukkit.Bukkit.dispatchCommand(p, "island demote " + args[1]); return true; }
+                p.sendMessage("§c사용법: /섬 강등 <닉>"); return true;
+        }
+        p.sendMessage("§c알 수 없는 하위명령입니다."); return true;
+    }
         Player p = (Player) sender;
         if (args.length == 0){
             p.sendMessage(Text.color("&a/섬 레벨 &7- 섬 레벨/경험치 보기"));
