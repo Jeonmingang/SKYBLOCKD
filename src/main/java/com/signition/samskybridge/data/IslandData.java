@@ -3,6 +3,9 @@ package com.signition.samskybridge.data;
 import java.util.UUID;
 
 public class IslandData {
+    private java.util.UUID owner; // island owner (nullable for legacy)
+    private java.util.Set<java.util.UUID> members = new java.util.HashSet<>();
+
     private final UUID id;
     private String name;
     private int level;
@@ -31,4 +34,22 @@ public class IslandData {
     public void addXp(long add){ this.xp += add; }
     public void setSize(int size){ this.size = size; }
     public void setTeamMax(int teamMax){ this.teamMax = teamMax; }
+
+
+public java.util.UUID getOwner() {
+    // fallback: if null, use this island's id as owner for legacy data
+    if (owner == null) owner = id;
+    return owner;
+}
+public void setOwner(java.util.UUID owner) {
+    this.owner = owner;
+}
+
+public java.util.Set<java.util.UUID> getMembers() {
+    return members;
+}
+public void setMembers(java.util.Set<java.util.UUID> members) {
+    this.members = (members == null) ? new java.util.HashSet<>() : members;
+}
+
 }

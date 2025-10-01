@@ -120,4 +120,17 @@ public class IslandChat implements Listener {
 
         return null;
     }
+
+    public void reload() {
+        // Re-read chat settings from config
+        String base = "chat.";
+        this.channel = plugin.getConfig().getString(base + "channel", this.channel);
+        this.format = plugin.getConfig().getString(base + "format", this.format);
+        this.leaderPrefix = plugin.getConfig().getString(base + "leader-prefix", this.leaderPrefix);
+        this.memberPrefix = plugin.getConfig().getString(base + "member-prefix", this.memberPrefix);
+        this.spyEnabled = plugin.getConfig().getBoolean(base + "spy.enabled", this.spyEnabled);
+        this.spyPerm = plugin.getConfig().getString(base + "spy.permission", this.spyPerm);
+        this.spyPrefix = plugin.getConfig().getString(base + "spy.prefix", this.spyPrefix);
+    }
+    
 }

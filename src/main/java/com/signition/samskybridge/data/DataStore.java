@@ -25,6 +25,12 @@ public class DataStore {
         load();
     }
 
+    public IslandData getIsland(java.util.UUID id) {
+        return get(id, null);
+    }
+    
+
+
     public synchronized IslandData getOrCreate(UUID id, String name){
         IslandData is = islands.get(id);
         if (is == null){

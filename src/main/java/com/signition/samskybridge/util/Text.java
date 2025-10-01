@@ -11,4 +11,13 @@ public final class Text {
         String colored = ChatColor.translateAlternateColorCodes('&', input);
         return ChatColor.stripColor(colored);
     }
+
+    /**
+     * Colorize text using & codes (e.g., &a, &b, &l).
+     */
+    public static String color(String input) {
+        if (input == null) return "";
+        return ChatColor.translateAlternateColorCodes('&', input);
+    }
+    
 }

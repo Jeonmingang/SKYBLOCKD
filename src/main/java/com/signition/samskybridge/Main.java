@@ -54,7 +54,7 @@ this.levelService = new LevelService(this, dataStore);
 
         getLogger().info(Text.color("&aSamSkyBridge enabled."));
         // Island chat listener
-        chat = new IslandChat(this);
+        chat = new IslandChat(this, dataStore);
         getServer().getPluginManager().registerEvents(chat, this);
     
         // Register Upgrade GUI for XP purchase
