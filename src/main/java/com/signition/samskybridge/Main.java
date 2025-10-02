@@ -16,8 +16,18 @@ import com.signition.samskybridge.util.VaultHook;
 import org.bukkit.Bukkit;
 import com.signition.samskybridge.chat.IslandChat;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.signition.samskybridge.listener.IslandChatListener;
+import com.signition.samskybridge.service.RankingUiService;
+import com.signition.samskybridge.service.InfoService;
+import com.signition.samskybridge.service.LevelService;
+import com.signition.samskybridge.service.ChatService;
 
 public class Main extends JavaPlugin {
+    private ChatService chatService;
+    private LevelService levelService;
+    private InfoService infoService;
+    private RankingUiService rankingUiService;
+
     public IslandChat getChat(){ return chat; }
     private IslandChat chat;
 private static Main inst;
@@ -30,6 +40,18 @@ private static Main inst;
 
     @Override
     public void onEnable(){
+        chatService = new ChatService();
+        levelService = new LevelService();
+        infoService = new InfoService();
+        rankingUiService = new RankingUiService();
+        getServer().getPluginManager().registerEvents(new IslandChatListener(this), this);
+
+        this.getCommand("samsky").setExecutor(new com.signition.samskybridge.command.IslandCommandRouter(this));
+        this.getCommand("samsky").setTabCompleter(new com.signition.samskybridge.command.IslandCommandRouter(this));
+        try { getCommand("섬").setExecutor(new com.signition.samskybridge.command.IslandCommandRouter(this)); getCommand("섬").setTabCompleter(new com.signition.samskybridge.command.IslandCommandRouter(this)); } catch (Throwable ignore) {}
+        try { getCommand("is").setExecutor(new com.signition.samskybridge.command.IslandCommandRouter(this)); getCommand("is").setTabCompleter(new com.signition.samskybridge.command.IslandCommandRouter(this)); } catch (Throwable ignore) {}
+        try { getCommand("island").setExecutor(new com.signition.samskybridge.command.IslandCommandRouter(this)); getCommand("island").setTabCompleter(new com.signition.samskybridge.command.IslandCommandRouter(this)); } catch (Throwable ignore) {}
+
 inst = this;
         saveDefaultConfig();
         saveResource("messages_ko.yml", false);
@@ -100,4 +122,10 @@ private void showLevelInfo(org.bukkit.entity.Player p){
     long next = levelService.getNextXpRequirement(level + 1);
     p.sendMessage("§a섬 레벨: §e" + level + " §7| §a경험치: §e" + cur + "§7/§e" + next);
 }
+
+
+public ChatService getChatService(){ return chatService; }
+public LevelService getLevelService(){ return levelService; }
+public InfoService getInfoService(){ return infoService; }
+public RankingUiService getRankingUiService(){ return rankingUiService; }
 }

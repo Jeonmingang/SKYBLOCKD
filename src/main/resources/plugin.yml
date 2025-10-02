@@ -28,3 +28,12 @@ permissions:
   samsky.admin:
     default: op
 softdepend: [Vault]
+
+  samsky:
+    description: Main SamSkyBridge command
+    aliases: [섬, is, island]
+    permission: samsky.use
+
+  samskyreload:
+    description: reload SamSkyBridge configs
+    permission: samsky.reload
