@@ -7,11 +7,9 @@ commands:
   samsky:
     description: Main SamSkyBridge command
     aliases: [섬, is, island]
-    permission: samsky.use
 
   섬:
     description: Korean alias for SamSkyBridge
-    permission: samsky.use
 
   samskyreload:
     description: reload SamSkyBridge configs
