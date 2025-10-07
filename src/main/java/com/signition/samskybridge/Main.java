@@ -108,4 +108,11 @@ private void showLevelInfo(org.bukkit.entity.Player p){
     long next = levelService.getNextXpRequirement(level + 1);
     p.sendMessage("§a섬 레벨: §e" + level + " §7| §a경험치: §e" + cur + "§7/§e" + next);
 }
+
+
+public com.signition.samskybridge.level.LevelService getLevelService(){ return this.levelService; }
+public com.signition.samskybridge.upgrade.UpgradeService getUpgradeService(){ return this.upgradeService; }
+public com.signition.samskybridge.rank.RankingService getRankingService(){ return this.rankingService; }
+public com.signition.samskybridge.rank.RankingUiService getRankingUiService(){ return new com.signition.samskybridge.rank.RankingUiService(this, this.rankingService, this.levelService, this.dataStore); }
+public com.signition.samskybridge.info.InfoService getInfoService(){ return new com.signition.samskybridge.info.InfoService(this, this.levelService, this.dataStore); }
 }
