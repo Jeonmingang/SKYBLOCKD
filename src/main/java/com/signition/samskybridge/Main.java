@@ -115,4 +115,6 @@ public com.signition.samskybridge.upgrade.UpgradeService getUpgradeService(){ re
 public com.signition.samskybridge.rank.RankingService getRankingService(){ return this.rankingService; }
 public com.signition.samskybridge.rank.RankingUiService getRankingUiService(){ return new com.signition.samskybridge.rank.RankingUiService(this, this.rankingService, this.levelService, this.dataStore); }
 public com.signition.samskybridge.info.InfoService getInfoService(){ return new com.signition.samskybridge.info.InfoService(this, this.levelService, this.dataStore); }
+
+public com.signition.samskybridge.chat.IslandChat getChatService(){ return getChat(); }
 }

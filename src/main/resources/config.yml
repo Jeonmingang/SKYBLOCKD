@@ -12,17 +12,18 @@ integration:
 
 # Periodic reapply to recover from other plugins overwriting player list/nametag
 tab:
-  reapply-interval-ticks: 200   # 10s (20 ticks = 1s)
+  reapply-interval-ticks: 200
   dynamic:
     leader:
-      prefix: "&7[ &a섬 랭킹 &f<rank>위 &7] "
-      suffix: "&7[ &bLv.<level> &7]"
-    member:
-      prefix: "&7[ &a<island> 섬 &7| &f<rank>위 ] "
-      suffix: "&7[ &3Lv.<level> &7]"
-    none:
-      prefix: "&7[등록안됨]"
+      prefix: "&6[섬장]&r "
       suffix: ""
+    member:
+      prefix: "&a[섬]&r "
+      suffix: ""
+    none:
+      prefix: ""
+      suffix: ""
+
 
 # Upgrade GUI title & slot layout
 gui:

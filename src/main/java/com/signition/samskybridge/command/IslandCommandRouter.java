@@ -23,25 +23,13 @@ public class IslandCommandRouter implements CommandExecutor, TabCompleter {
         String sub=args[0];
 
         if (eq(sub,"채팅","chat")) {
-            if (!callService("getChatService","toggle", new Class[]{Player.class}, new Object[]{p})) {
+            if (!callService("getChat","toggle", new Class[]{Player.class}, new Object[]{p})) {
                 p.sendMessage("§6[섬] §f섬 채팅 토글");
             }
             return true;
         }
-        if (eq(sub,"업그레이드","upgrade","upg")) {
-            if (!callService("getUpgradeService","openUpgradeGui", new Class[]{Player.class}, new Object[]{p})) {
-                p.sendMessage("§6[섬] §f업그레이드 GUI");
-            }
-            return true;
-        }
-        if (eq(sub,"레벨","level","lvl")) {
-            if (!callService("getLevelService","show", new Class[]{Player.class}, new Object[]{p})) {
-                p.sendMessage("§6[섬] §fLv.1 (예시)");
-            }
-            return true;
-        }
-        if (eq(sub,"정보","info")) { if (!callService("getInfoService","show", new Class[]{org.bukkit.entity.Player.class}, new Object[]{p})) { p.sendMessage("§6[섬] §f섬 정보 (예시)"); } return true; }
-        if (eq(sub,"랭킹","ranking","rank","top")) { if (!callService("getRankingUiService","openOrRefresh", new Class[]{org.bukkit.entity.Player.class}, new Object[]{p})) { p.sendMessage("§e[섬] 랭킹 UI를 열 수 없습니다."); } return true; }
+        if (eq(sub,"업그레이드","upgrade","upg")) { if (!callService("getUpgradeService","open", new Class[]{Player.class}, new Object[]{p})) { try { Main.class.getDeclaredMethod("openUpgradeOrForward", org.bukkit.entity.Player.class).invoke(plugin, p); } catch (Throwable ignore) { p.sendMessage("§c업그레이드 GUI를 열 수 없습니다."); } } return true; }
+        if (eq(sub,"레벨","level","lvl")) { if (!callService("getLevelService","show", new Class[]{Player.class}, new Object[]{p})) { try { Main.class.getDeclaredMethod("showLevelInfo", org.bukkit.entity.Player.class).invoke(plugin, p); } catch (Throwable ignore) { p.sendMessage("§6[섬] §fLv.1 (예시)"); } } return true; }
 
         p.sendMessage("§c알 수 없는 하위 명령입니다. §7/섬 §f로 도움말을 확인하세요."); 
         return true;

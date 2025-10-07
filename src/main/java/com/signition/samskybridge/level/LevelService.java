@@ -145,4 +145,21 @@ public class LevelService {
             }
         }
     }
+
+    /** Show status to player (used by /섬 레벨). */
+    public void show(org.bukkit.entity.Player p){
+        java.util.UUID id = p.getUniqueId();
+        int lv = getLevel(id);
+        long cur = getCurrentXp(id);
+        long need = getNextXpRequirement(lv + 1);
+        int percent = need > 0 ? (int)Math.floor((cur * 100.0) / need) : 0;
+        String msg = plugin.getConfig().getString("level.status",
+                "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7, &f<percent>%&7)");
+        msg = msg.replace("<level>", String.valueOf(lv))
+                 .replace("<xp>", String.valueOf(cur))
+                 .replace("<need>", String.valueOf(need))
+                 .replace("<percent>", String.valueOf(percent));
+        p.sendMessage(com.signition.samskybridge.util.Text.color(msg));
+    }
+    
 }
