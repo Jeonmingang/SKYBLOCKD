@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * IMPORTANT: Looks up player's island by UUID via LevelService/DataStore (world-agnostic),
  * so it works even when the player is not currently in an island world.
  */
-public class RankingService {
+public class RankingService implements org.bukkit.event.Listener {
 
     private final Main plugin;
     private final DataStore store;
@@ -139,4 +139,32 @@ public class RankingService {
 
     // Kept for compatibility with callers
     private void initTabTeams(){ /* no-op: team-per-player created lazily */ }
+
+    /** Legacy API: trigger rank rebuild immediately. */
+    public void refreshRanking(){
+        rebuildRanks();
+    }
+
+    /** Legacy API: re-apply TAB to all online players. */
+    public void refreshTabAll(){
+        applyAllOnline();
+    }
+
+    /** Legacy API: send top-N islands to a player. */
+    public void sendTop(org.bukkit.entity.Player to, int count){
+        try {
+            java.util.List<com.signition.samskybridge.data.IslandData> all = new java.util.ArrayList<>(store.all());
+            all.sort(java.util.Comparator.comparingInt(com.signition.samskybridge.data.IslandData::getLevel).reversed());
+            count = Math.max(1, Math.min(count, all.size()));
+            to.sendMessage(com.signition.samskybridge.util.Text.color("&a[섬 랭킹 상위 " + count + "]"));
+            for (int i=0; i<count; i++){
+                com.signition.samskybridge.data.IslandData is = all.get(i);
+                String name = is.getName() == null ? "섬" : is.getName();
+                to.sendMessage(com.signition.samskybridge.util.Text.color("&7" + (i+1) + "위 &f" + name + " &8- &bLv." + is.getLevel()));
+            }
+        } catch (Throwable t){
+            to.sendMessage("§c랭킹 표시 중 오류: " + t.getMessage());
+        }
+    }
+
 }
