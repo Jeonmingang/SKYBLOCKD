@@ -305,7 +305,7 @@ int lv = level.getLevel(p.getUniqueId());
         }
         return out;
     }
-}
-
     /** Backward compat for routers expecting openUpgradeGui */
     public void openUpgradeGui(org.bukkit.entity.Player p){ open(p); }
+
+}
