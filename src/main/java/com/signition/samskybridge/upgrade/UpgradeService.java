@@ -37,7 +37,7 @@ public class UpgradeService {
 
     // ---------------- GUI ----------------
     public void open(Player p){
-        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드");
+        IslandData __is = level.getIslandOf(p); if (!isLeader(p, __is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 업그레이드를 사용할 수 있습니다.")); return; } String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드");
         String title = Text.color(raw);
         int invSize = Math.max(9, Math.min(54, (plugin.getConfig().getInt("upgrade.gui.inventory-size", 27) / 9) * 9));
         Inventory inv = Bukkit.createInventory(p, invSize, title);
@@ -56,7 +56,7 @@ public class UpgradeService {
     public void openUpgradeGui(Player p){ open(p); }
 
     public void click(Player p, int slot, boolean shift){
-        int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 12);
+        IslandData __is = level.getIslandOf(p); if (!isLeader(p, __is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 업그레이드를 사용할 수 있습니다.")); p.closeInventory(); return; } int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 12);
         int teamSlot = plugin.getConfig().getInt("upgrade.gui.slots.team", 14);
         int xpSlot   = plugin.getConfig().getInt("upgrade.gui.slots.xp",   22);
         if (slot == sizeSlot) { tryUpgradeSize(p); return; }
@@ -176,7 +176,7 @@ public class UpgradeService {
         IslandData is = level.getIslandOf(p);
         if (is == null){ p.sendMessage(Text.color("&c섬 데이터를 찾지 못했습니다.")); return; }
 
-        int current = is.getSize();
+        if (!isLeader(p, is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 이 업그레이드를 실행할 수 있습니다.")); return; } int current = is.getSize();
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.size");
         int next = current, needLevel = 0; double cost = 0.0;
         if (sec != null){
@@ -219,7 +219,7 @@ public class UpgradeService {
         IslandData is = level.getIslandOf(p);
         if (is == null){ p.sendMessage(Text.color("&c섬 데이터를 찾지 못했습니다.")); return; }
 
-        int current = is.getTeamMax();
+        if (!isLeader(p, is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 이 업그레이드를 실행할 수 있습니다.")); return; } int current = is.getTeamMax();
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.team");
         int next = current, needLevel = 0; double cost = 0.0;
         if (sec != null){
@@ -255,4 +255,11 @@ public class UpgradeService {
         p.sendMessage(Text.color("&a섬 인원이 &f" + current + " &7→ &f" + next + " &a로 업그레이드 되었습니다."));
         open(p);
     }
+
+    private boolean isLeader(org.bukkit.entity.Player p, IslandData is){
+        if (is == null) return false;
+        java.util.UUID owner = is.getOwner();
+        return owner != null && owner.equals(p.getUniqueId());
+    }
+
 }
