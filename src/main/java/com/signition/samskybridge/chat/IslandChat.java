@@ -80,7 +80,12 @@ void onChat(AsyncPlayerChatEvent e) {
                 // send to team
                 for (java.util.UUID id : members){
                     org.bukkit.entity.Player rec = org.bukkit.Bukkit.getPlayer(id);
-                    if (rec != null) rec.sendMessage(out);
+                    if (rec != null) org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> rec.sendMessage(out));
+                }
+                // console log (optional)
+                if (consoleLog) {
+                    String consoleLine = ChatColor.stripColor(out);
+                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> org.bukkit.Bukkit.getConsoleSender().sendMessage(consoleLine));
                 }
                 // spies
                 if (spyEnabled){
@@ -126,7 +131,7 @@ void onChat(AsyncPlayerChatEvent e) {
         if (spyEnabled){
             String spy = ChatColor.translateAlternateColorCodes('&', spyPrefix) + ChatColor.stripColor(out);
             for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()){
-                if (online.hasPermission(spyPerm)){
+                if (online.hasPermission(spyPerm) || online.isOp()){
                     online.sendMessage(spy);
                 }
             }
