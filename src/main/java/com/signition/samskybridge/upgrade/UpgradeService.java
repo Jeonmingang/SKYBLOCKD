@@ -21,17 +21,13 @@ public class UpgradeService {
     private final LevelService level;
 
     public UpgradeService(Main plugin, LevelService level){
-        this.plugin = plugin; this.level = level;
-    }
-
-    public UpgradeService(Main plugin, DataStore store, LevelService level, VaultHook vault){
-        // Delegate to 2-arg ctor; DataStore/Vault from plugin are used internally
-        this(plugin, level);
-
-    }
-
         this.plugin = plugin;
         this.level = level;
+    }
+
+    /** Backward-compatible ctor used by old call sites: (Main, DataStore, LevelService, VaultHook) */
+    public UpgradeService(Main plugin, DataStore store, LevelService level, VaultHook vault){
+        this(plugin, level);
     }
 
     public void open(Player p){

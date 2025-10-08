@@ -5,7 +5,6 @@ import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.rank.RankingService;
-import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.util.Text;
 import org.bukkit.entity.Player;
 
@@ -18,11 +17,15 @@ public class RankingUiService {
     private final DataStore store;
     private final LevelService level;
 
-    public RankingUiService(Main plugin, LevelService level, DataStore store){ this.plugin=plugin; this.level=level; this.store=(store!=null?store:plugin.getDataStore()); }
-    public RankingUiService(Main plugin, RankingService ranking, LevelService level, DataStore store){ this(plugin, level, store); }
+    public RankingUiService(Main plugin, LevelService level, DataStore store){
         this.plugin = plugin;
         this.level = level;
-        this.store = store != null ? store : plugin.getDataStore();
+        this.store = (store != null ? store : plugin.getDataStore());
+    }
+
+    /** Backward-compatible ctor used by old call sites: (Main, RankingService, LevelService, DataStore) */
+    public RankingUiService(Main plugin, RankingService ranking, LevelService level, DataStore store){
+        this(plugin, level, store);
     }
 
     public void openOrRefresh(Player p){
@@ -36,8 +39,8 @@ public class RankingUiService {
         p.sendMessage(Text.color("&6[섬 랭킹 TOP " + count + "]"));
         int i = 1;
         for (IslandData is : top){
-            String name = is.getName() != null ? is.getName() :
-                    (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown");
+            String name = (is.getName() != null ? is.getName() :
+                    (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown"));
             int size = is.getSize();
             int team = is.getTeamMax();
             int baseRange = plugin.getConfig().getInt("upgrade.size.base-range", 120);
