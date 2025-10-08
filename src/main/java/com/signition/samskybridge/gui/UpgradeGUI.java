@@ -17,7 +17,7 @@ public class UpgradeGUI {
         this.plugin = plugin;
         this.level = level;
         this.economy = economy;
-        this.upgrade = new UpgradeService(plugin, plugin.getDataStore(), level, plugin.getVault());
+        this.upgrade = new UpgradeService(plugin, level);
     }
 
     public void open(Player p){

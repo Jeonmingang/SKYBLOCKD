@@ -37,9 +37,9 @@ public class Main extends JavaPlugin {
         this.dataStore = new DataStore(this);
         this.levelService = new LevelService(this, dataStore);
         this.upgradeService = new UpgradeService(this, levelService);
-        this.rankingService = new RankingService(this, dataStore); // if constructor differs, RankingService isn't used directly anyway
+                this.rankingService = new RankingService(this, dataStore, levelService);
         this.rankingUiService = new RankingUiService(this, levelService, dataStore);
-        try { this.chat = new IslandChat(this); } catch (Throwable t){ this.getLogger().warning("IslandChat init failed: " + t.getMessage()); }
+        try { this.chat = new IslandChat(this, dataStore); } catch (Throwable t){ this.getLogger().warning("IslandChat init failed: " + t.getMessage()); }
 
         // Register command
         IslandCommandRouter router = new IslandCommandRouter(this);
