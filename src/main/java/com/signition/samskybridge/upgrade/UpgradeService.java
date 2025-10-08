@@ -15,12 +15,24 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 public class UpgradeService {
+
+    public UpgradeService(Main plugin, com.signition.samskybridge.data.DataStore store, LevelService level, com.signition.samskybridge.util.VaultHook vault){
+        this.plugin = plugin;
+        this.level = level;
+        this.store = store != null ? store : plugin.getDataStore();
+        this.vaultHook = vault != null ? vault : plugin.getVault();
+    }
+
     private final Main plugin;
     private final LevelService level;
+    private final com.signition.samskybridge.data.DataStore store;
+    private final com.signition.samskybridge.util.VaultHook vaultHook;
 
     public UpgradeService(Main plugin, LevelService level){
         this.plugin = plugin;
         this.level = level;
+        this.store = plugin.getDataStore();
+        this.vaultHook = plugin.getVault();
     }
 
     // ---------------- GUI ----------------
@@ -185,7 +197,7 @@ public class UpgradeService {
 
         // Economy cost (Vault via plugin.getVault())
         try {
-            net.milkbowl.vault.economy.Economy econ = plugin.getVault().getEconomy();
+            net.milkbowl.vault.economy.Economy econ = (this.vaultHook != null ? this.vaultHook.getEconomy() : (plugin.getVault()!=null?plugin.getVault().getEconomy():null));
             if (econ != null && cost > 0){
                 if (!econ.has(p, cost)){ p.sendMessage(Text.color("&c잔액이 부족합니다. &f" + String.format("%,.0f", cost))); return; }
                 econ.withdrawPlayer(p, cost);
@@ -193,7 +205,7 @@ public class UpgradeService {
         } catch (Throwable ignored){}
 
         is.setSize(next);
-        plugin.getStore().put(is);
+        this.store.put(is);
 
         // Apply to Bento and refresh TAB
         try { plugin.getBento().applyRange(is.getOwner(), is.getSize()); } catch (Throwable ignored){}
@@ -227,7 +239,7 @@ public class UpgradeService {
         if (is.getLevel() < needLevel){ p.sendMessage(Text.color("&c요구 레벨 " + needLevel + "이(가) 필요합니다.")); return; }
 
         try {
-            net.milkbowl.vault.economy.Economy econ = plugin.getVault().getEconomy();
+            net.milkbowl.vault.economy.Economy econ = (this.vaultHook != null ? this.vaultHook.getEconomy() : (plugin.getVault()!=null?plugin.getVault().getEconomy():null));
             if (econ != null && cost > 0){
                 if (!econ.has(p, cost)){ p.sendMessage(Text.color("&c잔액이 부족합니다. &f" + String.format("%,.0f", cost))); return; }
                 econ.withdrawPlayer(p, cost);
@@ -235,7 +247,7 @@ public class UpgradeService {
         } catch (Throwable ignored){}
 
         is.setTeamMax(next);
-        plugin.getStore().put(is);
+        this.store.put(is);
 
         try { plugin.getBento().applyTeamCap(is.getOwner(), is.getTeamMax()); } catch (Throwable ignored){}
         try { plugin.getRankingService().applyTab(p); } catch (Throwable ignored){}
