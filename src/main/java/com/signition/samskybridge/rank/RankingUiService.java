@@ -39,20 +39,7 @@ public class RankingUiService {
         int i = 1;
         for (IslandData is : top){
             String name = is.getName() != null ? is.getName() : (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown");
-            int size = is.getSize();
-            int team = is.getTeamMax();
-            int lv2 = is.getLevel();
-            int rankNum = i;
-            int baseRange = plugin.getConfig().getInt("upgrade.size.base-range", 120);
-            int deltaSize = Math.max(0, size - baseRange);
-            String fmt = plugin.getConfig().getString("ranking.line-format", "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team>");
-            String line = fmt.replace("<rank>", String.valueOf(rankNum))
-                             .replace("<name>", name)
-                             .replace("<level>", String.valueOf(lv2))
-                             .replace("<size>", String.valueOf(size))
-                             .replace("<delta_size>", String.valueOf(deltaSize))
-                             .replace("<team>", String.valueOf(team));
-            p.sendMessage(Text.color(line));
+            p.sendMessage(Text.color("&e#" + i + " &f" + name + " &7- Lv.&f" + is.getLevel()));
             i++;
         }
         // If player's island exists, also show its rank

@@ -7,9 +7,6 @@
 
 integration:
   bentobox:
-    command-templates:
-      range-set: "bsbadmin range set <gamemode-id> <owner> <range>"
-      team-set: "bsbadmin team set <gamemode-id> <owner> <cap>"
     enabled: true
     gamemode-id: "bskyblock"   # Adjust if your Bento gamemode id differs
 
@@ -92,8 +89,6 @@ defaults:
 # 랭킹 표기 포맷 (/랭킹 등)
 ranking:
   top-count: 10
-  line-format: "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team>"
-  top-count: 10
   header: "&a[ 섬 랭킹 상위 <n> ]"
   line: "&f<rank>. &e<name> &7- Lv.<level>"
   footer: "&7총 <n>개 섬"
@@ -101,11 +96,6 @@ ranking:
 
 # 레벨/경험치 곡선
 level:
-  status: "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7) &8| &a<gauge> &7<percent>%"
-  gauge:
-    length: 20
-    full: "█"
-    empty: "░"
   base-xp: 1000      # 레벨 1→2에 필요한 기본 XP
   per-level: 500     # 레벨마다 선형으로 추가되는 값
   growth: 1.0        # 1.0=선형, >1.0이면 레벨 오를수록 요구치 증가

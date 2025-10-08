@@ -1,4 +1,3 @@
-
 package com.signition.samskybridge.info;
 
 import com.signition.samskybridge.Main;
@@ -19,7 +18,7 @@ public class InfoService {
         this.store = store;
     }
 
-    /** Opens a simple text-based island info. Can be extended to GUI later. */
+    /** Opens a simple text-based island info with XP gauge. */
     public void show(Player p){
         IslandData is = level.getIslandOf(p);
         if (is == null){
@@ -46,15 +45,5 @@ public class InfoService {
         for (int k=fill;k<barLen;k++) sb.append(empty);
         String gauge = sb.toString();
         p.sendMessage(Text.color("&8[&a" + gauge + "&8] &7" + (int)Math.floor(ratio*100) + "%"));
-    }
-        int lv = is.getLevel();
-        long cur = is.getXp();
-        long need = level.getNextXpRequirement(lv + 1);
-        int size = is.getSize();
-        int cap  = is.getTeamMax();
-
-        p.sendMessage(Text.color("&6[섬 정보] &f소유자: &e" + p.getName()));
-        p.sendMessage(Text.color("&7레벨: &f" + lv + " &8| &7경험치: &f" + cur + "&7/&f" + need));
-        p.sendMessage(Text.color("&7섬 크기: &f" + size + " 블럭 &8| &7인원수: &f" + cap + " 명"));
     }
 }
