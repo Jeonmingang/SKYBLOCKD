@@ -152,14 +152,21 @@ public class LevelService {
         int lv = getLevel(id);
         long cur = getCurrentXp(id);
         long need = getNextXpRequirement(lv + 1);
-        int percent = need > 0 ? (int)Math.floor((cur * 100.0) / need) : 0;
+        int barLen = Math.max(5, plugin.getConfig().getInt("level.gauge.length", 20));
+        String full = plugin.getConfig().getString("level.gauge.full", "█");
+        String empty = plugin.getConfig().getString("level.gauge.empty", "░");
+        double ratio = need > 0 ? Math.min(1.0, Math.max(0.0, (cur * 1.0) / need)) : 0.0;
+        int fill = (int)Math.floor(ratio * barLen);
+        StringBuilder sb = new StringBuilder();
+        for (int k=0;k<fill;k++) sb.append(full);
+        for (int k=fill;k<barLen;k++) sb.append(empty);
+        String gauge = sb.toString();
         String msg = plugin.getConfig().getString("level.status",
-                "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7, &f<percent>%&7)");
+                "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7) &8| &a<gauge> &7<percent>%");
         msg = msg.replace("<level>", String.valueOf(lv))
                  .replace("<xp>", String.valueOf(cur))
                  .replace("<need>", String.valueOf(need))
-                 .replace("<percent>", String.valueOf(percent));
+                 .replace("<gauge>", gauge)
+                 .replace("<percent>", String.valueOf((int)Math.floor(ratio*100)));
         p.sendMessage(com.signition.samskybridge.util.Text.color(msg));
     }
-    
-}

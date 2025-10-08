@@ -73,4 +73,30 @@ public class BentoSync {
         if (!isEnabled()) return;
         applyTeamMax(player, teamMax);
     }
+
+    public void applyRange(java.util.UUID owner, int range){
+        try {
+            if (!enabled) return;
+            String gm = gamemodeId;
+            String ownerName = org.bukkit.Bukkit.getOfflinePlayer(owner).getName();
+            String tpl = plugin.getConfig().getString("integration.bentobox.command-templates.range-set",
+                    "bsbadmin range set <gamemode-id> <owner> <range>");
+            String cmd = tpl.replace("<gamemode-id>", gm).replace("<owner>", ownerName).replace("<range>", String.valueOf(range));
+            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+            plugin.getLogger().info("[BentoSync] range applied: " + cmd);
+        } catch (Throwable ignore){}
+    }
+
+    public void applyTeamCap(java.util.UUID owner, int cap){
+        try {
+            if (!enabled) return;
+            String gm = gamemodeId;
+            String ownerName = org.bukkit.Bukkit.getOfflinePlayer(owner).getName();
+            String tpl = plugin.getConfig().getString("integration.bentobox.command-templates.team-set",
+                    "bsbadmin team set <gamemode-id> <owner> <cap>");
+            String cmd = tpl.replace("<gamemode-id>", gm).replace("<owner>", ownerName).replace("<cap>", String.valueOf(cap));
+            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+            plugin.getLogger().info("[BentoSync] team cap applied: " + cmd);
+        } catch (Throwable ignore){}
+    }
 }

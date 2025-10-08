@@ -22,8 +22,11 @@ public class GuiListener implements Listener {
         Inventory inv = e.getInventory();
         if (inv == null || e.getView() == null || e.getCurrentItem() == null) return;
 
-        String title = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
-        if (!e.getView().getTitle().equals(title)) return;
+        String raw = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
+        String title = com.signition.samskybridge.util.Text.color(raw);
+        boolean strict = plugin.getConfig().getBoolean("gui.strict-title-match", true);
+        String vt = e.getView().getTitle();
+        if (strict ? !vt.equals(title) : !org.bukkit.ChatColor.stripColor(vt).equals(org.bukkit.ChatColor.stripColor(title))) return;
 
         e.setCancelled(true);
         int slot = e.getRawSlot();

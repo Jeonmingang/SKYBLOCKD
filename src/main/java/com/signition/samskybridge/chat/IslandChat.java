@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Keeps behavior simple and compatible with 1.16.5 / Java 11.
  */
 public class IslandChat implements Listener {
+    private boolean consoleLog = true;
+
     private final Main plugin;
     private final DataStore store;
     private final Map<UUID, Boolean> toggled = new ConcurrentHashMap<>();
@@ -140,6 +142,7 @@ void onChat(AsyncPlayerChatEvent e) {
         this.spyEnabled = plugin.getConfig().getBoolean(base + "spy.enabled", this.spyEnabled);
         this.spyPerm = plugin.getConfig().getString(base + "spy.permission", this.spyPerm != null ? this.spyPerm : "samsky.chat.spy");
         this.spyPrefix = plugin.getConfig().getString(base + "spy.prefix", this.spyPrefix != null ? this.spyPrefix : "&8[Spy]&7 ");
+        this.consoleLog = plugin.getConfig().getBoolean(base + "console-log", this.consoleLog);
     }
 
 

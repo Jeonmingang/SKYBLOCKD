@@ -71,6 +71,14 @@ public class RankingService implements org.bukkit.event.Listener {
         String s = plugin.getConfig().getString(key, "");
         return Text.color(s);
     }
+    private String applyFmt(String key, java.util.Map<String,String> ctx){
+        String s = fmt(key);
+        for (java.util.Map.Entry<String,String> e : ctx.entrySet()){
+            s = s.replace(e.getKey(), e.getValue());
+        }
+        return s;
+    }
+
 
     private Team teamFor(Player p){
         Scoreboard sb = mainBoard();
@@ -89,8 +97,10 @@ public class RankingService implements org.bukkit.event.Listener {
             Team t = teamFor(p);
 
             if (is == null){
-                t.setPrefix(fmt("tab.dynamic.none.prefix"));
-                t.setSuffix(fmt("tab.dynamic.none.suffix"));
+                java.util.Map<String,String> ctx0 = new java.util.HashMap<>();
+                ctx0.put("<rank>", "0"); ctx0.put("<level>", "0"); ctx0.put("<island>", "섬");
+                t.setPrefix(applyFmt("tab.dynamic.none.prefix", ctx0));
+                t.setSuffix(applyFmt("tab.dynamic.none.suffix", ctx0));
                 return;
             }
 
@@ -98,21 +108,19 @@ public class RankingService implements org.bukkit.event.Listener {
             int rank = getRank(is.getOwner());
             int lv = is.getLevel();
             String islandName = is.getName() == null ? "섬" : is.getName();
+            java.util.Map<String,String> ctx = new java.util.HashMap<>();
+            ctx.put("<rank>", String.valueOf(rank));
+            ctx.put("<level>", String.valueOf(lv));
+            ctx.put("<island>", islandName);
 
             if (isLeader){
-                String pre = fmt("tab.dynamic.leader.prefix")
-                        .replace("<rank>", String.valueOf(rank))
-                        .replace("<level>", String.valueOf(lv));
-                String suf = fmt("tab.dynamic.leader.suffix")
-                        .replace("<level>", String.valueOf(lv));
+                String pre = applyFmt("tab.dynamic.leader.prefix", ctx);
+                String suf = applyFmt("tab.dynamic.leader.suffix", ctx);
                 t.setPrefix(pre);
                 t.setSuffix(suf);
             } else {
-                String pre = fmt("tab.dynamic.member.prefix")
-                        .replace("<island>", islandName)
-                        .replace("<rank>", String.valueOf(rank));
-                String suf = fmt("tab.dynamic.member.suffix")
-                        .replace("<level>", String.valueOf(lv));
+                String pre = applyFmt("tab.dynamic.member.prefix", ctx);
+                String suf = applyFmt("tab.dynamic.member.suffix", ctx);
                 t.setPrefix(pre);
                 t.setSuffix(suf);
             }

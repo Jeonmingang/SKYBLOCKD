@@ -26,11 +26,12 @@ public class InstantRefreshListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e){
         // Slight delay to ensure scoreboard initialized by other plugins
-        Bukkit.getScheduler().runTaskLater(plugin, () -> ranking.applyTab(e.getPlayer()), 4L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> { if (plugin.getConfig().getBoolean("tab.apply-on-join", true)) ranking.applyTab(e.getPlayer()); }, 4L);
     }
 
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent e){
+        if (!plugin.getConfig().getBoolean("tab.apply-on-world-change", true)) return;
         ranking.applyTab(e.getPlayer());
     }
 
