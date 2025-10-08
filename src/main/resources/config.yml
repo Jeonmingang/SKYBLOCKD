@@ -17,13 +17,14 @@ tab:
   reapply-interval-ticks: 200
   dynamic:
     leader:
-      prefix: "&6[섬장]&r "
-      suffix: ""
+      prefix: "&a섬 랭킹 <rank>위 | "
+      suffix: " &7[Lv.<level>]"
     member:
-      prefix: "&a[섬]&r "
-      suffix: ""
+      # 멤버는 섬 이름을 보여주고 싶으면 <island> 사용
+      prefix: "&a섬 랭킹 <rank>위 | <island> "
+      suffix: " &7[Lv.<level>]"
     none:
-      prefix: ""
+      prefix: "등록안됨"
       suffix: ""
 
 
