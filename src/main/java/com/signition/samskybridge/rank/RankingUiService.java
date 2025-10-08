@@ -35,11 +35,35 @@ public class RankingUiService {
                 .limit(count)
                 .collect(Collectors.toList());
 
-        p.sendMessage(Text.color("&6[섬 랭킹 TOP 10]"));
+        String name = is.getName() != null ? is.getName() : (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown");
+int size = is.getSize();
+int team = is.getTeamMax();
+int baseRange = plugin.getConfig().getInt("upgrade.size.base-range", 120);
+int deltaSize = Math.max(0, size - baseRange);
+String fmt = plugin.getConfig().getString("ranking.line-format", "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team>");
+String line = fmt.replace("<rank>", String.valueOf(i))
+                 .replace("<name>", name)
+                 .replace("<level>", String.valueOf(is.getLevel()))
+                 .replace("<size>", String.valueOf(size))
+                 .replace("<team>", String.valueOf(team))
+                 .replace("<delta_size>", String.valueOf(deltaSize));
+p.sendMessage(Text.color(line));
         int i = 1;
         for (IslandData is : top){
             String name = is.getName() != null ? is.getName() : (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown");
-            p.sendMessage(Text.color("&e#" + i + " &f" + name + " &7- Lv.&f" + is.getLevel()));
+            String name = is.getName() != null ? is.getName() : (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown");
+int size = is.getSize();
+int team = is.getTeamMax();
+int baseRange = plugin.getConfig().getInt("upgrade.size.base-range", 120);
+int deltaSize = Math.max(0, size - baseRange);
+String fmt = plugin.getConfig().getString("ranking.line-format", "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team>");
+String line = fmt.replace("<rank>", String.valueOf(i))
+                 .replace("<name>", name)
+                 .replace("<level>", String.valueOf(is.getLevel()))
+                 .replace("<size>", String.valueOf(size))
+                 .replace("<team>", String.valueOf(team))
+                 .replace("<delta_size>", String.valueOf(deltaSize));
+p.sendMessage(Text.color(line));
             i++;
         }
         // If player's island exists, also show its rank
@@ -49,7 +73,19 @@ public class RankingUiService {
                     .filter(o -> o != mine)
                     .filter(o -> o.getLevel() > mine.getLevel())
                     .count();
-            p.sendMessage(Text.color("&7내 섬 현재 순위: &e#" + myRank + " &7( Lv.&f" + mine.getLevel() + "&7 )"));
+            String name = is.getName() != null ? is.getName() : (is.getOwner()!=null ? is.getOwner().toString().substring(0,8) : "unknown");
+int size = is.getSize();
+int team = is.getTeamMax();
+int baseRange = plugin.getConfig().getInt("upgrade.size.base-range", 120);
+int deltaSize = Math.max(0, size - baseRange);
+String fmt = plugin.getConfig().getString("ranking.line-format", "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team>");
+String line = fmt.replace("<rank>", String.valueOf(i))
+                 .replace("<name>", name)
+                 .replace("<level>", String.valueOf(is.getLevel()))
+                 .replace("<size>", String.valueOf(size))
+                 .replace("<team>", String.valueOf(team))
+                 .replace("<delta_size>", String.valueOf(deltaSize));
+p.sendMessage(Text.color(line));
         }
     }
 }
