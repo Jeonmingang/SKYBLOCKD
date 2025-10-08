@@ -11,29 +11,19 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** Prints top N ranks to chat with configurable line format. */
 public class RankingUiService {
     private final Main plugin;
     private final DataStore store;
     private final LevelService level;
-    private final RankingService ranking; // optional reference, may be null
 
-    public RankingUiService(Main plugin, RankingService ranking, LevelService level, DataStore store){
+    public RankingUiService(Main plugin, LevelService level, DataStore store){
         this.plugin = plugin;
-        this.ranking = ranking;
         this.level = level;
         this.store = store != null ? store : plugin.getDataStore();
     }
-    public RankingUiService(Main plugin, LevelService level, DataStore store){
-        this(plugin, null, level, store);
-    }
-    public RankingUiService(Main plugin, DataStore store, LevelService level){
-        this(plugin, null, level, store);
-    }
 
     public void openOrRefresh(Player p){
-        DataStore st = (this.store != null ? this.store : plugin.getDataStore());
-        List<IslandData> all = st.all();
+        List<IslandData> all = store.all();
         int count = Math.max(1, plugin.getConfig().getInt("ranking.top-count", 10));
         List<IslandData> top = all.stream()
                 .sorted(Comparator.comparingInt(IslandData::getLevel).reversed())
@@ -49,6 +39,11 @@ public class RankingUiService {
             int team = is.getTeamMax();
             int baseRange = plugin.getConfig().getInt("upgrade.size.base-range", 120);
             int deltaSize = Math.max(0, size - baseRange);
+
+            long xp = is.getXp();
+            long need = level.getNextXpRequirement(is.getLevel() + 1);
+            int percent = (need > 0 ? (int)Math.floor(Math.min(100.0, (xp * 100.0) / need)) : 0);
+
             String fmt = plugin.getConfig().getString("ranking.line-format",
                     "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team>");
             String line = fmt.replace("<rank>", String.valueOf(i))
@@ -56,7 +51,10 @@ public class RankingUiService {
                     .replace("<level>", String.valueOf(is.getLevel()))
                     .replace("<size>", String.valueOf(size))
                     .replace("<team>", String.valueOf(team))
-                    .replace("<delta_size>", String.valueOf(deltaSize));
+                    .replace("<delta_size>", String.valueOf(deltaSize))
+                    .replace("<xp>", String.valueOf(xp))
+                    .replace("<need>", String.valueOf(need))
+                    .replace("<percent>", String.valueOf(percent));
             p.sendMessage(Text.color(line));
             i++;
         }

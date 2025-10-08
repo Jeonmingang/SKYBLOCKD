@@ -162,3 +162,22 @@ upgrade:
 
 island-chat:
   console-log: true
+level:
+  base-xp: 500
+  per-level: 250
+  growth: 1.10
+  max: 100
+  requirement-multiplier-percent: 100
+  notify-on-levelup: true
+  levelup-message: "&a섬 레벨이 올라갔습니다! &fLv.<level>"
+  gauge:
+    length: 20
+    full: "█"
+    empty: "░"
+  status: "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7) &8| &a<gauge> &7<percent>%"
+upgrade:
+  xp:
+    amount: 1000       # 구매 시 지급되는 경험치
+    cost: 10000        # 가격
+    need-level: 0      # 최소 레벨 요구
+    cooldown-seconds: 0  # (옵션) 쿨타임, 0=없음

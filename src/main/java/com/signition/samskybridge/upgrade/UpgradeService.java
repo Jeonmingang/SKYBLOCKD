@@ -15,29 +15,21 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 public class UpgradeService {
-
-    public UpgradeService(Main plugin, com.signition.samskybridge.data.DataStore store, LevelService level, com.signition.samskybridge.util.VaultHook vault){
-        this.plugin = plugin;
-        this.level = level;
-        this.store = store != null ? store : plugin.getDataStore();
-        this.vaultHook = vault != null ? vault : plugin.getVault();
-    }
-
     private final Main plugin;
     private final LevelService level;
-    private final com.signition.samskybridge.data.DataStore store;
-    private final com.signition.samskybridge.util.VaultHook vaultHook;
 
     public UpgradeService(Main plugin, LevelService level){
         this.plugin = plugin;
         this.level = level;
-        this.store = plugin.getDataStore();
-        this.vaultHook = plugin.getVault();
     }
 
-    // ---------------- GUI ----------------
     public void open(Player p){
-        IslandData __is = level.getIslandOf(p); if (!isLeader(p, __is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 업그레이드를 사용할 수 있습니다.")); return; } String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드");
+        IslandData __is = level.getIslandOf(p);
+        if (!isLeader(p, __is)) {
+            p.sendMessage(Text.color("&c섬장만 업그레이드를 사용할 수 있습니다."));
+            return;
+        }
+        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드");
         String title = Text.color(raw);
         int invSize = Math.max(9, Math.min(54, (plugin.getConfig().getInt("upgrade.gui.inventory-size", 27) / 9) * 9));
         Inventory inv = Bukkit.createInventory(p, invSize, title);
@@ -52,16 +44,21 @@ public class UpgradeService {
         p.openInventory(inv);
     }
 
-    /** Backward compatibility */
     public void openUpgradeGui(Player p){ open(p); }
 
     public void click(Player p, int slot, boolean shift){
-        IslandData __is = level.getIslandOf(p); if (!isLeader(p, __is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 업그레이드를 사용할 수 있습니다.")); p.closeInventory(); return; } int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 12);
+        IslandData __is = level.getIslandOf(p);
+        if (!isLeader(p, __is)) {
+            p.sendMessage(Text.color("&c섬장만 업그레이드를 사용할 수 있습니다."));
+            p.closeInventory();
+            return;
+        }
+        int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 12);
         int teamSlot = plugin.getConfig().getInt("upgrade.gui.slots.team", 14);
         int xpSlot   = plugin.getConfig().getInt("upgrade.gui.slots.xp",   22);
         if (slot == sizeSlot) { tryUpgradeSize(p); return; }
         if (slot == teamSlot) { tryUpgradeMemberCap(p); return; }
-        if (slot == xpSlot)   { p.sendMessage(Text.color("&cXP 업그레이드는 준비중입니다.")); return; }
+        if (slot == xpSlot)   { tryPurchaseXp(p); return; }
     }
 
     private ItemStack buildSizeItem(Player p){
@@ -151,10 +148,24 @@ public class UpgradeService {
     }
 
     private ItemStack buildXpItem(Player p){
-        ItemStack it = new ItemStack(Material.EXPERIENCE_BOTTLE);
+        IslandData is = level.getIslandOf(p);
+        long amount = plugin.getConfig().getLong("upgrade.xp.amount", 1000L);
+        double cost = plugin.getConfig().getDouble("upgrade.xp.cost", 10000.0);
+        int reqLevel = plugin.getConfig().getInt("upgrade.xp.need-level", 0);
+
+        ItemStack it = new ItemStack(Material.matchMaterial(plugin.getConfig().getString("upgrade.gui.items.xp.material","EXPERIENCE_BOTTLE")));
         ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName(Text.color("&a경험치 관련(준비중)"));
-        meta.setLore(java.util.Arrays.asList(Text.color("&7추가 예정")));
+        meta.setDisplayName(Text.color(plugin.getConfig().getString("upgrade.gui.items.xp.name","&a경험치 구매")));
+        List<String> tpl = plugin.getConfig().getStringList("upgrade.gui.items.xp.lore");
+        Map<String,String> ctx = new HashMap<>();
+        ctx.put("{경험치구매량}", String.valueOf(amount));
+        ctx.put("{경험치비용}", String.format("%,.0f", cost));
+        ctx.put("{경험치필요레벨}", String.valueOf(reqLevel));
+        ctx.put("{xp-amount}", String.valueOf(amount));
+        ctx.put("{xp-cost}", String.format("%,.0f", cost));
+        ctx.put("{xp-need-level}", String.valueOf(reqLevel));
+        ctx.put("{현재레벨}", String.valueOf(is != null ? is.getLevel() : 0));
+        meta.setLore(applyTemplate(tpl, ctx));
         it.setItemMeta(meta);
         return it;
     }
@@ -171,12 +182,11 @@ public class UpgradeService {
         return out;
     }
 
-    // --------------- Actions ----------------
     private void tryUpgradeSize(Player p){
         IslandData is = level.getIslandOf(p);
         if (is == null){ p.sendMessage(Text.color("&c섬 데이터를 찾지 못했습니다.")); return; }
 
-        if (!isLeader(p, is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 이 업그레이드를 실행할 수 있습니다.")); return; } int current = is.getSize();
+        int current = is.getSize();
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.size");
         int next = current, needLevel = 0; double cost = 0.0;
         if (sec != null){
@@ -195,9 +205,8 @@ public class UpgradeService {
         if (next <= current){ p.sendMessage(Text.color("&c더 이상 업그레이드할 단계가 없습니다.")); return; }
         if (is.getLevel() < needLevel){ p.sendMessage(Text.color("&c요구 레벨 " + needLevel + "이(가) 필요합니다.")); return; }
 
-        // Economy cost (Vault via plugin.getVault())
         try {
-            net.milkbowl.vault.economy.Economy econ = (this.vaultHook != null ? this.vaultHook.getEconomy() : (plugin.getVault()!=null?plugin.getVault().getEconomy():null));
+            net.milkbowl.vault.economy.Economy econ = plugin.getVault()!=null ? plugin.getVault().getEconomy() : null;
             if (econ != null && cost > 0){
                 if (!econ.has(p, cost)){ p.sendMessage(Text.color("&c잔액이 부족합니다. &f" + String.format("%,.0f", cost))); return; }
                 econ.withdrawPlayer(p, cost);
@@ -205,9 +214,8 @@ public class UpgradeService {
         } catch (Throwable ignored){}
 
         is.setSize(next);
-        this.store.put(is);
+        plugin.getDataStore().put(is);
 
-        // Apply to Bento and refresh TAB
         try { plugin.getBento().applyRange(is.getOwner(), is.getSize()); } catch (Throwable ignored){}
         try { plugin.getRankingService().applyTab(p); } catch (Throwable ignored){}
 
@@ -219,7 +227,7 @@ public class UpgradeService {
         IslandData is = level.getIslandOf(p);
         if (is == null){ p.sendMessage(Text.color("&c섬 데이터를 찾지 못했습니다.")); return; }
 
-        if (!isLeader(p, is)) { p.sendMessage(com.signition.samskybridge.util.Text.color("&c섬장만 이 업그레이드를 실행할 수 있습니다.")); return; } int current = is.getTeamMax();
+        int current = is.getTeamMax();
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.team");
         int next = current, needLevel = 0; double cost = 0.0;
         if (sec != null){
@@ -239,7 +247,7 @@ public class UpgradeService {
         if (is.getLevel() < needLevel){ p.sendMessage(Text.color("&c요구 레벨 " + needLevel + "이(가) 필요합니다.")); return; }
 
         try {
-            net.milkbowl.vault.economy.Economy econ = (this.vaultHook != null ? this.vaultHook.getEconomy() : (plugin.getVault()!=null?plugin.getVault().getEconomy():null));
+            net.milkbowl.vault.economy.Economy econ = plugin.getVault()!=null ? plugin.getVault().getEconomy() : null;
             if (econ != null && cost > 0){
                 if (!econ.has(p, cost)){ p.sendMessage(Text.color("&c잔액이 부족합니다. &f" + String.format("%,.0f", cost))); return; }
                 econ.withdrawPlayer(p, cost);
@@ -247,7 +255,7 @@ public class UpgradeService {
         } catch (Throwable ignored){}
 
         is.setTeamMax(next);
-        this.store.put(is);
+        plugin.getDataStore().put(is);
 
         try { plugin.getBento().applyTeamCap(is.getOwner(), is.getTeamMax()); } catch (Throwable ignored){}
         try { plugin.getRankingService().applyTab(p); } catch (Throwable ignored){}
@@ -256,10 +264,47 @@ public class UpgradeService {
         open(p);
     }
 
+    private void tryPurchaseXp(Player p){
+        IslandData is = level.getIslandOf(p);
+        if (is == null){ p.sendMessage(Text.color("&c섬 데이터를 찾지 못했습니다.")); return; }
+
+        long amount = plugin.getConfig().getLong("upgrade.xp.amount", 1000L);
+        double cost = plugin.getConfig().getDouble("upgrade.xp.cost", 10000.0);
+        int reqLv   = plugin.getConfig().getInt("upgrade.xp.need-level", 0);
+
+        if (is.getLevel() < reqLv){
+            p.sendMessage(Text.color("&c요구 레벨 " + reqLv + "이(가) 필요합니다."));
+            return;
+        }
+
+        try {
+            net.milkbowl.vault.economy.Economy econ = plugin.getVault()!=null ? plugin.getVault().getEconomy() : null;
+            if (econ != null && cost > 0){
+                if (!econ.has(p, cost)){
+                    p.sendMessage(Text.color("&c잔액이 부족합니다. &f" + String.format("%,.0f", cost)));
+                    return;
+                }
+                econ.withdrawPlayer(p, cost);
+            }
+        } catch (Throwable ignored){}
+
+        // add xp and handle level up internally
+        level.addXp(p, amount);
+
+        // feedback with gauge after purchase
+        int lv = is.getLevel();
+        long cur = is.getXp();
+        long need = level.getNextXpRequirement(lv + 1);
+        int percent = (need > 0 ? (int)Math.floor(Math.min(100.0, (cur * 100.0) / need)) : 0);
+        p.sendMessage(Text.color("&a경험치 &f+" + amount + " &a구매 완료 (&f" + cur + "&7/&f" + need + "&a, &f" + percent + "%&a)"));
+
+        try { plugin.getRankingService().applyTab(p); } catch (Throwable ignored){}
+        open(p);
+    }
+
     private boolean isLeader(org.bukkit.entity.Player p, IslandData is){
         if (is == null) return false;
         java.util.UUID owner = is.getOwner();
         return owner != null && owner.equals(p.getUniqueId());
     }
-
 }

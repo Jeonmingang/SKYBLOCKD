@@ -15,7 +15,7 @@ public class InfoService {
     public InfoService(Main plugin, LevelService level, DataStore store){
         this.plugin = plugin;
         this.level = level;
-        this.store = store;
+        this.store = store != null ? store : plugin.getDataStore();
     }
 
     /** Opens a simple text-based island info with XP gauge. */

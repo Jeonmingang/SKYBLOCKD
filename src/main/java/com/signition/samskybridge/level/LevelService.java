@@ -4,29 +4,25 @@ import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.util.Text;
-import org.bukkit.entity.Player;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-/**
- * Level / XP service (clean implementation).
- */
 public class LevelService {
     private final Main plugin;
     private final DataStore store;
 
-    // Tuning
-    private long baseXp;     // XP for level 1 -> 2
-    private long perLevel;   // linear increment per next level
-    private double growth;   // multiplicative growth per level
+    private long baseXp;
+    private long perLevel;
+    private double growth;
     private int maxLevel;
     private boolean notifyOnLevelUp;
     private String levelUpMsg;
 
     public LevelService(Main plugin, DataStore store){
         this.plugin = plugin;
-        this.store = store;
+        this.store = store != null ? store : plugin.getDataStore();
         reloadConfig();
     }
 
@@ -54,21 +50,61 @@ public class LevelService {
         return is != null ? is.getXp() : 0L;
     }
 
+    /** Multiplier percent for XP requirement (e.g. 120 means 1.2x). */
+    private double reqMultiplier(){
+        double pct = plugin.getConfig().getDouble("level.requirement-multiplier-percent", 100.0);
+        if (pct <= 0) pct = 100.0;
+        return pct / 100.0;
+    }
+
     /** XP required to REACH the given level (i.e., next level requirement). */
     public long getNextXpRequirement(int level){
-        if (level <= 1) return baseXp;
+        if (level <= 1) return (long)Math.floor(baseXp * reqMultiplier());
         double req = baseXp;
         for (int i=2; i<=level; i++){
             req = (req + perLevel) * growth;
         }
+        req = req * reqMultiplier();
         return (long) Math.max(baseXp, Math.floor(req));
+    }
+
+    /** Add XP and handle level up chain if needed. */
+    public void addXp(Player p, long delta){
+        if (delta <= 0) return;
+        IslandData is = getIslandOf(p);
+        if (is == null) return;
+        long xp = Math.max(0L, is.getXp()) + delta;
+
+        int level = Math.max(1, is.getLevel());
+        boolean leveled = false;
+        while (level < maxLevel){
+            long need = getNextXpRequirement(level + 1);
+            if (xp >= need){
+                xp -= need;
+                level++;
+                leveled = true;
+            } else break;
+        }
+
+        is.setXp(xp);
+        is.setLevel(level);
+        store.put(is);
+
+        if (leveled && notifyOnLevelUp){
+            String msg = levelUpMsg.replace("<level>", String.valueOf(level));
+            p.sendMessage(Text.color(msg));
+        }
     }
 
     /** Show status bar in chat for /섬 레벨 */
     public void show(Player p){
-        UUID id = p.getUniqueId();
-        int lv = Math.min(getLevel(id), maxLevel);
-        long cur = getCurrentXp(id);
+        IslandData is = getIslandOf(p);
+        if (is == null){
+            p.sendMessage(Text.color("&c섬 데이터를 찾지 못했습니다."));
+            return;
+        }
+        int lv = Math.min(is.getLevel(), maxLevel);
+        long cur = is.getXp();
         long need = getNextXpRequirement(lv + 1);
 
         int barLen = Math.max(5, plugin.getConfig().getInt("level.gauge.length", 20));
