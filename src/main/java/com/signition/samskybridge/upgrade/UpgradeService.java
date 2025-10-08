@@ -24,10 +24,47 @@ public class UpgradeService {
         this.plugin = plugin;
         this.level = level;
     }
-
-    /** Backward-compatible ctor used by old call sites: (Main, DataStore, LevelService, VaultHook) */
     public UpgradeService(Main plugin, DataStore store, LevelService level, VaultHook vault){
         this(plugin, level);
+    }
+
+    private java.util.List<String> getList(String... paths){
+        for (String p : paths){
+            java.util.List<String> v = plugin.getConfig().getStringList(p);
+            if (v != null && !v.isEmpty()) return v;
+        }
+        return new java.util.ArrayList<>();
+    }
+    private String getString(String def, String... paths){
+        for (String p : paths){
+            if (plugin.getConfig().isString(p)){
+                String s = plugin.getConfig().getString(p);
+                if (s != null) return s;
+            }
+        }
+        return def;
+    }
+    private java.util.List<String> applyPlaceholders(java.util.List<String> tpl, java.util.Map<String,String> ctx){
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String line : tpl){
+            for (java.util.Map.Entry<String,String> e : ctx.entrySet()){
+                line = line.replace(e.getKey(), e.getValue());
+            }
+            if (ctx.containsKey("{현재크기}")) {
+                line = line.replace("<current>", ctx.get("{현재크기}"))
+                           .replace("<next>", ctx.get("{다음크기}"))
+                           .replace("<level>", ctx.get("{크기필요레벨}"))
+                           .replace("<cost>", ctx.get("{크기비용}"));
+            }
+            if (ctx.containsKey("{현재인원}")) {
+                line = line.replace("<current>", ctx.get("{현재인원}"))
+                           .replace("<next>", ctx.get("{다음인원}"))
+                           .replace("<level>", ctx.get("{인원필요레벨}"))
+                           .replace("<cost>", ctx.get("{인원비용}"));
+            }
+            out.add(com.signition.samskybridge.util.Text.color(line));
+        }
+        return out;
     }
 
     public void open(Player p){
@@ -36,7 +73,8 @@ public class UpgradeService {
             p.sendMessage(Text.color("&c섬장만 업그레이드를 사용할 수 있습니다."));
             return;
         }
-        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드");
+        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", null);
+        if (raw == null) raw = plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드");
         String title = Text.color(raw);
         int invSize = Math.max(9, Math.min(54, (plugin.getConfig().getInt("upgrade.gui.inventory-size", 27) / 9) * 9));
         Inventory inv = Bukkit.createInventory(p, invSize, title);
@@ -76,10 +114,10 @@ public class UpgradeService {
         int reqLevel = 0;
         double cost = 0.0;
 
-        ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.size");
+        org.bukkit.configuration.ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.size");
         if (sec != null){
             for (String k : sec.getKeys(false)){
-                ConfigurationSection s = sec.getConfigurationSection(k);
+                org.bukkit.configuration.ConfigurationSection s = sec.getConfigurationSection(k);
                 if (s == null) continue;
                 int from = s.getInt("from", 0);
                 int to   = s.getInt("to", from);
@@ -88,6 +126,23 @@ public class UpgradeService {
                 if (current >= from && to > current){
                     nextRange = to; reqLevel = need; cost = c; break;
                 }
+            }
+        }
+
+        org.bukkit.inventory.ItemStack it = new org.bukkit.inventory.ItemStack(org.bukkit.Material.matchMaterial(getString("MAP", "upgrade.gui.items.size.material", "size.material")));
+        org.bukkit.inventory.meta.ItemMeta meta = it.getItemMeta();
+        meta.setDisplayName(com.signition.samskybridge.util.Text.color(getString("&a섬 크기 업그레이드", "upgrade.gui.items.size.name", "size.name")));
+        java.util.List<String> tpl = getList("upgrade.gui.items.size.lore", "size.lore");
+        java.util.Map<String,String> ctx = new java.util.HashMap<>();
+        ctx.put("{현재크기}", String.valueOf(current));
+        ctx.put("{다음크기}", String.valueOf(nextRange));
+        ctx.put("{크기업그레이드레벨}", String.valueOf(is != null ? is.getLevel() : 0));
+        ctx.put("{크기필요레벨}", String.valueOf(reqLevel));
+        ctx.put("{크기비용}", String.format("%,.0f", cost));
+        meta.setLore(applyPlaceholders(tpl, ctx));
+        it.setItemMeta(meta);
+        return it;
+    }
             }
         }
 
@@ -119,10 +174,10 @@ public class UpgradeService {
         int reqLevel = 0;
         double cost = 0.0;
 
-        ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.team");
+        org.bukkit.configuration.ConfigurationSection sec = plugin.getConfig().getConfigurationSection("upgrade.team");
         if (sec != null){
             for (String k : sec.getKeys(false)){
-                ConfigurationSection s = sec.getConfigurationSection(k);
+                org.bukkit.configuration.ConfigurationSection s = sec.getConfigurationSection(k);
                 if (s == null) continue;
                 int from = s.getInt("from", 0);
                 int to   = s.getInt("to", from);
@@ -131,6 +186,23 @@ public class UpgradeService {
                 if (current >= from && to > current){
                     nextCap = to; reqLevel = need; cost = c; break;
                 }
+            }
+        }
+
+        org.bukkit.inventory.ItemStack it = new org.bukkit.inventory.ItemStack(org.bukkit.Material.matchMaterial(getString("PLAYER_HEAD", "upgrade.gui.items.team.material", "members.material")));
+        org.bukkit.inventory.meta.ItemMeta meta = it.getItemMeta();
+        meta.setDisplayName(com.signition.samskybridge.util.Text.color(getString("&a팀 인원 업그레이드", "upgrade.gui.items.team.name", "members.name")));
+        java.util.List<String> tpl = getList("upgrade.gui.items.team.lore", "members.lore");
+        java.util.Map<String,String> ctx = new java.util.HashMap<>();
+        ctx.put("{현재인원}", String.valueOf(current));
+        ctx.put("{다음인원}", String.valueOf(nextCap));
+        ctx.put("{인원업그레이드레벨}", String.valueOf(is != null ? is.getLevel() : 0));
+        ctx.put("{인원필요레벨}", String.valueOf(reqLevel));
+        ctx.put("{인원비용}", String.format("%,.0f", cost));
+        meta.setLore(applyPlaceholders(tpl, ctx));
+        it.setItemMeta(meta);
+        return it;
+    }
             }
         }
 
@@ -155,24 +227,22 @@ public class UpgradeService {
     }
 
     private ItemStack buildXpItem(Player p){
-        IslandData is = level.getIslandOf(p);
         long amount = plugin.getConfig().getLong("upgrade.xp.amount", 1000L);
         double cost = plugin.getConfig().getDouble("upgrade.xp.cost", 10000.0);
         int reqLevel = plugin.getConfig().getInt("upgrade.xp.need-level", 0);
 
-        ItemStack it = new ItemStack(Material.matchMaterial(plugin.getConfig().getString("upgrade.gui.items.xp.material","EXPERIENCE_BOTTLE")));
-        ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName(Text.color(plugin.getConfig().getString("upgrade.gui.items.xp.name","&a경험치 구매")));
-        List<String> tpl = plugin.getConfig().getStringList("upgrade.gui.items.xp.lore");
-        Map<String,String> ctx = new HashMap<>();
+        org.bukkit.inventory.ItemStack it = new org.bukkit.inventory.ItemStack(org.bukkit.Material.matchMaterial(getString("EXPERIENCE_BOTTLE", "upgrade.gui.items.xp.material", "xp-purchase.material")));
+        org.bukkit.inventory.meta.ItemMeta meta = it.getItemMeta();
+        meta.setDisplayName(com.signition.samskybridge.util.Text.color(getString("&a경험치 구매", "upgrade.gui.items.xp.name", "xp-purchase.name")));
+        java.util.List<String> tpl = getList("upgrade.gui.items.xp.lore", "xp-purchase.lore");
+        if (tpl.isEmpty()){
+            tpl = java.util.Arrays.asList("&7획득 경험치: &f{경험치구매량}", "&7요구 레벨: &f{경험치필요레벨}", "&7비용: &f{경험치비용}");
+        }
+        java.util.Map<String,String> ctx = new java.util.HashMap<>();
         ctx.put("{경험치구매량}", String.valueOf(amount));
-        ctx.put("{경험치비용}", String.format("%,.0f", cost));
         ctx.put("{경험치필요레벨}", String.valueOf(reqLevel));
-        ctx.put("{xp-amount}", String.valueOf(amount));
-        ctx.put("{xp-cost}", String.format("%,.0f", cost));
-        ctx.put("{xp-need-level}", String.valueOf(reqLevel));
-        ctx.put("{현재레벨}", String.valueOf(is != null ? is.getLevel() : 0));
-        meta.setLore(applyTemplate(tpl, ctx));
+        ctx.put("{경험치비용}", String.format("%,.0f", cost));
+        meta.setLore(applyPlaceholders(tpl, ctx));
         it.setItemMeta(meta);
         return it;
     }

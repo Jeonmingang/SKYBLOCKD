@@ -181,3 +181,11 @@ upgrade:
     cost: 10000        # 가격
     need-level: 0      # 최소 레벨 요구
     cooldown-seconds: 0  # (옵션) 쿨타임, 0=없음
+ranking:
+  top-count: 10
+  line-format: "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team> &8| &7XP:&f<xp>&7/&f<need> (&f<percent>%&7)"
+level:
+  gauge:
+    length: 20
+    full: "█"
+    empty: "░"

@@ -15,10 +15,9 @@ public class InfoService {
     public InfoService(Main plugin, LevelService level, DataStore store){
         this.plugin = plugin;
         this.level = level;
-        this.store = store != null ? store : plugin.getDataStore();
+        this.store = (store != null ? store : plugin.getDataStore());
     }
 
-    /** Opens a simple text-based island info with XP gauge. */
     public void show(Player p){
         IslandData is = level.getIslandOf(p);
         if (is == null){
@@ -31,9 +30,10 @@ public class InfoService {
         int size = is.getSize();
         int cap  = is.getTeamMax();
 
-        p.sendMessage(Text.color("&6[섬 정보] &f소유자: &e" + p.getName()));
+        p.sendMessage(Text.color("&6[섬 정보]"));
+        p.sendMessage(Text.color("&7소유자: &f" + p.getName()));
         p.sendMessage(Text.color("&7레벨: &f" + lv + " &8| &7경험치: &f" + cur + "&7/&f" + need));
-        p.sendMessage(Text.color("&7섬 크기: &f" + size + " 블럭 &8| &7인원수: &f" + cap + " 명"));
+        p.sendMessage(Text.color("&7섬 크기: &f" + size + " &8| &7인원수: &f" + cap));
 
         int barLen = Math.max(5, plugin.getConfig().getInt("level.gauge.length", 20));
         String full = plugin.getConfig().getString("level.gauge.full", "█");
@@ -43,7 +43,6 @@ public class InfoService {
         StringBuilder sb = new StringBuilder();
         for (int k=0;k<fill;k++) sb.append(full);
         for (int k=fill;k<barLen;k++) sb.append(empty);
-        String gauge = sb.toString();
-        p.sendMessage(Text.color("&8[&a" + gauge + "&8] &7" + (int)Math.floor(ratio*100) + "%"));
+        p.sendMessage(Text.color("&8[&a" + sb + "&8] &7" + (int)Math.floor(ratio*100) + "%"));
     }
 }

@@ -8,16 +8,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.Event;
-
 import org.bukkit.inventory.InventoryView;
 
-/** Listens for GUI interactions and routes clicks to UpgradeService while preventing item extraction. */
 public class GuiListener implements Listener {
-
     private final Main plugin;
     private final UpgradeService upgrade;
 
@@ -40,25 +36,18 @@ public class GuiListener implements Listener {
         if (e.getWhoClicked() == null || e.getView() == null) return;
         if (!isUpgradeGui(e.getView())) return;
 
-        // Always deny moving items in our GUI
+        // hard block all move attempts on our gui
         e.setCancelled(true);
         e.setResult(Event.Result.DENY);
 
-        // Only accept clicks in the top inventory area
         int top = e.getView().getTopInventory().getSize();
-        int rawSlot = e.getRawSlot();
-        if (rawSlot < 0) return;
-        if (rawSlot >= top) {
-            // Click was in player inventory: still cancel to prevent shift-click into GUI
-            return;
-        }
+        int raw = e.getRawSlot();
+        if (raw < 0 || raw >= top) return; // clicks in player inv are blocked but ignored
 
         if (e.getWhoClicked() instanceof Player){
             Player p = (Player) e.getWhoClicked();
-            try {
-                upgrade.click(p, rawSlot, e.isShiftClick());
-            } catch (Throwable t){
-                plugin.getLogger().warning("Upgrade GUI click handling error: " + t.getMessage());
+            try { upgrade.click(p, raw, e.isShiftClick()); } catch (Throwable t){
+                plugin.getLogger().warning("Upgrade click error: " + t.getMessage());
             }
         }
     }
@@ -67,9 +56,7 @@ public class GuiListener implements Listener {
     public void onDrag(InventoryDragEvent e){
         if (e.getView() == null) return;
         if (!isUpgradeGui(e.getView())) return;
-
         int top = e.getView().getTopInventory().getSize();
-        // If any dragged slot touches the top inventory, cancel
         for (Integer s : e.getRawSlots()){
             if (s != null && s < top){
                 e.setCancelled(true);

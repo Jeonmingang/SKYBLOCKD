@@ -23,7 +23,7 @@ public class RankingUiService {
         this.store = (store != null ? store : plugin.getDataStore());
     }
 
-    /** Backward-compatible ctor used by old call sites: (Main, RankingService, LevelService, DataStore) */
+    /** Backward-compatible ctor for older call sites */
     public RankingUiService(Main plugin, RankingService ranking, LevelService level, DataStore store){
         this(plugin, level, store);
     }
