@@ -3,6 +3,8 @@ package com.signition.samskybridge.upgrade;
 import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.level.LevelService;
+import com.signition.samskybridge.data.DataStore;
+import com.signition.samskybridge.util.VaultHook;
 import com.signition.samskybridge.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -19,6 +21,15 @@ public class UpgradeService {
     private final LevelService level;
 
     public UpgradeService(Main plugin, LevelService level){
+        this.plugin = plugin; this.level = level;
+    }
+
+    public UpgradeService(Main plugin, DataStore store, LevelService level, VaultHook vault){
+        // Delegate to 2-arg ctor; DataStore/Vault from plugin are used internally
+        this(plugin, level);
+
+    }
+
         this.plugin = plugin;
         this.level = level;
     }

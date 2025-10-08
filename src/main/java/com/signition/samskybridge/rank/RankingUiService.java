@@ -4,6 +4,8 @@ import com.signition.samskybridge.Main;
 import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.level.LevelService;
+import com.signition.samskybridge.rank.RankingService;
+import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.util.Text;
 import org.bukkit.entity.Player;
 
@@ -16,7 +18,8 @@ public class RankingUiService {
     private final DataStore store;
     private final LevelService level;
 
-    public RankingUiService(Main plugin, LevelService level, DataStore store){
+    public RankingUiService(Main plugin, LevelService level, DataStore store){ this.plugin=plugin; this.level=level; this.store=(store!=null?store:plugin.getDataStore()); }
+    public RankingUiService(Main plugin, RankingService ranking, LevelService level, DataStore store){ this(plugin, level, store); }
         this.plugin = plugin;
         this.level = level;
         this.store = store != null ? store : plugin.getDataStore();
