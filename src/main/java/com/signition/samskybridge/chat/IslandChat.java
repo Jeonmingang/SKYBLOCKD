@@ -80,7 +80,11 @@ void onChat(AsyncPlayerChatEvent e) {
                 // send to team
                 for (java.util.UUID id : members){
                     org.bukkit.entity.Player rec = org.bukkit.Bukkit.getPlayer(id);
-                    if (rec != null) org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> rec.sendMessage(out));
+                    if (rec != null) {
+                        final org.bukkit.entity.Player target = rec;
+                        final String msgOut = out;
+                        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> target.sendMessage(msgOut));
+                    }
                 }
                 // console log (optional)
                 if (consoleLog) {
