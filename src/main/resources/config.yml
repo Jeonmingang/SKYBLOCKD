@@ -1,23 +1,50 @@
-# Config tailored to 민강's schema (merged & normalized)
+# SamSkyBridge — consolidated config (only keys used by code)
+# Note: Scoreboard prefix/suffix have ~16 char limits (incl. color codes).
+# Placeholders:
+# - TAB: <rank>, <level>, <island>, <leader>
+# - Upgrade size/members: <current>, <next>, <level>, <cost>
+# - Ranking messages: <rank>, <name>, <level>
+
 integration:
   bentobox:
     enabled: true
-    gamemode-id: "bskyblock"
+    gamemode-id: "bskyblock"   # Adjust if your Bento gamemode id differs
 
+# Periodic reapply to recover from other plugins overwriting player list/nametag
+tab:
+  apply-on-join: true
+  apply-on-world-change: true
+  reapply-interval-ticks: 200
+  dynamic:
+    leader:
+      prefix: "&a섬 랭킹 <rank>위 | "
+      suffix: " &7[Lv.<level>]"
+    member:
+      # 멤버는 섬 이름을 보여주고 싶으면 <island> 사용
+      prefix: "&a섬 랭킹 <rank>위 | <island> "
+      suffix: " &7[Lv.<level>]"
+    none:
+      prefix: "등록안됨"
+      suffix: ""
+
+
+# Upgrade GUI title & slot layout
 gui:
   title-upgrade: "&f섬 업그레이드"
   market:
-    title: "&f상점"
+    title: "&f상점"  # not used by default (market feature disabled)
 
 upgrade:
   gui:
     inventory-size: 27
     slots:
-      size: 12
-      team: 14
-      xp: 22
+      size: 12   # 섬 크기 업그레이드
+      team: 14   # 섬 인원 업그레이드
+      xp: 22     # 경험치 구매 (옵션)
   size:
+    base-range: 120   # 기본 섬 반경(블록)
     tiers:
+      # 각 층은 'range/need/cost' 키를 가짐
       1: { range: 140, need: 2, cost: 15000 }
       2: { range: 160, need: 3, cost: 30000 }
       3: { range: 180, need: 5, cost: 60000 }
@@ -26,8 +53,9 @@ upgrade:
       1: { next: 6, need: 2, cost: 30000 }
       2: { next: 8, need: 4, cost: 70000 }
   xp:
-    amount: 50
+    amount: 50    # /섬 업그레이드 GUI에서 보틀 하나당 경험치 양
 
+# 표시 텍스트(업그레이드)
 size:
   name: "&a섬 크기 업그레이드"
   lore:
@@ -50,13 +78,90 @@ members:
     1: { next: 6, need: 2, cost: 30000 }
     2: { next: 8, need: 4, cost: 70000 }
 
+# XP 구매 GUI (옵션)
 xp-purchase:
   enabled: true
 
+# 기본 신설 섬 값
 defaults:
   size: 120
   team-max: 4
 
+# 랭킹 표기 포맷 (/랭킹 등)
+ranking:
+  top-count: 10
+  header: "&a[ 섬 랭킹 상위 <n> ]"
+  line: "&f<rank>. &e<name> &7- Lv.<level>"
+  footer: "&7총 <n>개 섬"
+  top-n: 10
+
+# 레벨/경험치 곡선
+level:
+  base-xp: 1000      # 레벨 1→2에 필요한 기본 XP
+  per-level: 500     # 레벨마다 선형으로 추가되는 값
+  growth: 1.0        # 1.0=선형, >1.0이면 레벨 오를수록 요구치 증가
+  max-level: 1000
+  notify-on-levelup: true
+  messages:
+    level-up: "&a섬 레벨이 &e<level>&a 레벨이 되었습니다!"
+
+# 가시 장벽(섬 테두리) 표시
+barrier:
+  show-seconds: 6
+  step: 2.0
+
+# 명령 대체(업그레이드 애드온 없을 때 시도할 기본 명령 베이스)
+player-command-base: "island"
+
+# 랭킹 캐시/저장 스케줄
+rank-refresh-interval-ticks: 1200   # 60s
+save-interval-ticks: 1200           # 60s
+
+
+upgrade:
+  gui:
+    inventory-size: 27
+    title-upgrade: "&6섬 업그레이드"
+    items:
+      size:
+        name: "&a섬 크기 업그레이드"
+        lore:
+          - "&7현재: &f{현재크기} &8→ &f{다음크기}"
+          - "&7요구 레벨: &f{크기필요레벨} &8(현재: {크기업그레이드레벨})"
+          - "&7비용: &f{크기비용}"
+      team:
+        name: "&a팀 인원 업그레이드"
+        lore:
+          - "&7현재: &f{현재인원} &8→ &f{다음인원}"
+          - "&7요구 레벨: &f{인원필요레벨} &8(현재: {인원업그레이드레벨})"
+          - "&7비용: &f{인원비용}"
+
+  # 단계 정의 예시 (원하는 만큼 추가)
+  size:
+    "1":
+      from: 100
+      to: 150
+      need-level: 5
+      cost: 5000
+    "2":
+      from: 150
+      to: 200
+      need-level: 10
+      cost: 10000
+  team:
+    "1":
+      from: 4
+      to: 6
+      need-level: 5
+      cost: 8000
+    "2":
+      from: 6
+      to: 8
+      need-level: 12
+      cost: 15000
+
+island-chat:
+  console-log: true
 level:
   base-xp: 500
   per-level: 250
@@ -69,10 +174,22 @@ level:
     length: 20
     full: "█"
     empty: "░"
-  status: "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7) &8| &a<gauge> &7<percent>%%"
+  status: "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7) &8| &a<gauge> &7<percent>%"
+upgrade:
+  xp:
+    amount: 1000       # 구매 시 지급되는 경험치
+    cost: 10000        # 가격
+    need-level: 0      # 최소 레벨 요구
+    cooldown-seconds: 0  # (옵션) 쿨타임, 0=없음
+ranking:
+  top-count: 10
+  line-format: "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team> &8| &7XP:&f<xp>&7/&f<need> (&f<percent>%&7)"
+level:
+  gauge:
+    length: 20
+    full: "█"
+    empty: "░"
 
-upgrade-xp:
-  amount: 1000
-  cost: 10000
-  need-level: 0
-  cooldown-seconds: 0
+upgrade:
+  gui:
+    strict-title-match: true
