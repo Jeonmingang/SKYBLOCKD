@@ -5,6 +5,7 @@ import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.util.Text;
+import com.signition.samskybridge.util.CommonPlaceholders;
 import com.signition.samskybridge.util.VaultHook;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -104,6 +105,8 @@ public class UpgradeService {
     }
 
     private ItemStack buildSizeItem(Player p){
+        ItemStack _TMP_IT_ = null;
+
         IslandData is = level.getIslandOf(p);
         int current = (is != null ? is.getSize() : plugin.getConfig().getInt("defaults.size", 120));
         NextTier tier = nextSizeTier(current);
@@ -120,7 +123,7 @@ public class UpgradeService {
             ctx.put("{cost}", "-");
         }
 
-        return item("upgrade.gui.items.size",
+        _TMP_IT_ = item("upgrade.gui.items.size",
                 Material.GRASS_BLOCK,
                 "&a섬 크기 업그레이드",
                 Arrays.asList("&7섬 영역을 확장합니다.",
@@ -128,9 +131,31 @@ public class UpgradeService {
                               "&7필요 레벨: &a<level>",
                               "&7가격: &6<cost>"),
                 ctx);
+
+// Apply CommonPlaceholders to the lore (xp/need/percent/gauge/level)
+
+int _lv_ = 1; long _xp_ = 0L;
+try {
+    IslandData _is_ = level.getIslandOf(p);
+    if (_is_ != null){ _lv_ = Math.max(1, _is_.getLevel()); _xp_ = Math.max(0L, _is_.getXp()); }
+} catch (Throwable ignore) {}
+
+try {
+    org.bukkit.inventory.meta.ItemMeta _meta_ = _TMP_IT_.getItemMeta();
+    java.util.List<String> _lore_ = (_meta_ != null ? _meta_.getLore() : null);
+    if (_lore_ != null && !_lore_.isEmpty()) {
+        _lore_ = CommonPlaceholders.apply(_lore_, _lv_, _xp_, plugin);
+        _meta_.setLore(_lore_);
+        _TMP_IT_.setItemMeta(_meta_);
+    }
+} catch (Throwable ignore) {}
+
+        return _TMP_IT_;
     }
 
     private ItemStack buildMembersItem(Player p){
+        ItemStack _TMP_IT_ = null;
+
         IslandData is = level.getIslandOf(p);
         int current = (is != null ? is.getTeamMax() : plugin.getConfig().getInt("defaults.team-max", 4));
         NextTier tier = nextMembersTier(current);
@@ -147,7 +172,7 @@ public class UpgradeService {
             ctx.put("{cost}", "-");
         }
 
-        return item("upgrade.gui.items.members",
+        _TMP_IT_ = item("upgrade.gui.items.members",
                 Material.DARK_OAK_PLANKS,
                 "&a섬 인원 업그레이드",
                 Arrays.asList("&7섬 허용 인원을 늘립니다.",
@@ -155,22 +180,64 @@ public class UpgradeService {
                               "&7필요 레벨: &a<level>",
                               "&7가격: &6<cost>"),
                 ctx);
+
+// Apply CommonPlaceholders to the lore (xp/need/percent/gauge/level)
+
+int _lv_ = 1; long _xp_ = 0L;
+try {
+    IslandData _is_ = level.getIslandOf(p);
+    if (_is_ != null){ _lv_ = Math.max(1, _is_.getLevel()); _xp_ = Math.max(0L, _is_.getXp()); }
+} catch (Throwable ignore) {}
+
+try {
+    org.bukkit.inventory.meta.ItemMeta _meta_ = _TMP_IT_.getItemMeta();
+    java.util.List<String> _lore_ = (_meta_ != null ? _meta_.getLore() : null);
+    if (_lore_ != null && !_lore_.isEmpty()) {
+        _lore_ = CommonPlaceholders.apply(_lore_, _lv_, _xp_, plugin);
+        _meta_.setLore(_lore_);
+        _TMP_IT_.setItemMeta(_meta_);
+    }
+} catch (Throwable ignore) {}
+
+        return _TMP_IT_;
     }
 
     private ItemStack buildXpItem(Player p){
+        ItemStack _TMP_IT_ = null;
+
         int per = plugin.getConfig().getInt("upgrade.xp.per-bottle-xp", 50);
         double price = plugin.getConfig().getDouble("upgrade.xp.price-per-bottle", 1000.0);
         Map<String,String> ctx = new HashMap<>();
         ctx.put("{per}", String.valueOf(per));
         ctx.put("{cost}", String.valueOf(price));
 
-        return item("upgrade.gui.items.xp",
+        _TMP_IT_ = item("upgrade.gui.items.xp",
                 Material.EXPERIENCE_BOTTLE,
                 "&a경험치 구매",
                 Arrays.asList("&7섬 경험치를 구매합니다.",
                               "&7경험치 보틀 한 개당: &f<per>",
                               "&7가격: &6<cost>"),
                 ctx);
+
+// Apply CommonPlaceholders to the lore (xp/need/percent/gauge/level)
+
+int _lv_ = 1; long _xp_ = 0L;
+try {
+    IslandData _is_ = level.getIslandOf(p);
+    if (_is_ != null){ _lv_ = Math.max(1, _is_.getLevel()); _xp_ = Math.max(0L, _is_.getXp()); }
+} catch (Throwable ignore) {}
+
+try {
+    org.bukkit.inventory.meta.ItemMeta _meta_ = _TMP_IT_.getItemMeta();
+    java.util.List<String> _lore_ = (_meta_ != null ? _meta_.getLore() : null);
+    if (_lore_ != null && !_lore_.isEmpty()) {
+        _lore_ = CommonPlaceholders.apply(_lore_, _lv_, _xp_, plugin);
+        _meta_.setLore(_lore_);
+        _TMP_IT_.setItemMeta(_meta_);
+    }
+} catch (Throwable ignore) {}
+
+        return _TMP_IT_;
     }
 
     // ------------------------------------------------------------------
