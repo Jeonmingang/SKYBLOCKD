@@ -6,8 +6,8 @@ import com.signition.samskybridge.util.Text;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.Event;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -23,21 +23,19 @@ public class GuiListener implements Listener {
         this.upgrade = upgrade;
     }
 
-    private boolean isUpgradeGui(InventoryView view){
-        if (view == null) return false;
-        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade",
-                plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드"));
+    private boolean isUpgrade(InventoryView v){
+        if (v == null) return false;
+        String raw = plugin.getConfig().getString("upgrade.gui.title", plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드"));
+        String title = v.getTitle();
         String colored = Text.color(raw);
-        String title = view.getTitle();
         return title != null && (title.equals(colored) || title.equals(Text.stripColor(colored)) || title.contains("섬 업그레이드"));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(InventoryClickEvent e){
-        if (e.getView() == null) return;
-        if (!isUpgradeGui(e.getView())) return;
+        if (!isUpgrade(e.getView())) return;
 
-        // Deny any shift-click, number key swap or hotbar pickup to/from the top inventory
+        // Deny quick moves & hotbar swaps inside GUI
         if (e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT
                 || e.getClick() == ClickType.NUMBER_KEY || e.getAction() == InventoryAction.HOTBAR_SWAP
                 || e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY){
@@ -47,41 +45,26 @@ public class GuiListener implements Listener {
         }
 
         int raw = e.getRawSlot();
-        int topSize = e.getView().getTopInventory().getSize();
+        int top = e.getView().getTopInventory().getSize();
 
-        // Block taking/placing any items in the GUI area
-        if (raw < topSize){
+        if (raw < top){
             e.setCancelled(true);
             e.setResult(Event.Result.DENY);
-            if (!(e.getWhoClicked() instanceof Player)) return;
             Player p = (Player)e.getWhoClicked();
-
-            // Route clicks to UpgradeService only when the configured slots are clicked
-            int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 12);
-            int teamSlot = plugin.getConfig().getInt("upgrade.gui.slots.team", 14);
-            int xpSlot   = plugin.getConfig().getInt("upgrade.gui.slots.xp",   22);
             boolean shift = e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT;
-
-            if (raw == sizeSlot || raw == teamSlot || raw == xpSlot){
-                try {
-                    upgrade.click(p, raw, shift);
-                } catch (Throwable t){
-                    p.sendMessage("§c업그레이드 처리 중 오류: §7" + t.getMessage());
-                }
-            }
+            upgrade.click(p, raw, shift);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDrag(InventoryDragEvent e){
-        if (e.getView() == null) return;
-        if (!isUpgradeGui(e.getView())) return;
+        if (!isUpgrade(e.getView())) return;
         int top = e.getView().getTopInventory().getSize();
         for (Integer s : e.getRawSlots()){
             if (s != null && s < top){
                 e.setCancelled(true);
                 e.setResult(Event.Result.DENY);
-                return;
+                break;
             }
         }
     }
