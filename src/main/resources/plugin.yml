@@ -1,16 +1,14 @@
 name: SamSkyBridge
 main: com.signition.samskybridge.Main
-version: 1.3.4
+version: 1.0.0
 api-version: 1.16
-
+author: ChatGPT
+softdepend: [Vault, BentoBox]
 commands:
-  samsky:
-    description: Main SamSkyBridge command
-    aliases: [섬, is, island]
-
-  섬:
-    description: Korean alias for SamSkyBridge
-
-  samskyreload:
-    description: reload SamSkyBridge configs
-    permission: samsky.reload
+  섬업그레이드:
+    description: 섬 업그레이드 GUI 열기
+    usage: /섬업그레이드
+    aliases: [island-upgrade, bupgrade]
+permissions:
+  samskybridge.upgrade.open:
+    default: true
