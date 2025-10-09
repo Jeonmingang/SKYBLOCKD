@@ -3,12 +3,13 @@ package com.signition.samskybridge.listener;
 import com.signition.samskybridge.Main;
 import com.signition.samskybridge.upgrade.UpgradeService;
 import com.signition.samskybridge.util.Text;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.Event;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryView;
@@ -23,43 +24,50 @@ public class GuiListener implements Listener {
     }
 
     private boolean isUpgradeGui(InventoryView view){
-        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade", "섬 업그레이드");
+        if (view == null) return false;
+        String raw = plugin.getConfig().getString("upgrade.gui.title-upgrade",
+                plugin.getConfig().getString("gui.title-upgrade", "섬 업그레이드"));
         String colored = Text.color(raw);
-        boolean strict = plugin.getConfig().getBoolean("upgrade.gui.strict-title-match", true);
-        String vt = view.getTitle();
-        if (strict) return vt.equals(colored);
-        return ChatColor.stripColor(vt).equals(ChatColor.stripColor(colored));
+        String title = view.getTitle();
+        return title != null && (title.equals(colored) || title.equals(Text.stripColor(colored)) || title.contains("섬 업그레이드"));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(InventoryClickEvent e){
-        if (e.getWhoClicked() == null || e.getView() == null) return;
+        if (e.getView() == null) return;
         if (!isUpgradeGui(e.getView())) return;
 
-        // hard block all move attempts on our gui
-        e.setCancelled(true);
-        e.setResult(Event.Result.DENY);
-
-        int top = e.getView().getTopInventory().getSize();
-        // Forward the click to UpgradeService so the button actually performs its action
-        // while still blocking item movement.
-        if (e.getRawSlot() < top){
-            if (e.getWhoClicked() instanceof Player){
-                try {
-                    upgrade.click((Player) e.getWhoClicked(), e.getRawSlot(), e.isShiftClick());
-                } catch (Throwable t){
-                    ((Player)e.getWhoClicked()).sendMessage(Text.color("&c업그레이드 처리 중 오류: " + t.getMessage()));
-                }
-            }
-            return; // prevent any further processing
+        // Deny any shift-click, number key swap or hotbar pickup to/from the top inventory
+        if (e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT
+                || e.getClick() == ClickType.NUMBER_KEY || e.getAction() == InventoryAction.HOTBAR_SWAP
+                || e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY){
+            e.setCancelled(true);
+            e.setResult(Event.Result.DENY);
+            return;
         }
-        int raw = e.getRawSlot();
-        if (raw < 0 || raw >= top) return; // clicks in player inv are blocked but ignored
 
-        if (e.getWhoClicked() instanceof Player){
-            Player p = (Player) e.getWhoClicked();
-            try { upgrade.click(p, raw, e.isShiftClick()); } catch (Throwable t){
-                plugin.getLogger().warning("Upgrade click error: " + t.getMessage());
+        int raw = e.getRawSlot();
+        int topSize = e.getView().getTopInventory().getSize();
+
+        // Block taking/placing any items in the GUI area
+        if (raw < topSize){
+            e.setCancelled(true);
+            e.setResult(Event.Result.DENY);
+            if (!(e.getWhoClicked() instanceof Player)) return;
+            Player p = (Player)e.getWhoClicked();
+
+            // Route clicks to UpgradeService only when the configured slots are clicked
+            int sizeSlot = plugin.getConfig().getInt("upgrade.gui.slots.size", 12);
+            int teamSlot = plugin.getConfig().getInt("upgrade.gui.slots.team", 14);
+            int xpSlot   = plugin.getConfig().getInt("upgrade.gui.slots.xp",   22);
+            boolean shift = e.getClick() == ClickType.SHIFT_LEFT || e.getClick() == ClickType.SHIFT_RIGHT;
+
+            if (raw == sizeSlot || raw == teamSlot || raw == xpSlot){
+                try {
+                    upgrade.click(p, raw, shift);
+                } catch (Throwable t){
+                    p.sendMessage("§c업그레이드 처리 중 오류: §7" + t.getMessage());
+                }
             }
         }
     }

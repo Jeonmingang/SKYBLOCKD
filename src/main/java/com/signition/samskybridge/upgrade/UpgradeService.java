@@ -128,6 +128,7 @@ public class UpgradeService {
         }
 
         ItemStack it = materialOf("upgrade.gui.items.size.material", "size.material");
+        if (it.getType() == org.bukkit.Material.PAPER) it.setType(org.bukkit.Material.PLAYER_HEAD);
         ItemMeta meta = it.getItemMeta();
         meta.setDisplayName(Text.color(plugin.getConfig().getString("upgrade.gui.items.size.name",
                 plugin.getConfig().getString("size.name", "&a섬 크기 업그레이드"))));
@@ -180,6 +181,7 @@ public class UpgradeService {
         }
 
         ItemStack it = materialOf("upgrade.gui.items.team.material", "members.material");
+        if (it.getType() == org.bukkit.Material.PAPER) it.setType(org.bukkit.Material.PLAYER_HEAD);
         ItemMeta meta = it.getItemMeta();
         meta.setDisplayName(Text.color(plugin.getConfig().getString("upgrade.gui.items.team.name",
                 plugin.getConfig().getString("members.name", "&a섬 인원 업그레이드"))));
@@ -205,6 +207,7 @@ public class UpgradeService {
                 plugin.getConfig().getInt("xp.amount", 0));
         if (amount <= 0) amount = 50;
         ItemStack it = materialOf("upgrade.gui.items.xp.material", "xp-purchase.material");
+        if (it.getType() == org.bukkit.Material.PAPER) it.setType(org.bukkit.Material.EXPERIENCE_BOTTLE);
         ItemMeta meta = it.getItemMeta();
         meta.setDisplayName(Text.color(plugin.getConfig().getString("upgrade.gui.items.xp.name",
                 plugin.getConfig().getString("xp-purchase.name", "&a경험치 구매"))));

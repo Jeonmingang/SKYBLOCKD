@@ -190,6 +190,4 @@ level:
     full: "█"
     empty: "░"
 
-upgrade:
-  gui:
-    strict-title-match: true
+# (defaults enforced by code if not set: size=12, team=14, xp=22; materials default to heads/xp bottle)

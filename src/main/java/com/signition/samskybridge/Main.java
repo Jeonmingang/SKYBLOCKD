@@ -56,15 +56,7 @@ public class Main extends JavaPlugin {
         // Register listeners
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new GuiListener(this, upgradeService), this);
-        // TAB/nametag re-apply listeners (join/world change/respawn)
-        pm.registerEvents(new InstantRefreshListener(this, rankingService), this);
-
-        // Periodic re-apply to recover from other plugins overwriting list/nametag
-        int interval = Math.max(1, getConfig().getInt("tab.reapply-interval-ticks", 200));
-        Bukkit.getScheduler().runTaskTimer(this, new Runnable(){
-            @Override public void run(){ try { rankingService.applyAllOnline(); } catch (Throwable ignore) {} }
-        }, interval, interval);
-
+        pm.registerEvents(new InstantRefreshListener(this), this);
         this.infoService = new InfoService(this, levelService, dataStore);
         if (chat != null) pm.registerEvents(chat, this);
 

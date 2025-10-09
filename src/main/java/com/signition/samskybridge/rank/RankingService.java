@@ -101,7 +101,6 @@ public class RankingService implements org.bukkit.event.Listener {
                 ctx0.put("<rank>", "0"); ctx0.put("<level>", "0"); ctx0.put("<island>", "섬");
                 t.setPrefix(applyFmt("tab.dynamic.none.prefix", ctx0));
                 t.setSuffix(applyFmt("tab.dynamic.none.suffix", ctx0));
-                p.setPlayerListName(com.signition.samskybridge.util.Text.color(t.getPrefix() + p.getName() + t.getSuffix()));
                 return;
             }
 
@@ -119,13 +118,11 @@ public class RankingService implements org.bukkit.event.Listener {
                 String suf = applyFmt("tab.dynamic.leader.suffix", ctx);
                 t.setPrefix(pre);
                 t.setSuffix(suf);
-                p.setPlayerListName(com.signition.samskybridge.util.Text.color(pre + p.getName() + suf));
             } else {
                 String pre = applyFmt("tab.dynamic.member.prefix", ctx);
                 String suf = applyFmt("tab.dynamic.member.suffix", ctx);
                 t.setPrefix(pre);
                 t.setSuffix(suf);
-                p.setPlayerListName(com.signition.samskybridge.util.Text.color(pre + p.getName() + suf));
             }
         } catch (Throwable ex){
             plugin.getLogger().warning("[RankingService] applyTab error for " + p.getName() + ": " + ex.getMessage());
