@@ -48,7 +48,7 @@ public class RankingService implements org.bukkit.event.Listener {
                 }
             }
             lastRankBuild = System.currentTimeMillis();
-        } catch (Throwable t){
+        } catch (Throwable ex){
             plugin.getLogger().warning("[RankingService] rebuildRanks failed: " + t.getMessage());
         }
     }
@@ -113,7 +113,7 @@ public class RankingService implements org.bukkit.event.Listener {
                 } else {
                     isLeader = p.getUniqueId().equals(is.getOwner());
                 }
-            } catch (Throwable t) {
+            } catch (Throwable ex) {
                 isLeader = p.getUniqueId().equals(is.getOwner());
             }
             int rank = getRank(is.getOwner());
@@ -181,7 +181,7 @@ public class RankingService implements org.bukkit.event.Listener {
                 String name = is.getName() == null ? "섬" : is.getName();
                 to.sendMessage(com.signition.samskybridge.util.Text.color("&7" + (i+1) + "위 &f" + name + " &8- &bLv." + is.getLevel()));
             }
-        } catch (Throwable t){
+        } catch (Throwable ex){
             to.sendMessage("§c랭킹 표시 중 오류: " + t.getMessage());
         }
     }
