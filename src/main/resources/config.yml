@@ -1,7 +1,22 @@
-# === SamSkyBridge clean config (upgrade section) ===
+# === SamSkyBridge config (clean) ===
+defaults:
+  size: 25
+  team-max: 2
+
+integration:
+  bentobox:
+    enabled: true
+    gamemode-id: "bskyblock"
+
+island-chat:
+  console-log: true
+
+player-command-base: ""
+
 upgrade:
   gui:
     title: "&f섬 업그레이드"
+    title-upgrade: "&f섬 업그레이드"
     inventory-size: 27
     slots:
       size: 12
@@ -14,81 +29,54 @@ upgrade:
         lore:
           - "&7섬 영역을 확장합니다."
           - "&7현재: &f<current> &7→ 다음: &f<next>"
-          - "&7필요 레벨: &a<level>"
-          - "&7가격: &6<cost>"
+          - "&7필요 레벨: &f<need>"
+          - "&7가격: &f<cost>"
       members:
-        material: DARK_OAK_PLANKS
-        name: "&a섬 인원 업그레이드"
+        material: PLAYER_HEAD
+        name: "&a팀 인원 업그레이드"
         lore:
-          - "&7섬 허용 인원을 늘립니다."
+          - "&7팀 최대 인원을 늘립니다."
           - "&7현재: &f<current> &7→ 다음: &f<next>"
-          - "&7필요 레벨: &a<level>"
-          - "&7가격: &6<cost>"
+          - "&7필요 레벨: &f<need>"
+          - "&7가격: &f<cost>"
       xp:
         material: EXPERIENCE_BOTTLE
-        name: "&a경험치 구매"
+        name: "&a경험치 병 구매"
         lore:
-          - "&7섬 경험치를 구매합니다."
-          - "&7경험치 보틀 한 개당: &f<per>"
-          - "&7가격: &6<cost>"
-
-  # 섬 크기 업그레이드 단계
+          - "&7한 번에 &f<count>&7병 구매"
+          - "&7병당 &f<per>&7 XP, 총 XP &f<xp>"
+          - "&7가격: &f<cost>"
   size:
-    base: 120
+    base-range: 120
     tiers:
-      1: { to: 140, need-level: 2, cost: 15000 }
-      2: { to: 160, need-level: 3, cost: 30000 }
-      3: { to: 180, need-level: 5, cost: 60000 }
-
-  # 섬 인원 업그레이드 단계
+      "1": { to: 160, need-level: 2, cost: 5000.0 }
+      "2": { to: 200, need-level: 4, cost: 10000.0 }
+      "3": { to: 240, need-level: 6, cost: 20000.0 }
   members:
-    base: 4
     tiers:
-      1: { to: 6, need-level: 2, cost: 30000 }
-      2: { to: 8, need-level: 4, cost: 70000 }
-
-  # 경험치 구매
+      "1": { to: 6,  need-level: 3, cost: 8000.0 }
+      "2": { to: 8,  need-level: 5, cost: 15000.0 }
+      "3": { to: 10, need-level: 7, cost: 30000.0 }
   xp:
     enabled: true
-    per-bottle-xp: 50         # 보틀 1개당 섬 경험치
-    price-per-bottle: 1000.0  # 보틀 1개당 가격(화폐 단위)
-    max-per-click: 64         # 쉬프트-클릭 시 최대 구매 수
-    shift-multiplier: 16      # 쉬프트-클릭 1회 기본 수량
+    per-bottle-xp: 50
+    price-per-bottle: 1000.0
+    shift-multiplier: 16
+    max-per-click: 64
 
-# 기본 섬 수치 (초기값/최소값)
-defaults:
-  size: 120
-  team-max: 4
-barrier:
-  show-seconds: 6
-  step: 2.0
-gui:
-  title-upgrade: "&f섬 업그레이드"
-  market:
-    title: "&f상점"  # not used by default (market feature disabled)
-    
-integration:
-  bentobox:
-    enabled: true
-    gamemode-id: "bskyblock"   # Adjust if your Bento gamemode id differs
-island-chat:
-  console-log: true
 level:
   base-xp: 500
-    empty: "░"
-    full: "█"
-    length: 20
-  growth: 1.10
-  levelup-message: "&a섬 레벨이 올라갔습니다! &fLv.<level>"
-  max: 100
-  max-level: 1000
-  messages:
-    level-up: "&a섬 레벨이 &e<level>&a 레벨이 되었습니다!"
-  notify-on-levelup: true
   per-level: 250
-  requirement-multiplier-percent: 100
-  status: "&a섬 레벨: &f<level> &7(&f<xp>&7/&f<need>&7) &8| &a<gauge> &7<percent>%"
-  
+  growth: 1.10
+  max: 100
+  requirement-multiplier-percent: 100.0
+  notify-on-level-up: true
+  level-up-message: "&a레벨업! 현재 레벨: &f<level>"
+  gauge:
+    length: 20
+    full: "█"
+    empty: "░"
+
 ranking:
   top-count: 10
   footer: "&7총 <n>개 섬"
@@ -99,7 +87,7 @@ ranking:
   top-n: 10
   rank-refresh-interval-ticks: 1200   # 60s
   save-interval-ticks: 1200           # 60s
-  
+
 tab:
   apply-on-join: true
   apply-on-world-change: true
@@ -115,9 +103,11 @@ tab:
     none:
       prefix: "등록안됨"
       suffix: ""
-      
-xp-purchase:
-  enabled: true
 
-# 기본 신설 섬 값
-  enabled: true
+barrier:
+  show-seconds: true
+  step: 2.0
+
+gui:
+  market:
+    title: "&f상점"  # not used by default
