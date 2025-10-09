@@ -56,7 +56,7 @@ public class Main extends JavaPlugin {
         // Register listeners
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new GuiListener(this, upgradeService), this);
-        pm.registerEvents(new InstantRefreshListener(this), this);
+        pm.registerEvents(new InstantRefreshListener(this, rankingService), this);
         this.infoService = new InfoService(this, levelService, dataStore);
         if (chat != null) pm.registerEvents(chat, this);
 
