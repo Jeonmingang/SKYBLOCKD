@@ -5,6 +5,7 @@ import com.signition.samskybridge.data.DataStore;
 import com.signition.samskybridge.data.IslandData;
 import com.signition.samskybridge.level.LevelService;
 import com.signition.samskybridge.util.Text;
+import com.signition.samskybridge.integration.BentoHooks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
@@ -104,7 +105,17 @@ public class RankingService implements org.bukkit.event.Listener {
                 return;
             }
 
-            boolean isLeader = p.getUniqueId().equals(is.getOwner());
+            boolean isLeader;
+            try {
+                String role = BentoHooks.resolveRole(p);
+                if (role != null && !"미등록".equals(role)) {
+                    isLeader = "섬장".equals(role);
+                } else {
+                    isLeader = p.getUniqueId().equals(is.getOwner());
+                }
+            } catch (Throwable t) {
+                isLeader = p.getUniqueId().equals(is.getOwner());
+            }
             int rank = getRank(is.getOwner());
             int lv = is.getLevel();
             String islandName = is.getName() == null ? "섬" : is.getName();
