@@ -1,113 +1,79 @@
-# === SamSkyBridge config (clean) ===
-defaults:
-  size: 25
-  team-max: 2
-
-integration:
-  bentobox:
-    enabled: true
-    gamemode-id: "bskyblock"
-
-island-chat:
-  console-log: true
-
-player-command-base: ""
-
-upgrade:
-  gui:
-    title: "&f섬 업그레이드"
-    title-upgrade: "&f섬 업그레이드"
-    inventory-size: 27
-    slots:
-      size: 12
-      members: 14
-      xp: 22
-    items:
-      size:
-        material: GRASS_BLOCK
-        name: "&a섬 크기 업그레이드"
-        lore:
-          - "&7섬 영역을 확장합니다."
-          - "&7현재: &f<current> &7→ 다음: &f<next>"
-          - "&7필요 레벨: &f<need>"
-          - "&7가격: &f<cost>"
-      members:
-        material: PLAYER_HEAD
-        name: "&a팀 인원 업그레이드"
-        lore:
-          - "&7팀 최대 인원을 늘립니다."
-          - "&7현재: &f<current> &7→ 다음: &f<next>"
-          - "&7필요 레벨: &f<need>"
-          - "&7가격: &f<cost>"
-      xp:
-        material: EXPERIENCE_BOTTLE
-        name: "&a경험치 병 구매"
-        lore:
-          - "&7한 번에 &f<count>&7병 구매"
-          - "&7병당 &f<per>&7 XP, 총 XP &f<xp>"
-          - "&7가격: &f<cost>"
-  size:
-    base-range: 120
-    tiers:
-      "1": { to: 160, need-level: 2, cost: 5000.0 }
-      "2": { to: 200, need-level: 4, cost: 10000.0 }
-      "3": { to: 240, need-level: 6, cost: 20000.0 }
-  members:
-    tiers:
-      "1": { to: 6,  need-level: 3, cost: 8000.0 }
-      "2": { to: 8,  need-level: 5, cost: 15000.0 }
-      "3": { to: 10, need-level: 7, cost: 30000.0 }
-  xp:
-    enabled: true
-    per-bottle-xp: 50
-    price-per-bottle: 1000.0
-    shift-multiplier: 16
-    max-per-click: 64
-
-level:
-  base-xp: 500
-  per-level: 250
-  growth: 1.10
-  max: 100
-  requirement-multiplier-percent: 100.0
-  notify-on-level-up: true
-  level-up-message: "&a레벨업! 현재 레벨: &f<level>"
-  gauge:
-    length: 20
-    full: "█"
-    empty: "░"
-
-ranking:
-  top-count: 10
-  footer: "&7총 <n>개 섬"
-  header: "&a[ 섬 랭킹 상위 <n> ]"
-  line: "&f<rank>. &e<name> &7- Lv.<level>"
-  line-format: "&a섬 랭킹 <rank>위 &f<name> &7[Lv.<level>] &8| &7크기:&f<size>&7(+<delta_size>) &8| &7인원:&f<team> &8| &7XP:&f<xp>&7/&f<need> (&f<percent>%&7)"
-  top-count: 10
-  top-n: 10
-  rank-refresh-interval-ticks: 1200   # 60s
-  save-interval-ticks: 1200           # 60s
-
-tab:
-  apply-on-join: true
-  apply-on-world-change: true
-  reapply-interval-ticks: 200
-  dynamic:
-    leader:
-      prefix: "&a섬 랭킹 <rank>위 | "
-      suffix: " &7[Lv.<level>]"
-    member:
-      # 멤버는 섬 이름을 보여주고 싶으면 <island> 사용
-      prefix: "&a섬 랭킹 <rank>위 | <island> "
-      suffix: " &7[Lv.<level>]"
-    none:
-      prefix: "등록안됨"
-      suffix: ""
-
-barrier:
-  show-seconds: true
-  step: 2.0
+messages:
+  prefix: "&a[ 가위바위보 ]&f "
+  installed: "&a설치 완료: &e{name}&a (다이아 블럭 배치)"
+  removed: "&c제거 완료: &e{name}"
+  coin-set: "&a코인 설정 완료: &e{name}"
+  hologram-on: "&a홀로그램 ON: &e{name}"
+  hologram-off: "&c홀로그램 OFF: &e{name}"
+  reloaded: "&a설정을 리로드했습니다."
+  coin-not-set: "&c이 장소의 코인이 아직 설정되지 않았습니다. 관리자에게 문의하세요"
+  coin-wrong: "&c코인은 &f설정된 아이템&c만 넣을 수 있습니다."
+  coin-too-much: "&c코인은 최대 3개까지만 넣을 수 있습니다."
+  need-choose: "&c가위/바위/보 중 하나를 선택하세요."
+  need-coin: "&c코인을 1~3개 넣어주세요."
+  countdown: "&73... &72... &71..."
+  draw: "&e무승부! (베팅은 소모됩니다)"
+  lose: "&c패배! 베팅한 코인은 회수되었습니다."
+  win-broadcast: "&a{player}&f 님이 &b{name}&f 에서 &e{bet}개&f를 걸고 &b×{multiplier}&f에 당첨되어 &f{coin}&f &a{win}개&f를 획득!"
+  win-self: "&a축하합니다! ×{multiplier} 배에 당첨되어 {win}개를 획득했습니다."
 
 gui:
-  market:
-    title: "&f상점"  # not used by default
+  rps-title: "&0가위바위보 - {name}"
+  roulette-title: "&0보상 룰렛 - {name}"
+  start-button-name: "&a&l시작"
+  start-button-lore:
+    - "&7코인을 넣고 가위/바위/보를 선택한 뒤"
+    - "&7이 버튼을 누르면 시작합니다."
+  pick-rock-name: "&f&l바위"
+  pick-paper-name: "&f&l보"
+  pick-scissors-name: "&f&l가위"
+  coin-instruction-left: "&7여기에 코인을 넣으세요 ->"
+  coin-instruction-right: "&7<- 여기에 코인을 넣으세요"
+  pane-name: "&0 "
+  player-head-name: "&b내 선택: &f{choice}"
+  system-head-name: "&d시스템 선택: &f{choice}"
+
+hologram:
+  enabled-by-default: true
+  lines:
+    - "&b&l가위바위보 도박"
+    - "&e기계: &f{name}"
+    - "&6코인: &f&n{coin}"
+    - "&6배수정보: {최소}배 ~ {최대}배"
+    - "&7우클릭하여 시작"
+
+default-wedges:
+  - 50
+  - 35
+  - 25
+  - 20
+  - 15
+  - 10
+  - 9
+  - 8
+  - 7
+  - 6
+  - 5
+  - 4
+  - 3
+  - 3
+  - 2
+  - 2
+  - 2
+  - 2
+  - 1
+  - 1
+
+leaderboard:
+  title: "&b&l가위바위보 랭킹"
+  max-lines: 10
+  # 채팅/홀로그램 공통 라인 포맷
+  line-format: "&7{rank}. &b{station}&f - &7({player}) &e{coin}&f {amount}개"
+  # 플레이어가 없을 때(데이터 없음) 대체 포맷
+  line-format-noplayer: "&7{rank}. &b{station}&f - &e{coin}&f {amount}개"
+
+# 보상 드랍 보호 시간(초) - 이 시간 동안은 당첨자만 보상을 줍기 가능
+drop-protection-seconds: 10
+
+messages:
+  daily-limit-reached: "&c오늘은 더 이상 참여할 수 없습니다. (제한 {limit}회)"

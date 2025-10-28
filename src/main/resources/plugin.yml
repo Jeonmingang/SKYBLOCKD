@@ -1,16 +1,15 @@
-name: SamSkyBridge
-main: com.signition.samskybridge.Main
-version: 1.4.1
-api-version: 1.16
-
+name: UltimateRPS
+main: com.minkang.ultimate.rps.UltimateRpsPlugin
+version: 1.6.18
+api-version: "1.16"
+author: minkang
 commands:
-  samsky:
-    description: Main SamSkyBridge command
-    aliases: [섬, is, island]
-
-  섬:
-    description: Korean alias for SamSkyBridge
-
-  samskyreload:
-    description: reload SamSkyBridge configs
-    permission: samsky.reload
+  rps:
+    description: 가위바위보 시스템
+    usage: /rps
+    aliases: [가위바위보]
+permissions:
+  ultimaterps.use:
+    default: true
+  ultimaterps.admin:
+    default: op
