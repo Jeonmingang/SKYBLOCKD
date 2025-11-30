@@ -59,15 +59,27 @@ void onChat(AsyncPlayerChatEvent e) {
         e.setCancelled(true);
         String msg = ChatColor.translateAlternateColorCodes('&', e.getMessage());
 
-        // Try BentoBox first
+        // Try BentoBox first via reflection (no direct API dependency)
         try {
-            world.bentobox.bentobox.managers.IslandsManager im = world.bentobox.bentobox.BentoBox.getInstance().getIslands();
-            world.bentobox.bentobox.database.objects.Island island = im.getIsland(p.getWorld(), p.getUniqueId());
-            if (island != null){
-                java.util.UUID owner = island.getOwner();
-                java.util.Set<java.util.UUID> members = new java.util.HashSet<>(island.getMemberSet());
+            Class<?> bbClass = Class.forName("world.bentobox.bentobox.BentoBox");
+            Object bbInstance = bbClass.getMethod("getInstance").invoke(null);
+            Object islandsManager = bbClass.getMethod("getIslands").invoke(bbInstance);
+
+            java.lang.reflect.Method getIslandMethod =
+                    islandsManager.getClass().getMethod("getIsland", org.bukkit.World.class, java.util.UUID.class);
+            Object islandObj = getIslandMethod.invoke(islandsManager, p.getWorld(), p.getUniqueId());
+
+            if (islandObj != null) {
+                Class<?> islandClass = islandObj.getClass();
+                java.util.UUID owner = (java.util.UUID) islandClass.getMethod("getOwner").invoke(islandObj);
+                @SuppressWarnings("unchecked")
+                java.util.Set<java.util.UUID> members = new java.util.HashSet<>((java.util.Set<java.util.UUID>)
+                        islandClass.getMethod("getMemberSet").invoke(islandObj));
+
                 // include owner too
-                if (owner != null) members.add(owner);
+                if (owner != null) {
+                    members.add(owner);
+                }
 
                 // build prefix by role
                 boolean isLeader = owner != null && owner.equals(p.getUniqueId());
@@ -78,7 +90,7 @@ void onChat(AsyncPlayerChatEvent e) {
                 out = ChatColor.translateAlternateColorCodes('&', out);
 
                 // send to team
-                for (java.util.UUID id : members){
+                for (java.util.UUID id : members) {
                     org.bukkit.entity.Player rec = org.bukkit.Bukkit.getPlayer(id);
                     if (rec != null) {
                         final org.bukkit.entity.Player target = rec;
@@ -86,23 +98,28 @@ void onChat(AsyncPlayerChatEvent e) {
                         org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> target.sendMessage(msgOut));
                     }
                 }
+
                 // console log (optional)
                 if (consoleLog) {
-                    String consoleLine = ChatColor.stripColor(out);
-                    org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> org.bukkit.Bukkit.getConsoleSender().sendMessage(consoleLine));
+                    final String consoleLine = ChatColor.stripColor(out);
+                    org.bukkit.Bukkit.getScheduler().runTask(plugin,
+                            () -> org.bukkit.Bukkit.getConsoleSender().sendMessage(consoleLine));
                 }
+
                 // spies
-                if (spyEnabled){
-                    String spy = ChatColor.translateAlternateColorCodes('&', spyPrefix) + ChatColor.stripColor(out);
-                    for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()){
-                        if (online.hasPermission(spyPerm) && (owner == null || !owner.equals(online.getUniqueId())) && !members.contains(online.getUniqueId())){
-                            online.sendMessage(spy);
+                if (spyEnabled) {
+                    final String spyMsg = ChatColor.translateAlternateColorCodes('&', spyPrefix) + ChatColor.stripColor(out);
+                    for (org.bukkit.entity.Player online : org.bukkit.Bukkit.getOnlinePlayers()) {
+                        if (online.hasPermission(spyPerm) && !members.contains(online.getUniqueId())) {
+                            online.sendMessage(spyMsg);
                         }
                     }
                 }
                 return;
             }
-        } catch (Throwable ignore) {}
+        } catch (Throwable ignore) {
+            // ignore and fall back to DataStore
+        }
 
         // Fallback to DataStore
         IslandData is = resolveIsland(p.getUniqueId());
